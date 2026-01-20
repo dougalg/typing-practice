@@ -116,23 +116,27 @@ function App() {
 
   const renderHighlightedText = () => {
     if (!targetText || typingState === 'idle') {
-      return <p className="muted">Enter some text above and press "Start practice".</p>
+      return (
+        <p className="m-0 text-sm text-slate-400">
+          Enter some text above and press "Start practice".
+        </p>
+      )
     }
 
     return (
-      <p className="practice-text">
+      <p className="m-0 whitespace-pre-wrap break-words font-mono text-[0.95rem]">
         {Array.from(targetText).map((ch, i) => {
           const mark = typedMarks[i] ?? null
           const isCaret = typingState === 'running' && i === position
 
           const className =
             mark === 'correct'
-              ? 'typed typed--correct'
+              ? 'rounded-[3px] bg-gradient-to-r from-green-200 to-green-300 text-green-900'
               : mark === 'incorrect'
-                ? 'typed typed--incorrect'
+                ? 'rounded-[3px] bg-gradient-to-r from-red-200 to-red-400 text-red-900'
                 : isCaret
-                  ? 'typed typed--caret'
-                  : 'typed'
+                  ? 'rounded-[3px] bg-blue-500/18 shadow-[inset_0_-2px_0_rgba(37,99,235,0.8)]'
+                  : 'rounded-[3px]'
 
           return (
             <span key={i} className={className}>
@@ -145,33 +149,42 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <h1>Typing Practice</h1>
+    <div className="bg-white/96 rounded-[18px] p-8 pb-9 sm:p-6 sm:pb-7 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px]">
+      <h1 className="m-0 mb-6 text-[2.2rem] sm:text-[1.8rem] tracking-[-0.03em] text-slate-950">
+        Typing Practice
+      </h1>
 
-      <section className="panel">
-        <h2 className="panel-title">1. Enter text to practice</h2>
+      <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40">
+        <h2 className="m-0 mb-3 text-[0.95rem] uppercase tracking-[0.09em] text-slate-500">
+          1. Enter text to practice
+        </h2>
         <textarea
           value={sourceText}
           onChange={(e) => setSourceText(e.target.value)}
           onKeyDown={handleSourceKeyDown}
-          className="source-input"
+          className="w-full resize-y min-h-[80px] max-h-[200px] py-3 px-[0.9rem] rounded-[10px] border border-slate-300 font-inherit leading-relaxed text-slate-950 bg-white transition-all duration-150 ease-out focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] placeholder:text-slate-400"
           rows={4}
           placeholder="Type or paste any text you want to practice..."
         />
-        <button onClick={handleStart} className="primary-button">
+        <button
+          onClick={handleStart}
+          className="mt-3 rounded-full border-none py-[0.55rem] px-5 text-[0.95rem] font-semibold tracking-[0.03em] uppercase bg-gradient-to-br from-blue-500 to-blue-700 text-blue-50 cursor-pointer inline-flex items-center gap-1.5 shadow-[0_10px_25px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.7)] transition-all duration-[120ms] ease-out hover:-translate-y-[1px] hover:brightness-105 hover:shadow-[0_14px_30px_rgba(37,99,235,0.4),0_0_0_1px_rgba(30,64,175,0.75)] active:translate-y-0 active:shadow-[0_6px_18px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.8)]"
+        >
           Start practice
         </button>
       </section>
 
-      <section className="panel">
-        <h2 className="panel-title">2. Type the text below</h2>
+      <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40 mt-5">
+        <h2 className="m-0 mb-3 text-[0.95rem] uppercase tracking-[0.09em] text-slate-500">
+          2. Type the text below
+        </h2>
         <div
-          className={`practice-area ${
+          className={`mt-2 min-h-[80px] rounded-[10px] py-3 px-[0.9rem] text-left flex items-center ${
             typingState === 'idle'
-              ? 'practice-area--idle'
+              ? 'border border-dashed border-slate-300 bg-slate-50'
               : typingState === 'finished'
-              ? 'practice-area--finished'
-              : 'practice-area--active'
+              ? 'border border-solid border-green-500 bg-gradient-to-br from-green-50 to-green-50/50'
+              : 'border border-solid border-blue-500 bg-blue-50'
           }`}
         >
           {renderHighlightedText()}
@@ -180,7 +193,7 @@ function App() {
           ref={typingInputRef}
           value=""
           onKeyDown={handleTypingKeyDown}
-          className="typing-input"
+          className="mt-3 w-full py-2.5 px-[0.9rem] rounded-[10px] border border-slate-300 font-inherit bg-white transition-all duration-150 ease-out focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] disabled:bg-gray-200 disabled:cursor-not-allowed placeholder:text-slate-400"
           type="text"
           autoComplete="off"
           spellCheck={false}
@@ -188,7 +201,7 @@ function App() {
           placeholder="Start typing… (this box stays empty; it captures keystrokes)"
         />
         {errorMessage && (
-          <p className="error-message" role="alert">
+          <p className="min-h-[1.25rem] mt-2.5 text-sm text-red-700" role="alert">
             {errorMessage}
           </p>
         )}
