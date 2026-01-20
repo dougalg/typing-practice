@@ -4,12 +4,6 @@ import './style.css'
 type TypingState = 'idle' | 'running' | 'finished'
 type TypedMark = 'correct' | 'incorrect' | null
 
-function isPrintableKey(event: React.KeyboardEvent) {
-  if (event.ctrlKey || event.metaKey || event.altKey) return false
-  // Includes space and punctuation. Excludes things like "Backspace", "ArrowLeft", etc.
-  return event.key.length === 1
-}
-
 function displayChar(ch: string) {
   if (ch === ' ') return 'space'
   if (ch === '\n') return 'newline'
@@ -23,6 +17,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('')
   const [position, setPosition] = useState(0)
   const [typedMarks, setTypedMarks] = useState<TypedMark[]>([])
+  const [isComposing, setIsComposing] = useState(false)
+  const [currentInputValue, setCurrentInputValue] = useState('')
   const typingInputRef = useRef<HTMLInputElement>(null)
 
   const targetText = useMemo(() => sourceText.replace(/\s+$/g, ''), [sourceText])
@@ -36,15 +32,148 @@ function App() {
     setPosition(0)
     setTypedMarks(Array.from({ length: targetText.length }, () => null))
     setErrorMessage('')
+    setCurrentInputValue('')
+    setIsComposing(false)
     setTimeout(() => {
       typingInputRef.current?.focus()
     }, 0)
   }
 
+  const handleTypingInput = (event: React.FormEvent<HTMLInputElement>) => {
+    if (typingState !== 'running' || isComposing) return
+
+    const inputElement = event.currentTarget
+    const newValue = inputElement.value
+
+    // Find the difference - what was just typed
+    if (newValue.length > currentInputValue.length) {
+      const typedChar = newValue.slice(currentInputValue.length)
+      // Handle the typed character(s) - might be multiple if pasted, but we only care about one at a time
+      const actual = typedChar[0]
+
+      const expected = targetText[position]
+
+      if (expected === undefined) {
+        setTypingState('finished')
+        setErrorMessage('Nice work! You finished.')
+        inputElement.value = ''
+        setCurrentInputValue('')
+        return
+      }
+
+      const isExpectedWhitespace = typeof expected === 'string' && expected.length === 1 && /\s/.test(expected)
+      // Treat spacebar as "any whitespace" (space, tab, newline, etc.)
+      const isCorrect = actual === expected || (actual === ' ' && isExpectedWhitespace)
+
+      if (!isCorrect) {
+        // Wrong character - don't advance, show error
+        setTypedMarks((prev) => {
+          const next = prev.slice()
+          next[position] = 'incorrect'
+          return next
+        })
+        setErrorMessage(
+          `Error at position ${position + 1}: expected "${displayChar(expected)}" but got "${displayChar(actual)}". Keep typing until you get it right!`,
+        )
+        inputElement.value = currentInputValue // Reset to previous value
+        return
+      }
+
+      // Correct character - advance position
+      setTypedMarks((prev) => {
+        const next = prev.slice()
+        next[position] = 'correct'
+        return next
+      })
+      setErrorMessage('')
+
+      const nextPos = position + 1
+      if (nextPos >= targetText.length) {
+        setTypingState('finished')
+        setErrorMessage('Nice work! You finished.')
+        inputElement.value = ''
+        setCurrentInputValue('')
+      } else {
+        setPosition(nextPos)
+        inputElement.value = '' // Clear input after each character
+        setCurrentInputValue('')
+      }
+    } else if (newValue.length < currentInputValue.length) {
+      // Backspace was pressed
+      setErrorMessage('')
+      setPosition((pos) => {
+        if (pos <= 0) return 0
+        const newPos = pos - 1
+        setTypedMarks((prev) => {
+          const next = prev.slice()
+          next[newPos] = null
+          return next
+        })
+        return newPos
+      })
+      setCurrentInputValue('')
+      inputElement.value = ''
+    }
+  }
+
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = (event: React.CompositionEvent<HTMLInputElement>) => {
+    setIsComposing(false)
+    // After composition ends, process the input
+    if (typingState === 'running') {
+      const inputElement = event.currentTarget
+      const composedText = inputElement.value
+
+      if (composedText.length > 0) {
+        // Handle each character in the composed text
+        const expected = targetText[position]
+        const actual = composedText[0]
+
+        if (expected !== undefined) {
+          const isExpectedWhitespace = typeof expected === 'string' && expected.length === 1 && /\s/.test(expected)
+          const isCorrect = actual === expected || (actual === ' ' && isExpectedWhitespace)
+
+          if (!isCorrect) {
+            setTypedMarks((prev) => {
+              const next = prev.slice()
+              next[position] = 'incorrect'
+              return next
+            })
+            setErrorMessage(
+              `Error at position ${position + 1}: expected "${displayChar(expected)}" but got "${displayChar(actual)}". Keep typing until you get it right!`,
+            )
+          } else {
+            setTypedMarks((prev) => {
+              const next = prev.slice()
+              next[position] = 'correct'
+              return next
+            })
+            setErrorMessage('')
+
+            const nextPos = position + 1
+            if (nextPos >= targetText.length) {
+              setTypingState('finished')
+              setErrorMessage('Nice work! You finished.')
+            } else {
+              setPosition(nextPos)
+            }
+          }
+        }
+      }
+
+      inputElement.value = ''
+      setCurrentInputValue('')
+    }
+  }
+
   const handleTypingKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (typingState !== 'running') return
 
-    if (event.key === 'Backspace') {
+    // Handle backspace when not composing
+    if (event.key === 'Backspace' && !isComposing) {
       event.preventDefault()
       setErrorMessage('')
       setPosition((pos) => {
@@ -57,53 +186,10 @@ function App() {
         })
         return newPos
       })
-      return
-    }
-
-    if (!isPrintableKey(event)) return
-
-    event.preventDefault()
-
-    const expected = targetText[position]
-    const actual = event.key
-
-    if (expected === undefined) {
-      setTypingState('finished')
-      setErrorMessage('Nice work! You finished.')
-      return
-    }
-
-    const isExpectedWhitespace = typeof expected === 'string' && expected.length === 1 && /\s/.test(expected)
-    // Treat spacebar as "any whitespace" (space, tab, newline, etc.)
-    const isCorrect = actual === expected || (actual === ' ' && isExpectedWhitespace)
-
-    if (!isCorrect) {
-      // Wrong character - don't advance, show error
-      setTypedMarks((prev) => {
-        const next = prev.slice()
-        next[position] = 'incorrect'
-        return next
-      })
-      setErrorMessage(
-        `Error at position ${position + 1}: expected "${displayChar(expected)}" but got "${displayChar(actual)}". Keep typing until you get it right!`,
-      )
-      return
-    }
-
-    // Correct character - advance position
-    setTypedMarks((prev) => {
-      const next = prev.slice()
-      next[position] = 'correct'
-      return next
-    })
-    setErrorMessage('')
-
-    const nextPos = position + 1
-    if (nextPos >= targetText.length) {
-      setTypingState('finished')
-      setErrorMessage('Nice work! You finished.')
-    } else {
-      setPosition(nextPos)
+      setCurrentInputValue('')
+      if (typingInputRef.current) {
+        typingInputRef.current.value = ''
+      }
     }
   }
 
@@ -131,12 +217,12 @@ function App() {
 
           const className =
             mark === 'correct'
-              ? 'rounded-[3px] bg-gradient-to-r from-green-200 to-green-300 text-green-900'
+              ? 'text-green-600'
               : mark === 'incorrect'
-                ? 'rounded-[3px] bg-gradient-to-r from-red-200 to-red-400 text-red-900'
+                ? 'text-red-600'
                 : isCaret
-                  ? 'rounded-[3px] bg-blue-500/18 shadow-[inset_0_-2px_0_rgba(37,99,235,0.8)]'
-                  : 'rounded-[3px]'
+                  ? 'text-blue-600 font-semibold'
+                  : ''
 
           return (
             <span key={i} className={className}>
@@ -191,8 +277,11 @@ function App() {
         </div>
         <input
           ref={typingInputRef}
-          value=""
+          value={currentInputValue}
+          onInput={handleTypingInput}
           onKeyDown={handleTypingKeyDown}
+          onCompositionStart={handleCompositionStart}
+          onCompositionEnd={handleCompositionEnd}
           className="mt-3 w-full py-2.5 px-[0.9rem] rounded-[10px] border border-slate-300 font-inherit bg-white transition-all duration-150 ease-out focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] disabled:bg-gray-200 disabled:cursor-not-allowed placeholder:text-slate-400"
           type="text"
           autoComplete="off"
