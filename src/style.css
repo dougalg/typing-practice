@@ -16,8 +16,19 @@
     justify-content: center;
     padding: 2rem 1rem;
     color: #0f172a;
-    background: radial-gradient(circle at top, #e0f2fe 0, #f9fafb 40%, #f1f5f9 100%);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    background: radial-gradient(
+      circle at top,
+      #e0f2fe 0,
+      #f9fafb 40%,
+      #f1f5f9 100%
+    );
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "SF Pro Text",
+      system-ui,
+      sans-serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
