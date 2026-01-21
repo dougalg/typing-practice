@@ -201,14 +201,6 @@ function App() {
   }
 
   const renderHighlightedText = () => {
-    if (!targetText || typingState === 'idle') {
-      return (
-        <p className="m-0 text-sm text-slate-400">
-          Enter some text above and press "Start practice".
-        </p>
-      )
-    }
-
     return (
       <p className="m-0 whitespace-pre-wrap break-words font-mono text-[0.95rem]">
         {Array.from(targetText).map((ch, i) => {
@@ -234,41 +226,104 @@ function App() {
     )
   }
 
+  const progressPercentage = targetText.length > 0 
+    ? Math.round((position / targetText.length) * 100) 
+    : 0
+
+  const handleReset = () => {
+    setTypingState('idle')
+    setPosition(0)
+    setTypedMarks([])
+    setErrorMessage('')
+    setCurrentInputValue('')
+    setIsComposing(false)
+    if (typingInputRef.current) {
+      typingInputRef.current.value = ''
+    }
+  }
+
+  // Setup view - show text entry and start button
+  if (typingState === 'idle') {
+    return (
+      <div className="bg-white/96 rounded-[18px] p-8 pb-9 sm:p-6 sm:pb-7 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px]">
+        <h1 className="m-0 mb-6 text-[2.2rem] sm:text-[1.8rem] tracking-[-0.03em] text-slate-950">
+          Typing Practice
+        </h1>
+
+        <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40">
+          <h2 className="m-0 mb-3 text-[0.95rem] uppercase tracking-[0.09em] text-slate-500">
+            Enter text to practice
+          </h2>
+          <textarea
+            value={sourceText}
+            onChange={(e) => setSourceText(e.target.value)}
+            onKeyDown={handleSourceKeyDown}
+            className="w-full resize-y min-h-[80px] max-h-[200px] py-3 px-[0.9rem] rounded-[10px] border border-slate-300 font-inherit leading-relaxed text-slate-950 bg-white transition-all duration-150 ease-out focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] placeholder:text-slate-400"
+            rows={4}
+            placeholder="Type or paste any text you want to practice..."
+          />
+          {errorMessage && (
+            <p className="min-h-[1.25rem] mt-2.5 text-sm text-red-700" role="alert">
+              {errorMessage}
+            </p>
+          )}
+          <button
+            onClick={handleStart}
+            className="mt-3 rounded-full border-none py-[0.55rem] px-5 text-[0.95rem] font-semibold tracking-[0.03em] uppercase bg-gradient-to-br from-blue-500 to-blue-700 text-blue-50 cursor-pointer inline-flex items-center gap-1.5 shadow-[0_10px_25px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.7)] transition-all duration-[120ms] ease-out hover:-translate-y-[1px] hover:brightness-105 hover:shadow-[0_14px_30px_rgba(37,99,235,0.4),0_0_0_1px_rgba(30,64,175,0.75)] active:translate-y-0 active:shadow-[0_6px_18px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.8)]"
+          >
+            Start practice
+          </button>
+        </section>
+      </div>
+    )
+  }
+
+  // Practice view - show text, typing input, and progress
+
   return (
     <div className="bg-white/96 rounded-[18px] p-8 pb-9 sm:p-6 sm:pb-7 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px]">
-      <h1 className="m-0 mb-6 text-[2.2rem] sm:text-[1.8rem] tracking-[-0.03em] text-slate-950">
-        Typing Practice
-      </h1>
-
-      <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40">
-        <h2 className="m-0 mb-3 text-[0.95rem] uppercase tracking-[0.09em] text-slate-500">
-          1. Enter text to practice
-        </h2>
-        <textarea
-          value={sourceText}
-          onChange={(e) => setSourceText(e.target.value)}
-          onKeyDown={handleSourceKeyDown}
-          className="w-full resize-y min-h-[80px] max-h-[200px] py-3 px-[0.9rem] rounded-[10px] border border-slate-300 font-inherit leading-relaxed text-slate-950 bg-white transition-all duration-150 ease-out focus:outline-none focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] placeholder:text-slate-400"
-          rows={4}
-          placeholder="Type or paste any text you want to practice..."
-        />
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="m-0 text-[2.2rem] sm:text-[1.8rem] tracking-[-0.03em] text-slate-950">
+          Typing Practice
+        </h1>
         <button
-          onClick={handleStart}
-          className="mt-3 rounded-full border-none py-[0.55rem] px-5 text-[0.95rem] font-semibold tracking-[0.03em] uppercase bg-gradient-to-br from-blue-500 to-blue-700 text-blue-50 cursor-pointer inline-flex items-center gap-1.5 shadow-[0_10px_25px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.7)] transition-all duration-[120ms] ease-out hover:-translate-y-[1px] hover:brightness-105 hover:shadow-[0_14px_30px_rgba(37,99,235,0.4),0_0_0_1px_rgba(30,64,175,0.75)] active:translate-y-0 active:shadow-[0_6px_18px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.8)]"
+          onClick={handleReset}
+          className="rounded-full border-none py-2 px-4 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 cursor-pointer transition-colors duration-150"
         >
-          Start practice
+          Reset
         </button>
-      </section>
+      </div>
 
-      <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40 mt-5">
+      {/* Progress Bar */}
+      <div className="mb-6 rounded-full bg-slate-200 h-2 overflow-hidden">
+        <div
+          className={`h-full transition-all duration-300 ${
+            typingState === 'finished'
+              ? 'bg-green-500'
+              : 'bg-blue-500'
+          }`}
+          style={{ width: `${progressPercentage}%` }}
+        />
+      </div>
+
+      {/* Progress Stats */}
+      <div className="mb-6 flex items-center gap-6 text-sm text-slate-600">
+        <div>
+          <span className="font-semibold">{position}</span> / <span>{targetText.length}</span> characters
+        </div>
+        <div>
+          <span className="font-semibold">{progressPercentage}%</span> complete
+        </div>
+      </div>
+
+      {/* Text Display */}
+      <section className="rounded-[14px] p-5 pb-6 bg-gradient-to-br from-slate-50 to-blue-50 border border-slate-300/40 mb-5">
         <h2 className="m-0 mb-3 text-[0.95rem] uppercase tracking-[0.09em] text-slate-500">
-          2. Type the text below
+          Type the text below
         </h2>
         <div
           className={`mt-2 min-h-[80px] rounded-[10px] py-3 px-[0.9rem] text-left flex items-center ${
-            typingState === 'idle'
-              ? 'border border-dashed border-slate-300 bg-slate-50'
-              : typingState === 'finished'
+            typingState === 'finished'
               ? 'border border-solid border-green-500 bg-gradient-to-br from-green-50 to-green-50/50'
               : 'border border-solid border-blue-500 bg-blue-50'
           }`}
