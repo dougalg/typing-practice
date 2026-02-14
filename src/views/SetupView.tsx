@@ -29,7 +29,7 @@ function SetupView({
 					value={sourceText}
 					onChange={(e) => onChangeText(e.target.value)}
 					onKeyDown={onKeyDown}
-					className="font-inherit max-h-[200px] min-h-[80px] w-full resize-y rounded-[10px] border border-slate-300 bg-white px-[0.9rem] py-3 leading-relaxed text-slate-950 transition-all duration-150 ease-out placeholder:text-slate-400 focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] focus:outline-none"
+					className="font-inherit max-h-[200px] min-h-[80px] w-full resize-y rounded-[10px] border border-slate-300 bg-white px-[0.9rem] py-3 text-[1.5rem] leading-relaxed text-slate-950 transition-all duration-150 ease-out placeholder:text-slate-400 focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] focus:outline-none"
 					rows={4}
 					placeholder="Type or paste any text you want to practice..."
 				/>

@@ -15,7 +15,12 @@ function displayChar(ch: string) {
 	return ch;
 }
 
-function PracticeView({ targetText, typingState, onFinish, onReset }: PracticeViewProps) {
+function PracticeView({
+	targetText,
+	typingState,
+	onFinish,
+	onReset,
+}: PracticeViewProps) {
 	const [position, setPosition] = useState(0);
 	const [typedMarks, setTypedMarks] = useState<TypedMark[]>([]);
 	const [isComposing, setIsComposing] = useState(false);
@@ -118,7 +123,9 @@ function PracticeView({ targetText, typingState, onFinish, onReset }: PracticeVi
 		}
 	};
 
-	const handleTypingKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+	const handleTypingKeyDown = (
+		event: React.KeyboardEvent<HTMLInputElement>,
+	) => {
 		if (typingState !== "running") return;
 		if (event.key === "Backspace" && !isComposing) {
 			event.preventDefault();
@@ -235,13 +242,13 @@ function PracticeView({ targetText, typingState, onFinish, onReset }: PracticeVi
 					Type the text below
 				</h2>
 				<div
-					className={`mt-2 flex min-h-[80px] items-center rounded-[10px] px-[0.9rem] py-3 text-left ${
+					className={`mt-2 flex min-h-20 items-center rounded-[10px] px-[0.9rem] py-3 text-left text-[1.5rem] ${
 						typingState === "finished"
-							? "border border-solid border-green-500 bg-gradient-to-br from-green-50 to-green-50/50"
-							: "border border-solid border-blue-500 bg-blue-50"
+							? "border border-solid border-green-500 bg-linear-to-br from-green-50 to-green-50/50"
+							: "border border-solid border-blue-500"
 					}`}
 				>
-					<p className="m-0 font-mono text-[0.95rem] break-words whitespace-pre-wrap">
+					<p className="m-0 font-mono text-[1.5rem] wrap-break-word whitespace-pre-wrap">
 						{Array.from(targetText).map((ch, i) => {
 							const mark = typedMarks[i] ?? null;
 							const isCaret = typingState === "running" && i === position;
@@ -252,8 +259,8 @@ function PracticeView({ targetText, typingState, onFinish, onReset }: PracticeVi
 									: mark === "incorrect"
 										? "text-red-600"
 										: isCaret
-											? "text-blue-600 font-semibold"
-											: "";
+											? "text-blue-600 font-semibold underline"
+											: "text-slate-600";
 
 							const key = `${i}-${ch ?? ""}`;
 

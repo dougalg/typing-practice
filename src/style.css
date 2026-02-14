@@ -33,6 +33,10 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @media (prefers-color-scheme: dark) {
+      color: #eee;
+      background: radial-gradient(circle at top, #333 0, #444 40%, #555 100%);
+    }
   }
 
   #root {
