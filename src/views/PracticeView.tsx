@@ -207,9 +207,6 @@ function PracticeView({
 	return (
 		<div className="rounded-[18px] bg-white/96 p-8 pb-9 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px] sm:p-6 sm:pb-7">
 			<div className="mb-6 flex items-center justify-between">
-				<h1 className="m-0 text-[2.2rem] tracking-[-0.03em] text-slate-950 sm:text-[1.8rem]">
-					Typing Practice
-				</h1>
 				<button
 					onClick={onReset}
 					className="cursor-pointer rounded-full border-none bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-200"
@@ -287,10 +284,7 @@ function PracticeView({
 					placeholder="Start typing… (this box stays empty; it captures keystrokes)"
 				/>
 				{errorMessage && (
-					<p
-						className="mt-2.5 min-h-[1.25rem] text-sm text-red-700"
-						role="alert"
-					>
+					<p className="mt-2.5 min-h-5 text-sm text-red-700" role="alert">
 						{errorMessage}
 					</p>
 				)}
