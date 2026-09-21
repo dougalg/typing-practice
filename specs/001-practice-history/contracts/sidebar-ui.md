@@ -30,8 +30,7 @@ export interface SavedTextItemProps {
 	id: number;
 	text: string;
 	dateModified: Date;
-	numberOfLoads: number;
-	numberOfCompletes: number;
+	numberOfCompletes: number; // the practice count
 	onLoadRequest: MouseEventHandler;
 }
 ```
@@ -43,7 +42,7 @@ The component takes the fields it displays from the shared `SavedText` type. It 
 |---------|-------------|-----------|
 | Preview | text, clamped to 3 lines by styling; full text stays in the DOM for assistive technology | Long text never breaks the layout |
 | Last practiced | visible text "Last practiced: {medium date}" using `dateModified` | FR-006 |
-| Counts | visible text "Practiced {n} time(s)" and "Completed {m} time(s)"; singular for 1 | FR-006 |
+| Practice count | visible text "Practiced {n} times" from `numberOfCompletes`; "Practiced 1 time" for 1; "Practiced 0 times" for 0. It is the only count shown | FR-006 |
 | Load control | `button` whose accessible name is "Load" followed by the preview, e.g. "Load The quick brown fox…" | Focusable, activated by Enter and Space, visible focus ring (FR-007, FR-014) |
 
 ## Keyboard and focus

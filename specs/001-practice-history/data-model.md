@@ -11,13 +11,12 @@ feature module, the database definition and the presentational components.
 | `text` | string | The full text to type | Non-empty, no trailing whitespace (`normalizeText`); **unique** across entries |
 | `dateCreated` | Date | When the entry was first stored | Set once at creation, never changed |
 | `dateModified` | Date | **Last practiced**: the last time a session was started with this text | Set to "now" on every start or load |
-| `numberOfLoads` | number | **Practice count**: how many sessions have been started with this text | Starts at 1 on creation, +1 on every later start or load |
-| `numberOfCompletes` | number | How many sessions typed the text to the end | Starts at 0, +1 per completed session; never changed by reset or abandon |
+| `numberOfCompletes` | number | **Practice count**: how many sessions typed the text through to the end, with or without mistakes | Starts at 0, +1 per finished session; never changed by start, load, reset or abandon |
+| `numberOfLoads` | number | **Legacy, unused**: how many sessions earlier versions started with this text | No longer read, shown or updated. New entries are written with 0. Kept in the type and the store so no data migration is needed |
 
 Invariants:
 
-- `numberOfLoads >= 1` and `0 <= numberOfCompletes <= numberOfLoads` for data written by this feature.
-  Merged legacy rows keep this because both counts are summed.
+- `numberOfCompletes >= 0`. It is the only count the sidebar shows.
 - `dateCreated <= dateModified`.
 - No two entries share the same `text` (enforced by the unique index from schema version 3).
 
@@ -33,13 +32,16 @@ practice": no session starts and no entry is written (FR-003). It is the only pl
 
 | Trigger | Effect on the store |
 |---------|--------------------|
-| Start with text `t` (normalised, non-empty) | If no entry has `text = t`: create one (`numberOfLoads = 1`, `numberOfCompletes = 0`, both dates now). Otherwise: `dateModified = now`, `numberOfLoads += 1` |
+| Start with text `t` (normalised, non-empty) | If no entry has `text = t`: create one (`numberOfCompletes = 0`, `numberOfLoads = 0`, both dates now). Otherwise: `dateModified = now` and nothing else (FR-009) |
 | Load entry `e` | Same as Start with `t = e.text` |
-| Session for `t` reaches the last character | If an entry has `text = t`: `numberOfCompletes += 1` |
+| Session for `t` reaches the last character | If an entry has `text = t`: `numberOfCompletes += 1` (FR-010) |
 | Reset, Load of another entry, or leaving | No change beyond the start that already happened |
 
 Each operation runs in a single read-write transaction so a read followed by a write cannot
-interleave with another one in the same tab. Across tabs the unique index is the backstop.
+interleave with another one in the same tab. Across tabs the unique index is the backstop: if the
+insert for a new text fails with a `ConstraintError` because another writer created that text first,
+the operation retries once as an update of the existing entry (FR-017). If the retry also fails, or
+any other error occurs, the operation resolves `{ ok: false }`.
 
 ## Ordering and reads
 

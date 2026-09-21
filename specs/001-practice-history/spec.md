@@ -41,22 +41,23 @@ A learner sees their history in the sidebar and picks an entry. The app loads th
 2. **Given** the user is mid-practice on one text, **When** they Load a different entry, **Then** the current attempt is replaced by a fresh attempt at the loaded text, starting from the first character.
 3. **Given** the user loads an entry, **When** the session begins, **Then** that entry's "last practiced" date is updated and it moves to the top of the list.
 4. **Given** the user is using only the keyboard, **When** they tab to an entry and press Enter or Space on its Load control, **Then** it loads exactly as it would with a mouse click.
+5. **Given** the user has started practice, either with typed text or with a loaded entry, **When** they press Reset, **Then** the setup view is shown with an empty text box.
 
 ---
 
 ### User Story 3 - See how each text has gone (Priority: P2)
 
-A learner scanning the history can tell entries apart and gauge progress: each entry shows a preview of its text, when it was last practiced, how many times it has been practiced, and how many of those attempts were completed.
+A learner scanning the history can tell entries apart and gauge progress: each entry shows a preview of its text, when it was last practiced, and how many times it has been practiced. A text counts as practiced each time the learner types it through to the end, whether or not they made mistakes along the way.
 
 **Why this priority**: It makes the history useful for choosing what to practice next, but the feature works without it.
 
-**Independent Test**: Practice a text to completion, then check its sidebar entry shows the updated practice and completion counts.
+**Independent Test**: Type a text through to the end, then check its sidebar entry shows its practice count increased by one.
 
 **Acceptance Scenarios**:
 
 1. **Given** an entry with a long text, **When** it is shown in the sidebar, **Then** only a short preview is shown, and the sidebar layout is not broken.
-2. **Given** the user finishes typing an entire text, **When** they look at that entry, **Then** its completion count has increased by one.
-3. **Given** the user resets or loads another text before finishing, **When** they look at that entry, **Then** its practice count reflects the attempt but its completion count is unchanged.
+2. **Given** the user finishes typing an entire text (whether or not they made mistakes along the way), **When** they look at that entry, **Then** its practice count has increased by one.
+3. **Given** the user resets or loads another text before finishing, **When** they look at that entry, **Then** its practice count is unchanged.
 4. **Given** the history has many entries, **When** the user views the sidebar, **Then** the entries are ordered most recently practiced first and the list stays usable by scrolling.
 
 ---
@@ -68,7 +69,8 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - The history is empty (first visit): the sidebar shows a short, friendly empty state instead of a blank panel.
 - The browser blocks or fails to provide on-device storage (for example, private browsing restrictions): practice still works, and the user is told that history could not be saved instead of the app failing silently.
 - Existing users who already have saved texts from the previous version: those entries remain in the history and keep their data, with no manual migration.
-- The user activates Load repeatedly in quick succession: only one session starts for the last selection, with no duplicate history entries.
+- The user activates Load repeatedly in quick succession: only one session starts for the last selection, with no duplicate history entries. Starting or loading never changes an entry's practice count; only finishing does.
+- Two browser tabs start practice with the same new text at the same moment: the history ends up with a single entry for it, and neither tab shows an error.
 
 ## Requirements *(mandatory)*
 
@@ -79,21 +81,23 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - **FR-003**: The system MUST NOT add an entry when the entered text is empty or only whitespace.
 - **FR-004**: The system MUST keep the history across page reloads and browser restarts, on the user's own device only.
 - **FR-005**: The system MUST list history entries in the sidebar, most recently practiced first.
-- **FR-006**: Each sidebar entry MUST show a truncated preview of its text, the date it was last practiced, its practice count and its completion count.
+- **FR-006**: Each sidebar entry MUST show a truncated preview of its text, the date it was last practiced, and its practice count (the number of times the text was typed through to the end).
 - **FR-007**: Each sidebar entry MUST provide a Load control that begins a new practice session using that entry's full text.
 - **FR-008**: Loading an entry MUST replace any practice session in progress, and the new session MUST start at the first character with all previous progress and error marks cleared.
-- **FR-009**: Loading an entry MUST update its last-practiced date and increase its practice count.
-- **FR-010**: The system MUST increase an entry's completion count when the user types the entire text to the end, and MUST NOT increase it for abandoned or reset attempts.
+- **FR-009**: Starting or loading a text MUST update its entry's last-practiced date, and MUST NOT change its practice count.
+- **FR-010**: The system MUST increase an entry's practice count by exactly one when the user types the entire text to the end, whether or not they made mistakes along the way, and MUST NOT increase it for abandoned or reset attempts.
 - **FR-011**: The system MUST show an empty-state message in the sidebar when the history has no entries.
 - **FR-012**: The system MUST keep any texts saved by earlier versions of the app, including their dates and counts.
 - **FR-013**: If the history cannot be stored or read, the system MUST keep practice usable and MUST tell the user, in a way assistive technology also announces.
 - **FR-014**: The history list and its Load controls MUST be fully operable by keyboard, have accessible names that identify which entry each control acts on, and meet WCAG 2.2 AA.
 - **FR-015**: The system MUST NOT send history data off the user's device.
+- **FR-016**: Pressing Reset MUST return the user to the setup view with an empty text box, whether the practice began from typed text or from a loaded entry.
+- **FR-017**: When two writers start the same new text at the same moment, the system MUST end up with a single entry for it and MUST NOT report a save failure for that.
 
 ### Key Entities
 
-- **History Entry**: One distinct practice text and its usage summary. Attributes: the full text, when it was first stored, when it was last practiced, how many times it has been started, and how many times it has been completed. There is at most one entry per distinct text.
-- **Practice Session**: A single attempt at typing a text, either started from newly entered text or loaded from a History Entry. It is not stored as its own record. It updates the counts and dates of the related History Entry.
+- **History Entry**: One distinct practice text and its usage summary. Attributes: the full text, when it was first stored, when it was last practiced, and its practice count (how many times it has been typed through to the end). There is at most one entry per distinct text.
+- **Practice Session**: A single attempt at typing a text, either started from newly entered text or loaded from a History Entry. It is not stored as its own record. Starting it updates the last-practiced date of the related History Entry, and finishing it raises that entry's practice count.
 
 ## Success Criteria *(mandatory)*
 
@@ -102,7 +106,7 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - **SC-001**: A user can re-start practice on a previously used text in 2 interactions or fewer (find the entry, activate Load), with no retyping.
 - **SC-002**: 100% of texts the user has started practicing are still listed after the browser is closed and reopened.
 - **SC-003**: Practicing the same text any number of times never produces more than one history entry for it.
-- **SC-004**: After a user completes a text, its completion count is visible in the sidebar on the next view of that entry, with no manual refresh.
+- **SC-004**: After a user finishes a text, its increased practice count is visible in the sidebar on the next view of that entry, with no manual refresh.
 - **SC-005**: A user who has never used a mouse can find and load a history entry using only the keyboard.
 - **SC-006**: The sidebar remains readable and scrollable with 100 or more stored entries, with no overlap or clipping of entry content.
 
@@ -115,3 +119,5 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - Export, import and syncing history across devices or browsers are out of scope, in line with the app's local-only design.
 - The existing saved-texts store and sidebar are the basis for this feature. It extends them and does not add a second, separate store.
 - A single user per browser profile: there are no accounts or sharing.
+- The practice count is the only count shown. It counts finished attempts, with or without mistakes (a mistake must be corrected before typing can continue, so a finished attempt always ends with every character correct). A separate count of mistake-free attempts is out of scope.
+- Entries saved by earlier versions keep their text and dates. Their earlier "loads" counter is no longer shown or updated. Earlier versions never recorded a finished attempt, so these entries show "Practiced 0 times" until they are finished again.

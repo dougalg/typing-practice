@@ -8,17 +8,19 @@
 
 Turn the existing "saved texts" sidebar into a working practice history. Starting a practice
 (from typed text or from the sidebar) upserts one entry per distinct text, refreshing its
-last-practiced date and practice count. Finishing a text bumps its completion count. The sidebar
-lists every entry, most recent first, with a preview, date and counts. Its Load control starts a
-fresh session with that entry's full text.
+last-practiced date. Finishing a text, with or without mistakes, bumps its practice count, which is
+the only count the sidebar shows. The sidebar lists every entry, most recent first, with a preview,
+date and that count. Its Load control starts a fresh session with that entry's full text. Reset
+always returns to an empty setup text box.
 
 Approach, from [research.md](./research.md): keep the existing Dexie store as the single source of
 truth and add a small `features/savedItems/history.ts` module that owns text normalisation,
-upsert-by-text, completion counting and a live list hook. A two-step Dexie migration removes the
+upsert-by-text, practice counting on completion and a live list hook. A two-step Dexie migration removes the
 duplicate rows that the current "add on every start" behaviour created and then enforces one row
 per text with a unique index. `App` lifts the active practice text and a run counter so a Load can
 restart practice mid-session (the practice view is remounted through a `key`). Storage failures are
-caught at the module boundary so practice keeps working and the user is told.
+caught at the module boundary so practice keeps working and the user is told. If two tabs race to
+insert the same new text, the loser retries once as an update instead of reporting a failure.
 
 ## Technical Context
 
@@ -48,7 +50,7 @@ caught at the module boundary so practice keeps working and the user is told.
 |-----------|---------------------------|--------------------------|
 | I. Local-First, No Backend | Pass. Only IndexedDB is used and nothing leaves the device. Schema change adds `version(2)` and `version(3)` with an upgrade that preserves data (FR-012, FR-015). | Pass. Migration merges duplicate rows and sums counts, so no data is lost; covered by a test seeded with v1 data. |
 | II. Strict Type Safety | Pass, with one tidy-up: `SavedText` is declared in `db.ts` and its fields are redeclared in `SavedTextItemProps`. | Pass. `SavedText` moves to `src/types.ts` (already the home of shared domain types), so `db.ts`, the feature module and the presentational component all import the one definition without `components/` importing from `features/`. No `any`. |
-| III. Test-First for Behavior | Pass. Every requirement has a testable behaviour. | Pass. Pure logic (`normalizeText`, migration merge) is extracted and unit-tested. The upsert, completion and live-list behaviour is tested against `fake-indexeddb`. UI is tested through roles and real user events. |
+| III. Test-Driven Development (renamed from "Test-First for Behavior" in constitution 1.2.0) | Pass. Every requirement has a testable behaviour. | Pass. Pure logic (`normalizeText`, migration merge) is extracted and unit-tested. The upsert, completion and live-list behaviour is tested against `fake-indexeddb`. UI is tested through roles and real user events. |
 | IV. Feature-Oriented Structure | Pass, with a fix: `App.tsx` calls `savedTextsDb.savedTexts.add(...)` directly, which breaks "views access persistence only through a feature module". | Pass. All persistence goes through `features/savedItems/history.ts`. Components stay presentational. Tests sit beside code. |
 | V. Accessible by Default | Pass in intent. This is the feature that needs `vitest-axe`, which the constitution's follow-up note says to add with the first accessibility test. | Pass. axe checks in each state of `Sidebar` and `SavedTextItem`, keyboard-only Load test, focus lands on the typing input after Load, storage errors use `role="alert"`, "practiced/completed" is text and not colour. Contrast and 200% zoom are manual PR checks (see [quickstart.md](./quickstart.md)). |
 
@@ -85,7 +87,7 @@ src/
 ├── App.tsx                           # owns active practice text + run counter; wires Sidebar, recording
 ├── App.test.tsx                      # NEW: end-to-end flow tests (start, load, complete, error)
 ├── components/
-│   ├── SavedTextItem.tsx             # preview, last practiced, counts, named Load button
+│   ├── SavedTextItem.tsx             # preview, last practiced, practice count, named Load button
 │   └── SavedTextItem.test.tsx        # NEW
 ├── features/
 │   └── savedItems/

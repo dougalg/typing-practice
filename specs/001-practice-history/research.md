@@ -62,9 +62,14 @@ current schema, and asserts the merged rows and unique constraint.
 
 ## R4. Where does last-practiced live, and what do the counts mean?
 
-**Decision**: Reuse existing fields. `dateModified` is the last-practiced timestamp. `numberOfLoads`
-is the practice count (incremented every time a session starts with that text, from Start or Load).
-`numberOfCompletes` is the completion count. No rename.
+**Decision** (revised after the spec changed to one count): Reuse existing fields. `dateModified` is
+the last-practiced timestamp, refreshed on every start or load. `numberOfCompletes` is the practice
+count, raised only when a session reaches its last character, with or without mistakes. The sidebar
+shows only this count. `numberOfLoads` is legacy: no longer read, shown or updated, and new entries
+get 0. It stays in the type and the store so no migration or rename is needed.
+
+**Consequence**: entries saved by earlier versions show "Practiced 0 times" until finished again,
+because earlier versions never incremented `numberOfCompletes`. The spec records this.
 
 **Rationale**: Renaming fields needs a migration and touches every call site for no user-visible
 gain. The meaning is documented in [data-model.md](./data-model.md) so the fuzzy name does not
@@ -135,6 +140,29 @@ notice are plain text; the error notice has `role="alert"`. Counts and dates are
 colour, so status does not rely on colour alone. Text colours reuse the existing slate palette at
 `slate-600` or darker on white, which meets 4.5:1; this is to be confirmed in the PR as the
 constitution requires.
+
+## R10. What happens when two tabs start the same new text at once?
+
+**Decision**: The unique text index (schema version 3) lets only one insert win. The loser gets a
+`ConstraintError`, and `recordPractice` retries once as an update of the entry the other tab just
+created. It then resolves `{ ok: true }` and the user sees no error (FR-017). If the retry also fails,
+or the error is anything other than a unique-text conflict, it resolves `{ ok: false }` as before.
+
+**Alternatives considered**: reporting `{ ok: false }` on the conflict (rejected: the text is in fact
+saved, so "could not be saved" would be wrong); unbounded retries (rejected: one retry covers the race
+and a loop hides real failures).
+
+**Testing note**: `fake-indexeddb` runs in one process, so the race is simulated by making the first
+`add` for a text insert the row itself and then throw `ConstraintError`.
+
+## R11. What does Reset do to the setup text box?
+
+**Findings**: `AppInner` keeps the setup text (`sourceText`) in its own state, and `handleReset` only
+sets the typing state back to `idle`, so the previous draft stays in the box.
+
+**Decision**: `handleReset` also clears `sourceText`, so Reset always returns to an empty setup box,
+after typed practice and after a Load alike (FR-016). Loading an entry does not put its text into the
+setup box, so there is nothing to keep. This replaces the earlier open question about the draft.
 
 ## Summary of open questions
 

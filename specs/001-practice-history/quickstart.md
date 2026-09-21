@@ -33,11 +33,12 @@ Use a normal window. Clear site data first if you want a first-visit state.
 
 1. **First visit**: the sidebar shows the empty-state message.
 2. **Store (US1)**: enter "hello world", press Start. Reload the page. The text is in the sidebar (SC-002).
-3. **No duplicates (US1)**: Reset, enter the same text again, Start. Still one entry, moved to the top, practice count now 2 (SC-003).
+3. **No duplicates (US1)**: Reset, enter the same text again, Start. Still one entry, moved to the top, and its practice count unchanged, because starting never counts (SC-003, FR-009).
 4. **Empty text (US1)**: clear the box and Start. The existing message appears and nothing is added.
 5. **Load (US2)**: enter a second text and start it, Reset, then use Load on the first entry. Practice begins with the first entry's text, typing input focused, progress at zero (SC-001).
 6. **Load mid-practice (US2)**: type a few characters, then Load another entry. Progress is cleared and the new text starts at the first character. Load the same entry that is running: it also restarts.
-7. **Counts (US3)**: type a text to the end. Its completed count goes up by one without reloading (SC-004). Start another and Reset before finishing; its completed count does not change.
+7. **Practice count (US3)**: type a text to the end, making a deliberate mistake on the way. Its "Practiced" count goes up by exactly one without reloading (SC-004, FR-010). Start another and Reset before finishing; its count does not change.
+7a. **Reset empties the box (US2.5)**: after typing a text and pressing Reset, and again after Loading an entry and pressing Reset, the setup text box is empty (FR-016).
 8. **Long text**: paste several thousand characters. The sidebar entry shows a short preview and does not overflow; Load still types the full text.
 9. **Keyboard only (SC-005)**: without a mouse, Tab to an entry's Load button and press Enter, then Space on another. Both load.
 10. **Legacy data**: in DevTools, seed the version 1 database with duplicate rows (or open the app from `main` first to create some), then run this branch. Duplicates collapse to one entry each with summed counts (FR-012).
