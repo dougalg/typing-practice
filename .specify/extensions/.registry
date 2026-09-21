@@ -7,16 +7,9 @@
       "manifest_hash": "sha256:e07b49d00feb217a92cdbacd9471326b71bd31c636b184718cabb7904a13e6b2",
       "enabled": true,
       "priority": 10,
-      "registered_commands": {
-        "claude": [
-          "speckit.tdd.setup",
-          "speckit.tdd.plan",
-          "speckit.tdd.run",
-          "speckit.tdd.verify"
-        ]
-      },
+      "registered_commands": {},
       "registered_skills": [],
-      "installed_at": "2026-09-20T16:47:06.960490+00:00"
+      "installed_at": "2026-09-21T15:22:09.501915+00:00"
     }
   }
 }
