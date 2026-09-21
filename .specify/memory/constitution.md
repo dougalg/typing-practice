@@ -1,6 +1,15 @@
 <!--
 Sync Impact Report
-Version change: (blank template) → 1.1.0 (drafted as 1.0.0, amended before commit)
+Version change: 1.1.0 → 1.2.0 (2026-09-21, MINOR: materially expanded guidance)
+Modified principles:
+  - III. Test-First for Behavior → III. Test-Driven Development (NON-NEGOTIABLE)
+    ("tests written before or alongside" tightened to "a test that failed first", with recorded
+    failure evidence, mandatory test tasks, no weakening of tests, an acceptance test per
+    criterion, refactor-on-green, and test-strength verification). The previous rules on Testing
+    Library usage, extracted pure logic, bug-fix tests, accessibility tests and `pnpm test`
+    are kept. Compliance plan for existing code: none needed, since it adds tests only when
+    behavior changes; untested files get characterization tests before they are changed.
+Earlier history: (blank template) → 1.1.0 (drafted as 1.0.0, amended before commit)
 Modified principles:
   - V. Keyboard-First Accessible Typing Experience → V. Accessible by Default (WCAG 2.2 AA)
     (expanded to require WCAG 2.2 Level AA plus accessibility tests)
@@ -44,18 +53,34 @@ imported, not redeclared. `pnpm build` (`tsc && vite build`) MUST pass before co
 Rationale: The typing state machine and persisted records are easy to corrupt with silent type
 drift; the compiler is the cheapest guard.
 
-### III. Test-First for Behavior
+### III. Test-Driven Development (NON-NEGOTIABLE)
 
-New behavior and bug fixes MUST be covered by Vitest tests written before or alongside the
-implementation. UI behavior MUST be tested through Testing Library from the user's perspective
-(roles, labels, visible text, real user events), not by asserting on implementation details.
-Pure logic (e.g. correct/incorrect marking, position tracking, completion detection) SHOULD be
-extracted from components so it can be tested without rendering. A bug fix MUST include a test
-that fails without the fix. Accessibility requirements (Principle V) MUST be tested as part of
-this rule. `pnpm test` MUST pass before code is merged.
+Every behavior change and bug fix MUST be driven by a Vitest test that failed first.
+
+- The test MUST be observed failing, for the right reason, before the code that makes it pass.
+  The failure output MUST be recorded in `specs/<feature>/tdd/cycle-log.md`. A run whose summary
+  shows only skipped tests is not a failure and does not count.
+- Test tasks are not optional. `tasks.md` MUST place each behavior's test task before its
+  implementation task, and the implementation task MUST NOT be started until the test is red.
+- Tests MUST NOT be weakened, skipped, deleted, or filtered out to reach green. When a test and
+  the code disagree, `spec.md` decides which is wrong.
+- Every acceptance criterion in `spec.md` MUST have at least one acceptance test that exercises
+  the real entry point. Where no browser runner exists, this is a Testing Library test that
+  renders the real `App`, and the test list MUST label it as integration-level.
+- Refactoring MUST happen only on a green suite, and MUST NOT change a test in the same commit
+  as a behavior change.
+- Test strength MUST be verified, not assumed: mutation testing on the changed files where a
+  mutation tool exists, and a deliberate-mutant spot check where it does not.
+- UI behavior MUST be tested through Testing Library from the user's perspective (roles, labels,
+  visible text, real user events), not by asserting on implementation details. Pure logic (e.g.
+  correct/incorrect marking, position tracking, completion detection) SHOULD be extracted from
+  components so it can be tested without rendering. A bug fix MUST include a test that fails
+  without the fix. Accessibility requirements (Principle V) MUST be tested as part of this rule.
+  `pnpm test` MUST pass before code is merged.
 
 Rationale: The core value of the app is that typed input is judged correctly; regressions there
-are invisible until a user notices them.
+are invisible until a user notices them. A test written after the code can only describe what
+the code already does, so it cannot catch the code being wrong.
 
 ### IV. Feature-Oriented Structure
 
@@ -137,4 +162,4 @@ Compliance is reviewed at PR time (see Development Workflow) and whenever a feat
 produced, where the plan MUST include a check of the Core Principles. Runtime development
 guidance for agents lives in `CLAUDE.md` when present.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-20 | **Last Amended**: 2026-09-20
+**Version**: 1.2.0 | **Ratified**: 2026-09-20 | **Last Amended**: 2026-09-21
