@@ -157,16 +157,16 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | id  | behavior                                                                                                             | traces        | kind             | state   | test |
 | --- | -------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------- | ------- | ---- |
 | U8  | A row added to the current store reads back with all its fields intact, dates still Date values                      | FR-004 (base) | characterization | BASELINE | `src/features/savedItems/db.test.ts::[U8] a row added to the current store reads back with all its fields intact, dates still Date values` |
-| U31 | Upgrading a version-1 database leaves a row with a unique text unchanged, including its id and every field           | FR-012        | example          | PENDING |      |
-| U32 | Two version-1 rows with the same text become one row, keeping the lowest id                                          | FR-012        | example          | PENDING |      |
-| U33 | The merged row's dateCreated is the earliest and its dateModified the latest of the group                            | FR-012        | example          | PENDING |      |
-| U34 | The merged row's numberOfCompletes and numberOfLoads are the sums of the group                                       | FR-012        | example          | PENDING |      |
-| U35 | A group of three rows with the same text merges into one row                                                         | FR-012        | example          | PENDING |      |
-| U36 | Rows with different texts stay separate: the row count after upgrade equals the number of distinct texts             | FR-012        | example          | PENDING |      |
-| U37 | Upgrading a version-1 database with no rows succeeds and leaves an empty table                                       | FR-012        | example          | PENDING |      |
-| U38 | After the upgrade, adding a row whose text already exists is rejected with a ConstraintError                         | FR-002        | example          | PENDING |      |
-| U39 | After the upgrade, adding a row with a new text succeeds                                                             | FR-001        | example          | PENDING |      |
-| U40 | A database created fresh, with no earlier version, enforces the same unique-text rule                                | FR-002        | example          | PENDING |      |
+| U31 | Upgrading a version-1 database leaves a row with a unique text unchanged, including its id and every field           | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U31]` |
+| U32 | Two version-1 rows with the same text become one row, keeping the lowest id                                          | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U32]` |
+| U33 | The merged row's dateCreated is the earliest and its dateModified the latest of the group                            | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U33]` |
+| U34 | The merged row's numberOfCompletes and numberOfLoads are the sums of the group                                       | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U34]` |
+| U35 | A group of three rows with the same text merges into one row                                                         | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U35]` |
+| U36 | Rows with different texts stay separate: the row count after upgrade equals the number of distinct texts             | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U36]` |
+| U37 | Upgrading a version-1 database with no rows succeeds and leaves an empty table                                       | FR-012        | example          | DONE | `src/features/savedItems/db.test.ts::[U37]` |
+| U38 | After the upgrade, adding a row whose text already exists is rejected with a ConstraintError                         | FR-002        | example          | DONE | `src/features/savedItems/db.test.ts::[U38]` |
+| U39 | After the upgrade, adding a row with a new text succeeds                                                             | FR-001        | example          | DONE | `src/features/savedItems/db.test.ts::[U39]` |
+| U40 | A database created fresh, with no earlier version, enforces the same unique-text rule                                | FR-002        | example          | DONE | `src/features/savedItems/db.test.ts::[U40]` |
 
 ## Invariants and edge cases still to place
 

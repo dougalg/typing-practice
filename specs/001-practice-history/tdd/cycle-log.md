@@ -86,4 +86,64 @@ Suite after this phase: `pnpm test` -> 11 passed, 0 failed (5 files). `pnpm buil
 diff remains in any production file (`App.tsx`, `PracticeView.tsx`, `SetupView.tsx`,
 `Sidebar.tsx`, `SavedTextItem.tsx`, `db.ts`) — every mutant was restored exactly.
 
+- commit: `77b635f`
+
+## Structural: SavedText moved to src/types.ts (task T004)
+
+No behavior change. Moved the `SavedText` interface into `src/types.ts` per data-model.md, with
+`db.ts` importing and re-exporting it so `Sidebar.tsx`'s existing import keeps working. Verified
+by `pnpm build` (tsc) and by re-running the U1-U8/A4 characterization suite unchanged.
+
+- suite: `pnpm test` -> 11 passed, 0 failed (unchanged)
+- commit: `cc0ca15`
+
+## Structural: extracted openSavedTextsDb(name) as a factory
+
+No behavior change (the default `savedTextsDb` still opens the same name with the same version-1
+schema). Introduces the seam the next cycle's migration tests need: an isolated database under a
+throwaway name, so seeding version-1 data for a test never touches the real `savedTextsDb` that
+the global `afterEach` cleanup and the characterization tests already depend on. Per the
+playbook's "introduce the seam as its own refactoring step on green code, then come back."
+
+- suite: `pnpm test` -> 11 passed, 0 failed (unchanged)
+- commit: `728dd84`
+
+## Cycle: U31-U40 (schema v2/v3 migration, tasks T005-T006)
+
+One cycle covering all ten migration behaviors together, since they are one implementation (the
+version 2 upgrade function and the version 3 unique index) and were written and driven as one
+unit rather than ten separate implementation steps.
+
+- test: `src/features/savedItems/db.test.ts`, new `describe("openSavedTextsDb migration from
+  version 1 ...")` block, ten `it` blocks tagged `[U31]` to `[U40]`. Helpers added: `seedV1()`
+  (opens a version-1-only Dexie instance under a throwaway name and inserts rows, bypassing
+  `openSavedTextsDb` so the seed predates any upgrade function) and `row()` (a `SavedText`
+  builder with sensible defaults).
+- red: `pnpm vitest run src/features/savedItems/db.test.ts` (against `db.ts` with only the
+  version-1 schema, no version 2 or 3) -> `Tests 7 failed | 4 passed (11)`. The 4 that passed
+  trivially hold without merge/uniqueness logic (a single unique row is already "unchanged"; an
+  empty database is already "empty"). The 7 real reds, each a genuine assertion failure, not a
+  broken test file:
+  - U32: `expected [ 2 ] to have a length of 1` -> two rows, not merged
+  - U33: dateCreated/dateModified assertions failed (values from the first-seeded row, not
+    earliest/latest)
+  - U34: `expected 1 to be 7` (numberOfLoads), `expected 0 to be 4` (numberOfCompletes) -> not
+    summed
+  - U35: three-row group not merged
+  - U36: `expected [ 'a','a','b','c','c','c' ] to deeply equal [ 'a','b','c' ]` -> duplicates not
+    collapsed
+  - U38: `promise resolved "99" instead of rejecting` -> no unique index yet
+  - U40: `promise resolved "2" instead of rejecting` -> no unique index on a fresh database either
+- green: implemented in `src/features/savedItems/db.ts`: `version(2).stores({ savedTexts: "++id,
+  dateCreated, dateModified, text" }).upgrade(...)` groups existing rows by `text`, and for each
+  group of 2+ keeps the lowest id, earliest `dateCreated`, latest `dateModified`, and sums
+  `numberOfLoads`/`numberOfCompletes`; then `version(3).stores({ savedTexts: "++id, dateCreated,
+  dateModified, &text" })` adds the unique index once duplicates are gone. Suite ->
+  `pnpm vitest run src/features/savedItems/db.test.ts`: 11 passed, 0 failed.
+- refactor: none needed beyond running Prettier on the new test file (`pnpm format` was avoided
+  repo-wide after an earlier incident; only the touched file was formatted:
+  `npx prettier --write src/features/savedItems/db.test.ts`). Re-ran the full suite unchanged
+  after formatting.
+- full suite: `pnpm test` -> 21 passed, 0 failed (5 files), repeated 3 times clean. `pnpm build`
+  passes.
 - commit: (recorded after this entry is written, see report)
