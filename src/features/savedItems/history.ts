@@ -1,4 +1,6 @@
+import { useLiveQuery } from "dexie-react-hooks";
 import { savedTextsDb } from "./db";
+import type { SavedText } from "../../types";
 
 /**
  * Trims trailing whitespace only. An empty result means there is nothing to
@@ -62,4 +64,30 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 	} catch {
 		return { ok: false };
 	}
+}
+
+export type HistoryState =
+	| { status: "loading" }
+	| { status: "ready"; entries: SavedText[] }
+	| { status: "error" };
+
+/**
+ * Live list of entries, most recently practiced first, no cap. Errors are
+ * caught inside the querier so they surface as { status: "error" } instead of
+ * being thrown during render by useLiveQuery.
+ */
+export function useHistory(): HistoryState {
+	const result = useLiveQuery<HistoryState>(async () => {
+		try {
+			const entries = await savedTextsDb.savedTexts
+				.orderBy("dateModified")
+				.reverse()
+				.toArray();
+			return { status: "ready", entries };
+		} catch {
+			return { status: "error" };
+		}
+	}, []);
+
+	return result ?? { status: "loading" };
 }

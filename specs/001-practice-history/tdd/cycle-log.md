@@ -204,4 +204,31 @@ unit rather than ten separate implementation steps.
   implementation. Confirms this feature's convention (quickstart.md) of always running both
   `pnpm test` and `pnpm build`, never one alone.
 - full suite: `pnpm test` -> 35 passed, 0 failed (6 files). `pnpm build` passes (both errors gone).
+- commit: `237b0ed`
+
+## Cycle: U25-U28, U29 (part 1), U30 (useHistory, task T007 slice 4)
+
+- test: six `it` blocks added to `history.test.ts`, tagged `[U25]` to `[U30]`, using
+  `renderHook`/`waitFor` from `@testing-library/react`.
+- **Split found before writing the test**: U29 as written ("updates without remounting after
+  recordPractice and after recordCompletion") needs `recordCompletion`, which does not exist yet
+  (it is added in US3, task T021). Per the playbook, this is a missing seam, not something to fake
+  early. Split into U29 (the `recordPractice` half, driven now) and a new U30->U70 appended at the
+  end of its series for the `recordCompletion` half, to be driven when that function exists.
+  Recorded in `tdd/test-list.md`.
+- **U28 narrowed**: the "and all 100 when 100 exist" clause is dropped from U28 and left to U66
+  (`Sidebar.test.tsx`, task T020/US3), which exercises the same 100-entry claim through the
+  sidebar's real rendering of `useHistory`'s output — an equally valid, higher-layer proof, not a
+  gap.
+- red: `pnpm vitest run src/features/savedItems/history.test.ts` with no `useHistory` export ->
+  `Tests 6 failed | 14 passed (20)`, each failure a `TypeError: useHistory is not a function`
+  raised inside the rendered test component (a real, if noisy, unresolved-symbol red).
+- green: added `HistoryState` and `useHistory()`, wrapping `useLiveQuery` from `dexie-react-hooks`
+  with the read wrapped in its own `try/catch` so a failure resolves to `{ status: "error" }`
+  instead of being thrown during render (this is what makes U30 possible: `dexie-react-hooks`
+  4.4.0 otherwise re-throws an observable's error during render). `pnpm vitest run
+  src/features/savedItems/history.test.ts` -> 20 passed, repeated 3 times clean.
+- refactor: none needed.
+- full suite: `pnpm test` -> 41 passed, 0 failed (6 files). `pnpm build` passes (checked this time
+  before, not only after, formatting — see the finding in the previous cycle).
 - commit: (recorded after this entry is written, see report)

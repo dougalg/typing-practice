@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { normalizeText, recordPractice } from "./history";
+import { renderHook, waitFor } from "@testing-library/react";
+import { normalizeText, recordPractice, useHistory } from "./history";
 import { savedTextsDb } from "./db";
 
 describe("normalizeText (specs/001-practice-history contracts/history-module.md)", () => {
@@ -157,5 +158,113 @@ describe("recordPractice (specs/001-practice-history contracts/history-module.md
 		});
 		const rows = await savedTextsDb.savedTexts.toArray();
 		expect(rows).toEqual([]);
+	});
+});
+
+describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("[U25] reports { status: 'loading' } first, then { status: 'ready' }", async () => {
+		const { result } = renderHook(() => useHistory());
+
+		expect(result.current).toEqual({ status: "loading" });
+		await waitFor(() =>
+			expect(result.current).toEqual({ status: "ready", entries: [] }),
+		);
+	});
+
+	it("[U26] on an empty store is ready with an empty entries array", async () => {
+		const { result } = renderHook(() => useHistory());
+
+		await waitFor(() =>
+			expect(result.current).toEqual({ status: "ready", entries: [] }),
+		);
+	});
+
+	it("[U27] returns entries in descending dateModified order", async () => {
+		await savedTextsDb.savedTexts.bulkAdd([
+			{
+				text: "oldest",
+				dateCreated: new Date("2026-01-01T00:00:00Z"),
+				dateModified: new Date("2026-01-01T00:00:00Z"),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			},
+			{
+				text: "newest",
+				dateCreated: new Date("2026-01-03T00:00:00Z"),
+				dateModified: new Date("2026-01-03T00:00:00Z"),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			},
+			{
+				text: "middle",
+				dateCreated: new Date("2026-01-02T00:00:00Z"),
+				dateModified: new Date("2026-01-02T00:00:00Z"),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			},
+		]);
+
+		const { result } = renderHook(() => useHistory());
+
+		await waitFor(() => {
+			expect(result.current.status).toBe("ready");
+		});
+		const state = result.current;
+		if (state.status !== "ready") throw new Error("expected ready");
+		expect(state.entries.map((e) => e.text)).toEqual([
+			"newest",
+			"middle",
+			"oldest",
+		]);
+	});
+
+	it("[U28] returns every entry: all 6 when 6 exist, past the old 5-row cap", async () => {
+		await savedTextsDb.savedTexts.bulkAdd(
+			Array.from({ length: 6 }, (_, i) => ({
+				text: `text ${i}`,
+				dateCreated: new Date(2026, 0, i + 1),
+				dateModified: new Date(2026, 0, i + 1),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			})),
+		);
+
+		const { result } = renderHook(() => useHistory());
+
+		await waitFor(() => {
+			expect(result.current.status).toBe("ready");
+		});
+		const state = result.current;
+		if (state.status !== "ready") throw new Error("expected ready");
+		expect(state.entries).toHaveLength(6);
+	});
+
+	it("[U29 part 1/2] updates without remounting after recordPractice (the recordCompletion half is deferred to when that function exists, see tdd/test-list.md)", async () => {
+		const { result } = renderHook(() => useHistory());
+		await waitFor(() =>
+			expect(result.current).toEqual({ status: "ready", entries: [] }),
+		);
+
+		await recordPractice("hello world");
+
+		await waitFor(() => {
+			const state = result.current;
+			if (state.status !== "ready") throw new Error("expected ready");
+			expect(state.entries).toHaveLength(1);
+		});
+	});
+
+	it("[U30] when the store cannot be read, returns { status: 'error' } and does not throw during render", async () => {
+		vi.spyOn(savedTextsDb.savedTexts, "orderBy").mockImplementation(() => {
+			throw new Error("boom");
+		});
+
+		const { result } = renderHook(() => useHistory());
+
+		await waitFor(() => expect(result.current).toEqual({ status: "error" }));
 	});
 });
