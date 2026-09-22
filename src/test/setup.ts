@@ -1,12 +1,12 @@
 import "@testing-library/jest-dom/vitest";
 import "fake-indexeddb/auto";
-import "vitest-axe/extend-expect";
-import { afterEach, expect } from "vitest";
+import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
-import * as axeMatchers from "vitest-axe/matchers";
 import { savedTextsDb } from "../features/savedItems/db";
 
-expect.extend(axeMatchers);
+// Accessibility checks use axe-core directly via ./a11y.ts's expectNoA11yViolations,
+// not vitest-axe: see that file's comment for why (a real Vitest 5 type
+// incompatibility, not a runtime one).
 
 // Testing Library's own auto-cleanup only registers itself when `afterEach` is a
 // global, and this project runs Vitest without globals enabled, so it never

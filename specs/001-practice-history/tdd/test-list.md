@@ -90,19 +90,19 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | id  | behavior                                                                                                 | traces         | kind             | state   | test |
 | --- | -------------------------------------------------------------------------------------------------------- | -------------- | ---------------- | ------- | ---- |
 | U6  | A text already in the store appears in the sidebar together with a Load button                           | FR-005 (base)  | characterization | BASELINE | `src/views/Sidebar.test.tsx::[U6] a text already in the store appears in the sidebar together with a Load button` |
-| U53 | The sidebar is a region named "Practice History"                                                         | FR-005         | example          | PENDING |      |
-| U54 | Entries are list items, most recently practiced first                                                    | FR-005         | example          | PENDING |      |
+| U53 | The sidebar is a region named "Practice History"                                                         | FR-005         | example          | DONE | `src/views/Sidebar.test.tsx::[U53]` |
+| U54 | Entries are list items, most recently practiced first                                                    | FR-005         | example          | DONE | `src/views/Sidebar.test.tsx::[U54]` |
 | U55 | Pressing Load on one entry calls onLoadRequest with exactly that entry                                   | FR-007         | example          | PENDING |      |
 | U56 | Load buttons of two different entries have different accessible names                                    | FR-014         | example          | PENDING |      |
-| U57 | With no entries the sidebar shows "No practice history yet. Texts you practice will appear here."        | FR-011         | example          | PENDING |      |
-| U58 | The empty-state text is absent when at least one entry exists                                            | FR-011         | example          | PENDING |      |
-| U59 | When the store cannot be read, an alert "Practice history could not be loaded." shows and nothing throws | FR-013         | example          | PENDING |      |
-| U60 | With saveError set, an alert "Your practice history could not be saved. You can keep practicing." shows  | FR-013         | example          | PENDING |      |
-| U61 | With a readable store and saveError unset, no alert is shown                                             | FR-013         | example          | PENDING |      |
-| U62 | The empty sidebar has no axe violations                                                                  | FR-014         | example          | PENDING |      |
-| U63 | The populated sidebar has no axe violations                                                              | FR-014         | example          | PENDING |      |
-| U64 | The sidebar in the read-failure state has no axe violations                                              | FR-014         | example          | PENDING |      |
-| U65 | The sidebar in the save-failure state has no axe violations                                              | FR-014         | example          | PENDING |      |
+| U57 | With no entries the sidebar shows "No practice history yet. Texts you practice will appear here."        | FR-011         | example          | DONE | `src/views/Sidebar.test.tsx::[U57]` |
+| U58 | The empty-state text is absent when at least one entry exists                                            | FR-011         | example          | DONE | `src/views/Sidebar.test.tsx::[U58]` |
+| U59 | When the store cannot be read, an alert "Practice history could not be loaded." shows and nothing throws — NOTE: simulated via a real `savedTextsDb.close()`, not a mocked Dexie method (see cycle-log) | FR-013 | example | DONE | `src/views/Sidebar.test.tsx::[U59]` |
+| U60 | With saveError set, an alert "Your practice history could not be saved. You can keep practicing." shows — NOTE: asserted via role + textContent, not getByRole(name), since role="alert" doesn't name-from-content (see cycle-log) | FR-013 | example | DONE | `src/views/Sidebar.test.tsx::[U60]` |
+| U61 | With a readable store and saveError unset, no alert is shown                                             | FR-013         | example          | DONE | `src/views/Sidebar.test.tsx::[U61]` |
+| U62 | The empty sidebar has no axe violations — NOTE: via expectNoA11yViolations (axe-core directly), not vitest-axe (see cycle-log) | FR-014 | example | DONE | `src/views/Sidebar.test.tsx::[U62]` |
+| U63 | The populated sidebar has no axe violations                                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U63]` |
+| U64 | The sidebar in the read-failure state has no axe violations                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U64]` |
+| U65 | The sidebar in the save-failure state has no axe violations                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U65]` |
 | U66 | With 100 entries the sidebar renders all 100 Load buttons in most-recent-first order                     | FR-005, SC-006 | example          | PENDING |      |
 
 ### `src/components/SavedTextItem.tsx` (existing, untested)

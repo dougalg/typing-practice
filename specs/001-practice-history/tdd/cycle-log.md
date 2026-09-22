@@ -231,4 +231,57 @@ unit rather than ten separate implementation steps.
 - refactor: none needed.
 - full suite: `pnpm test` -> 41 passed, 0 failed (6 files). `pnpm build` passes (checked this time
   before, not only after, formatting — see the finding in the previous cycle).
+- commit: `9bd22ef`
+
+## Cycle: U53, U54, U57-U65 (Sidebar rewrite, task T008/T011)
+
+- test: eleven `it` blocks added to `Sidebar.test.tsx` (the existing `[U6]` characterization test
+  kept untouched), tagged `[U53]`, `[U54]`, `[U57]` to `[U65]`.
+- red: `pnpm vitest run src/views/Sidebar.test.tsx` against the untouched `Sidebar.tsx` ->
+  `Tests 7 failed | 5 passed (12)`. Real failures: no region named "Practice History" (no
+  `aria-labelledby`/heading text mismatch), no empty-state text, entries not in a `list`/`listitem`
+  structure, no read-failure or save-failure alert, `saveError` prop not recognised. The 5 that
+  passed were narrower assertions not yet exercising the missing pieces.
+- green: rewrote `Sidebar.tsx` to use `useHistory()` and the `SidebarProps` contract
+  (`onLoadRequest`, `saveError?`): `aria-labelledby` linking the `<section>` to an `<h2 id="...">`
+  named "Practice History"; a `<ul>`/`<li>` list; the empty-state paragraph; two `role="alert"`
+  paragraphs for the read- and save-failure cases. Removed the old `.limit(5)` query entirely
+  (superseded by `useHistory`).
+- **Three real findings surfaced while getting this green, all documented rather than routed
+  around silently**:
+  1. **A mocked Dexie failure poisoned later tests.** `vi.spyOn(savedTextsDb.savedTexts,
+     "orderBy").mockImplementation(() => { throw ... })`, even after `vi.restoreAllMocks()`,
+     left `dexie-react-hooks`' live-query cache returning the stale `{status: "error"}` result to
+     *later, unrelated* tests in the same file (confirmed by running `pnpm vitest run ... -t
+     "U62"` alone, which passed, versus failing when run after U59/U64 in the full file). Root
+     cause: my `useHistory` querier catches the thrown error internally and returns a normal
+     value, so Dexie's own observability/caching layer sees a successful query with no table
+     dependency recorded (the mock threw before any real read occurred) and never invalidates it.
+     Fixed by simulating the failure with a real Dexie operation instead —
+     `await savedTextsDb.close()` / `.open()` — which participates correctly in Dexie's real
+     failure and cache-invalidation paths. U59 and U64 rewritten this way.
+  2. **`getByRole("alert", { name: "..." })` can never match a plain-text alert.** `role="alert"`
+     is not one of the ARIA roles whose accessible name is computed from text content (unlike
+     `button`, `heading`, `link`, etc.), so a `<p role="alert">some text</p>` has an empty
+     accessible name unless given an explicit `aria-label`. U60's first draft failed for this
+     reason (a bug in the test, not the code): rewritten to `getByRole("alert")` (no name filter)
+     plus `toHaveTextContent(...)` on the result. U59/U64 already queried by role alone and were
+     unaffected.
+  3. **`vitest-axe` does not work with Vitest 5's types.** `pnpm test` was green, but `pnpm build`
+     found 4 real `tsc` errors: `toHaveNoViolations` did not exist on the `expect()` return type.
+     Root cause, confirmed against `@testing-library/jest-dom` (which does work): Vitest 5
+     augments `Assertion` via `declare module "vitest"`; `vitest-axe`'s `extend-expect.d.ts` still
+     uses the older `declare global { namespace Vi { interface Assertion ... } } }` pattern, which
+     never merges with Vitest 5's actual interface. This is exactly the fallback scenario
+     `research.md` R8 and `tdd-profile.md` anticipated. Executed it: removed `vitest-axe`
+     (`pnpm remove`), added `axe-core` directly (`pnpm add -D`), wrote
+     `src/test/a11y.ts::expectNoA11yViolations(container)` (calls `axe.run` and throws a formatted
+     summary on any violation — no custom matcher, so no type augmentation needed at all).
+     Re-verified genuine (not vacuous) with a throwaway smoke test: passes a clean button, throws
+     for a real violation (`<img>` with no alt), then deleted. `setup.ts` and `Sidebar.test.tsx`
+     updated to match; `research.md` R8 updated with this outcome.
+- full suite (after all three fixes): `pnpm vitest run src/views/Sidebar.test.tsx` -> 12 passed,
+  repeated 3 times clean. `pnpm test` -> 52 passed, 0 failed (6 files), repeated 3 times clean.
+  `pnpm build` passes (checked, not just assumed, given finding 3 above).
+- refactor: none beyond the fixes above, which were necessary correctness work, not style.
 - commit: (recorded after this entry is written, see report)

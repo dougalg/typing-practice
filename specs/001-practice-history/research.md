@@ -121,11 +121,19 @@ whole panel and makes recovery awkward, and writes are not covered by render err
 **Findings**: jsdom has no IndexedDB. `vitest-axe` and `fake-indexeddb` are not installed, and the
 constitution explicitly says to add an axe dependency with the first accessibility test.
 
-**Decision**: Add `fake-indexeddb` (loaded through `fake-indexeddb/auto` in `src/test/setup.ts`) and
-`vitest-axe` (matcher registered in the same setup file) as dev dependencies. A shared helper in
-setup clears the database between tests. Confirm at implementation time that the resolved
-`vitest-axe` version works with Vitest 5; if it does not, fall back to calling `axe-core` directly
-in a small `expectNoA11yViolations` helper.
+**Decision**: Add `fake-indexeddb` (loaded through `fake-indexeddb/auto` in `src/test/setup.ts`) as
+a dev dependency. A shared helper in setup clears the database between tests.
+
+**Update, confirmed at implementation time**: `vitest-axe` (tried first, as originally planned)
+does not work with this stack. Its type augmentation uses the pre-Vitest-5
+`declare global { namespace Vi { interface Assertion ... } }` pattern; Vitest 5's own `Assertion`
+interface is augmented via `declare module "vitest"` instead (confirmed against
+`@testing-library/jest-dom`, which does work). The runtime matcher registers fine, but
+`toHaveNoViolations()` never appears on the real `expect()` return type — a `tsc` failure, not a
+runtime one, so `pnpm test` alone did not catch it; only `pnpm build` did. Fell back to the
+alternative this research already named: `axe-core` directly, called from a small
+`expectNoA11yViolations(container)` helper in `src/test/a11y.ts` that throws with a formatted
+summary on any violation. No custom Chai matcher, so no type augmentation is needed at all.
 
 **Alternatives considered**: mocking Dexie (rejected: would not exercise the migration or the
 unique index, which are the riskiest parts); Playwright end-to-end (rejected as new heavyweight
