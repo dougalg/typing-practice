@@ -17,7 +17,10 @@ describe("Sidebar (characterization: current behavior before the practice-histor
 		render(<Sidebar onLoadRequest={vi.fn()} />);
 
 		expect(await screen.findByText("hello world")).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: "Load" })).toBeInTheDocument();
+		// Baseline updated for the intended change in [U41] (SavedTextItem.tsx):
+		// the button's accessible name is "Load" plus the entry's preview text,
+		// not exactly "Load". See tdd/cycle-log.md.
+		expect(screen.getByRole("button", { name: /^Load/ })).toBeInTheDocument();
 	});
 });
 

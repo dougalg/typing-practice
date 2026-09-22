@@ -356,4 +356,36 @@ unit rather than ten separate implementation steps.
 - refactor: none needed.
 - full suite: `pnpm test` -> 60 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes.
+- commit: `5e56f67`
+
+## Cycle: U41-U43 (Load button naming and keyboard activation, task T013/T015) — opens User Story 2
+
+- test: three `it` blocks added to `SavedTextItem.test.tsx`, tagged `[U41]`-`[U43]`.
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx` -> `Tests 1 failed | 3 passed (4)`.
+  `[U41]` failed for real (`Unable to find role="button" name /^Load .*quick brown fox/`, the
+  button's name was still plain "Load"). `[U42]`/`[U43]` passed on the first run: a native
+  `<button>` already activates on Enter and Space in jsdom, so those two behaviors were already
+  true of the existing markup and needed no new code — but per the playbook, a first-run pass
+  needs a deliberate-mutant check before being trusted.
+- green: `SavedTextItem.tsx` now takes its props as `Pick<SavedText, ...>` (per T015; the shared
+  type, not a redeclared interface) and gives the Load `button` and the preview `<p>` ids from
+  `useId()`, with `aria-labelledby` on the button pointing at both, so its accessible name is
+  "Load" followed by the preview. Added a visible `focus-visible:` outline.
+  `pnpm vitest run src/components/SavedTextItem.test.tsx` -> 4 passed, repeated 3 times clean.
+- **deliberate-mutant check for `[U42]`/`[U43]`**: temporarily replaced the `<button>` with a
+  `<span role="button" tabIndex={0}>` (same click handler, same accessible name, no native
+  keyboard activation) -> both failed (`onLoadRequest` not called). Restored the real `<button>`.
+- **Two characterization baselines broken by this change, both intended, both fixed as their own
+  documented step rather than silently**: `[U7]` (`SavedTextItem.test.tsx`) and `[U6]`
+  (`Sidebar.test.tsx`) both queried `getByRole("button", { name: "Load" })` — an exact match that
+  `[U41]`'s new accessible name (`"Load " + preview`) no longer satisfies. Per the playbook's
+  brownfield section ("when a characterization test now contradicts an intended change, updating
+  it is a behavior change ... reported"): both updated to `getByRole("button", { name: /^Load/ })`,
+  which still pins the same observable behavior (click calls `onLoadRequest`; a Load button
+  exists) without hard-coding the now-superseded exact string. `[U6]`'s break was caught by the
+  **full suite run**, not by the file-scoped test run, which is exactly why the cycle always
+  re-runs the whole suite before calling a step green.
+- refactor: none beyond the fixes above.
+- full suite: `pnpm test` -> 63 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes.
 - commit: (recorded after this entry is written, see report)

@@ -110,9 +110,9 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | id  | behavior                                                                                            | traces          | kind             | state    | test |
 | --- | --------------------------------------------------------------------------------------------------- | --------------- | ---------------- | -------- | ---- |
 | U7  | Shows its text and calls onLoadRequest once when Load is pressed                                    | FR-007 (base)   | characterization | BASELINE  | `src/components/SavedTextItem.test.tsx::[U7] shows its text and calls onLoadRequest once when Load is pressed` |
-| U41 | The Load button's accessible name is "Load" followed by the entry's preview text                    | FR-014          | example          | PENDING  |      |
-| U42 | Pressing Enter on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | PENDING  |      |
-| U43 | Pressing Space on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | PENDING  |      |
+| U41 | The Load button's accessible name is "Load" followed by the entry's preview text                    | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U41]` |
+| U42 | Pressing Enter on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U42]` |
+| U43 | Pressing Space on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U43]` |
 | U44 | Shows "Last practiced:" with the date of dateModified, not dateCreated, when the two differ         | FR-006          | example          | PENDING  |      |
 | U45 | Shows "Practiced 1 time" (singular) for a practice count of 1                                       | FR-006          | example          | PENDING  |      |
 | U46 | Shows "Practiced 2 times" for a practice count of 2                                                 | FR-006          | example          | PENDING  |      |
