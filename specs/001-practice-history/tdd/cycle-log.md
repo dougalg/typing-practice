@@ -146,4 +146,20 @@ unit rather than ten separate implementation steps.
   after formatting.
 - full suite: `pnpm test` -> 21 passed, 0 failed (5 files), repeated 3 times clean. `pnpm build`
   passes.
+- commit: `25a1f11`
+
+## Cycle: U9-U13 (normalizeText, task T007 slice 1 of several)
+
+- test: `src/features/savedItems/history.test.ts` (new file), five `it` blocks tagged `[U9]` to
+  `[U13]`.
+- red: `pnpm vitest run src/features/savedItems/history.test.ts` against `import { normalizeText }
+  from "./history"` with no `history.ts` yet -> unresolved-symbol compile error (Vite transform
+  error), the allowed non-assertion red per the playbook. Added the minimal stub
+  `normalizeText(input) { return input; }`, re-ran -> `Tests 2 failed | 3 passed (5)`, real
+  assertion failures (U12: `expected '   \n\t' to be ''`; U13 failed at the same input for the
+  same reason). U9, U10, U11 passed trivially against the identity stub (no trailing whitespace in
+  those fixtures to strip).
+- green: `input.trimEnd()`. `pnpm vitest run src/features/savedItems/history.test.ts` -> 5 passed.
+- refactor: none needed; the implementation is already the smallest correct form.
+- full suite: `pnpm test` -> 26 passed, 0 failed (6 files).
 - commit: (recorded after this entry is written, see report)

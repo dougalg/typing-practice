@@ -127,11 +127,11 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 
 | id  | behavior                                                                                                                        | traces                 | kind    | state   | test |
 | --- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | ------- | ------- | ---- |
-| U9  | normalizeText removes trailing spaces, tabs and newlines ("a b  \n" gives "a b")                                                | FR-003, FR-002         | example | PENDING |      |
-| U10 | normalizeText leaves a text with no trailing whitespace unchanged                                                               | FR-002                 | example | PENDING |      |
-| U11 | normalizeText keeps leading and inner whitespace ("  a  b" stays "  a  b")                                                      | FR-002                 | example | PENDING |      |
-| U12 | normalizeText returns "" for "" and for whitespace-only input                                                                   | FR-003                 | example | PENDING |      |
-| U13 | normalizeText is idempotent (sampled at "", "a", "a  ", "  a \n", "\n"; not a property test, no library)                        | FR-002                 | example | PENDING |      |
+| U9  | normalizeText removes trailing spaces, tabs and newlines ("a b  \n" gives "a b")                                                | FR-003, FR-002         | example | DONE | `src/features/savedItems/history.test.ts::[U9]` |
+| U10 | normalizeText leaves a text with no trailing whitespace unchanged                                                               | FR-002                 | example | DONE | `src/features/savedItems/history.test.ts::[U10]` |
+| U11 | normalizeText keeps leading and inner whitespace ("  a  b" stays "  a  b")                                                      | FR-002                 | example | DONE | `src/features/savedItems/history.test.ts::[U11]` |
+| U12 | normalizeText returns "" for "" and for whitespace-only input                                                                   | FR-003                 | example | DONE | `src/features/savedItems/history.test.ts::[U12]` |
+| U13 | normalizeText is idempotent (sampled at "", "a", "a  ", "  a \n", "\n"; not a property test, no library)                        | FR-002                 | example | DONE | `src/features/savedItems/history.test.ts::[U13]` |
 | U14 | recordPractice on a new text creates exactly one entry with practice count 0 and dateCreated equal to dateModified              | FR-001                 | example | PENDING |      |
 | U15 | recordPractice on an existing text keeps one entry: dateModified later, dateCreated and practice count unchanged                | FR-002, FR-009         | example | PENDING |      |
 | U16 | recordPractice with the same text plus trailing whitespace updates the same entry and stores the trimmed text                   | FR-002                 | example | PENDING |      |
