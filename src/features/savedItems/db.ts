@@ -1,13 +1,7 @@
 import { Dexie, type EntityTable } from "dexie";
+import type { SavedText } from "../../types";
 
-export interface SavedText {
-	id: number;
-	dateCreated: Date;
-	dateModified: Date;
-	numberOfLoads: number;
-	numberOfCompletes: number;
-	text: string;
-}
+export type { SavedText };
 
 export const savedTextsDb = new Dexie("savedTextsDb") as Dexie & {
 	savedTexts: EntityTable<SavedText, "id">;
