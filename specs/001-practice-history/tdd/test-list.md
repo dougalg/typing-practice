@@ -50,7 +50,7 @@ until the feature works through `App`. Integration level, hosted by `pnpm vitest
 | A1  | With an empty history, starting practice with a new text makes that text appear in the sidebar                                          | US1.1, FR-001              | example          | PENDING |      |
 | A2  | A text started earlier is still listed after the app is unmounted and mounted again (storage kept)                                      | US1.2, FR-004, SC-002      | example          | PENDING |      |
 | A3  | Starting practice again with exactly the same text leaves one entry for it, at the top of the list                                      | US1.3, FR-002, SC-003      | example          | PENDING |      |
-| A4  | Starting with empty or whitespace-only text shows "Please enter some text to practice first." and adds no entry (already true today)   | US1.4, FR-003              | characterization | PENDING |      |
+| A4  | Starting with empty or whitespace-only text shows "Please enter some text to practice first." and adds no entry (already true today)   | US1.4, FR-003              | characterization | BASELINE |  `src/App.test.tsx::[A4] starting with empty or whitespace-only text shows the setup error and adds no entry`    |
 | A5  | Pressing Load on an entry opens the practice view with that entry's full text, typing input focused, 0 characters typed, in one click  | US2.1, FR-007, SC-001      | example          | PENDING |      |
 | A6  | Loading a different entry while another text is half typed replaces it with a fresh attempt at the first character                      | US2.2, FR-008              | example          | PENDING |      |
 | A7  | Loading an entry moves it to the top of the list and updates its last-practiced date, leaves its practice count unchanged and adds no second entry | US2.3, FR-009      | example          | PENDING |      |
@@ -78,18 +78,18 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 
 | id  | behavior                                                                                               | traces        | kind             | state   | test |
 | --- | ------------------------------------------------------------------------------------------------------ | ------------- | ---------------- | ------- | ---- |
-| U1  | The idle app shows the setup text box and a "Start practice" button                                    | FR-001 (base) | characterization | PENDING |      |
-| U2  | Starting with a text switches to the practice view showing that text with the typing input present     | FR-007 (base) | characterization | PENDING |      |
-| U3  | Pressing Ctrl+Enter in the setup text box starts practice                                              | FR-014 (base) | characterization | PENDING |      |
-| U4  | Pressing Reset in the practice view returns to the setup view                                          | FR-008 (base) | characterization | PENDING |      |
-| U5  | Typing the whole text correctly shows "Nice work! You finished." and the progress reaches 100%         | FR-010 (base) | characterization | PENDING |      |
+| U1  | The idle app shows the setup text box and a "Start practice" button                                    | FR-001 (base) | characterization | BASELINE | `src/App.test.tsx::[U1] the idle app shows the setup text box and a Start practice button` |
+| U2  | Starting with a text switches to the practice view showing that text with the typing input present     | FR-007 (base) | characterization | BASELINE | `src/App.test.tsx::[U2] starting with a text switches to the practice view showing that text with the typing input present` |
+| U3  | Pressing Ctrl+Enter in the setup text box starts practice                                              | FR-014 (base) | characterization | BASELINE | `src/App.test.tsx::[U3] pressing Ctrl+Enter in the setup text box starts practice` |
+| U4  | Pressing Reset in the practice view returns to the setup view                                          | FR-008 (base) | characterization | BASELINE | `src/App.test.tsx::[U4] pressing Reset in the practice view returns to the setup view` |
+| U5  | Typing the whole text correctly shows "Nice work! You finished." — NOTE: progress does NOT reach 100%, a pre-existing quirk found while writing this test (see cycle-log); it plateaus at (n-1)/n because `handleTypingInput` never sets `position` on the last character | FR-010 (base) | characterization | BASELINE | `src/App.test.tsx::[U5] typing the whole text correctly shows the finished message (progress stays one character short: a pre-existing quirk, not introduced here)` |
 | U67 | The practice view is shown immediately when Start is pressed, while the history write is still pending | FR-013        | example          | PENDING |      |
 
 ### `src/views/Sidebar.tsx` (existing, untested)
 
 | id  | behavior                                                                                                 | traces         | kind             | state   | test |
 | --- | -------------------------------------------------------------------------------------------------------- | -------------- | ---------------- | ------- | ---- |
-| U6  | A text already in the store appears in the sidebar together with a Load button                           | FR-005 (base)  | characterization | PENDING |      |
+| U6  | A text already in the store appears in the sidebar together with a Load button                           | FR-005 (base)  | characterization | BASELINE | `src/views/Sidebar.test.tsx::[U6] a text already in the store appears in the sidebar together with a Load button` |
 | U53 | The sidebar is a region named "Practice History"                                                         | FR-005         | example          | PENDING |      |
 | U54 | Entries are list items, most recently practiced first                                                    | FR-005         | example          | PENDING |      |
 | U55 | Pressing Load on one entry calls onLoadRequest with exactly that entry                                   | FR-007         | example          | PENDING |      |
@@ -109,7 +109,7 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 
 | id  | behavior                                                                                            | traces          | kind             | state    | test |
 | --- | --------------------------------------------------------------------------------------------------- | --------------- | ---------------- | -------- | ---- |
-| U7  | Shows its text and calls onLoadRequest once when Load is pressed                                    | FR-007 (base)   | characterization | PENDING  |      |
+| U7  | Shows its text and calls onLoadRequest once when Load is pressed                                    | FR-007 (base)   | characterization | BASELINE  | `src/components/SavedTextItem.test.tsx::[U7] shows its text and calls onLoadRequest once when Load is pressed` |
 | U41 | The Load button's accessible name is "Load" followed by the entry's preview text                    | FR-014          | example          | PENDING  |      |
 | U42 | Pressing Enter on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | PENDING  |      |
 | U43 | Pressing Space on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | PENDING  |      |
@@ -156,7 +156,7 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 
 | id  | behavior                                                                                                             | traces        | kind             | state   | test |
 | --- | -------------------------------------------------------------------------------------------------------------------- | ------------- | ---------------- | ------- | ---- |
-| U8  | A row added to the current store reads back with all its fields intact, dates still Date values                      | FR-004 (base) | characterization | PENDING |      |
+| U8  | A row added to the current store reads back with all its fields intact, dates still Date values                      | FR-004 (base) | characterization | BASELINE | `src/features/savedItems/db.test.ts::[U8] a row added to the current store reads back with all its fields intact, dates still Date values` |
 | U31 | Upgrading a version-1 database leaves a row with a unique text unchanged, including its id and every field           | FR-012        | example          | PENDING |      |
 | U32 | Two version-1 rows with the same text become one row, keeping the lowest id                                          | FR-012        | example          | PENDING |      |
 | U33 | The merged row's dateCreated is the earliest and its dateModified the latest of the group                            | FR-012        | example          | PENDING |      |
