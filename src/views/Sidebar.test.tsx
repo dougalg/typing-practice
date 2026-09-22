@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
 import { Sidebar } from "./Sidebar";
 import { savedTextsDb } from "../features/savedItems/db";
@@ -154,5 +155,43 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 		const { container } = render(<Sidebar onLoadRequest={vi.fn()} saveError />);
 
 		await expectNoA11yViolations(container);
+	});
+
+	it("[U55] pressing Load on one entry calls onLoadRequest with exactly that entry", async () => {
+		const user = userEvent.setup();
+		await addEntry({
+			text: "older",
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+		});
+		await addEntry({
+			text: "newer",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+		const onLoadRequest = vi.fn();
+
+		render(<Sidebar onLoadRequest={onLoadRequest} />);
+
+		const olderButton = await screen.findByRole("button", {
+			name: /^Load .*older/,
+		});
+		await user.click(olderButton);
+
+		expect(onLoadRequest).toHaveBeenCalledOnce();
+		expect(onLoadRequest).toHaveBeenCalledWith(
+			expect.objectContaining({ text: "older" }),
+		);
+	});
+
+	it("[U56] the Load buttons of two different entries have different accessible names", async () => {
+		await addEntry({ text: "alpha" });
+		await addEntry({ text: "beta" });
+
+		render(<Sidebar onLoadRequest={vi.fn()} />);
+
+		const alphaButton = await screen.findByRole("button", {
+			name: /^Load .*alpha/,
+		});
+		const betaButton = screen.getByRole("button", { name: /^Load .*beta/ });
+		expect(alphaButton).not.toBe(betaButton);
 	});
 });

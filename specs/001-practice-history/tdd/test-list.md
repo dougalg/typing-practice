@@ -92,8 +92,8 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | U6  | A text already in the store appears in the sidebar together with a Load button                           | FR-005 (base)  | characterization | BASELINE | `src/views/Sidebar.test.tsx::[U6] a text already in the store appears in the sidebar together with a Load button` |
 | U53 | The sidebar is a region named "Practice History"                                                         | FR-005         | example          | DONE | `src/views/Sidebar.test.tsx::[U53]` |
 | U54 | Entries are list items, most recently practiced first                                                    | FR-005         | example          | DONE | `src/views/Sidebar.test.tsx::[U54]` |
-| U55 | Pressing Load on one entry calls onLoadRequest with exactly that entry                                   | FR-007         | example          | PENDING |      |
-| U56 | Load buttons of two different entries have different accessible names                                    | FR-014         | example          | PENDING |      |
+| U55 | Pressing Load on one entry calls onLoadRequest with exactly that entry                                   | FR-007         | example          | DONE | `src/views/Sidebar.test.tsx::[U55]` |
+| U56 | Load buttons of two different entries have different accessible names                                    | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U56]` |
 | U57 | With no entries the sidebar shows "No practice history yet. Texts you practice will appear here."        | FR-011         | example          | DONE | `src/views/Sidebar.test.tsx::[U57]` |
 | U58 | The empty-state text is absent when at least one entry exists                                            | FR-011         | example          | DONE | `src/views/Sidebar.test.tsx::[U58]` |
 | U59 | When the store cannot be read, an alert "Practice history could not be loaded." shows and nothing throws — NOTE: simulated via a real `savedTextsDb.close()`, not a mocked Dexie method (see cycle-log) | FR-013 | example | DONE | `src/views/Sidebar.test.tsx::[U59]` |

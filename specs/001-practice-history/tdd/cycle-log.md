@@ -388,4 +388,23 @@ unit rather than ten separate implementation steps.
 - refactor: none beyond the fixes above.
 - full suite: `pnpm test` -> 63 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes.
+- commit: `d3647dc`
+
+## Cycle: U55, U56 (Sidebar forwards Load to the right entry, task T034)
+
+- test: two `it` blocks added to `Sidebar.test.tsx`, tagged `[U55]`, `[U56]`.
+- Both passed on the first run (`pnpm vitest run src/views/Sidebar.test.tsx -t "U55|U56"` -> 2
+  passed): `Sidebar.tsx` already closes over the right `item` per entry, and `[U41]`'s earlier
+  cycle already made each entry's Load button name distinct. Per the playbook, applied the
+  deliberate-mutant check to both before trusting them:
+  - `[U55]`: changed the callback to `onLoadRequest={() => onLoadRequest(state.entries[0]!)}`
+    (always the most-recent entry, regardless of which button was clicked) -> failed
+    (`expected onLoadRequest to be called with {text: "older"}, called with {text: "newer"}`
+    in substance). Restored.
+  - `[U56]`: hard-coded every `SavedTextItem`'s `text` prop to `"MUTANT"` -> failed (`Unable to
+    find role="button" name /^Load .*alpha/`, since both buttons became "Load MUTANT"). Restored.
+- No implementation change was needed; both behaviors were already correctly satisfied by the
+  existing code from earlier cycles.
+- full suite: `pnpm test` -> 65 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes. No diff in `Sidebar.tsx` (mutants fully reverted).
 - commit: (recorded after this entry is written, see report)
