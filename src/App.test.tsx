@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import App from "./App";
 import * as historyModule from "./features/savedItems/history";
@@ -203,8 +203,9 @@ describe("App (specs/001-practice-history, User Story 1)", () => {
 		await within(sidebarRegion()).findByText("hello world");
 		await user.click(resetButton());
 		vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
-		// Reset does not clear the setup box (that is FR-016, driven in User
-		// Story 2), so the box still reads "hello world" here.
+		// Reset now clears the setup box (FR-016, driven in User Story 2), so the
+		// same text has to be retyped before starting again.
+		await user.type(setupBox(), "hello world");
 		await user.click(startButton());
 		vi.useRealTimers();
 
@@ -268,7 +269,9 @@ describe("App (specs/001-practice-history, User Story 1)", () => {
 		await user.click(startButton());
 		await within(sidebarRegion()).findByText("hello world");
 		await user.click(resetButton());
-		await user.type(setupBox(), "  \n");
+		// Reset now clears the setup box (FR-016), so the same text plus
+		// trailing whitespace is retyped in full.
+		await user.type(setupBox(), "hello world  \n");
 		await user.click(startButton());
 
 		const items = await within(sidebarRegion()).findAllByRole("listitem");
@@ -371,9 +374,16 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 		await user.click(loadOlder);
 		vi.useRealTimers();
 
-		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		// Two listitems exist throughout (both entries always existed; only their
+		// order changes), so findAllByRole resolving on "2 items present" would
+		// race the asynchronous recordPractice write and its live-query re-sort.
+		// Wait for the actual reordering instead.
+		await waitFor(() => {
+			const items = within(sidebarRegion()).getAllByRole("listitem");
+			expect(items[0]).toHaveTextContent("older");
+		});
+		const items = within(sidebarRegion()).getAllByRole("listitem");
 		expect(items).toHaveLength(2);
-		expect(items[0]).toHaveTextContent("older");
 		const rows = await savedTextsDb.savedTexts.toArray();
 		expect(rows).toHaveLength(2);
 		const olderRow = rows.find((r) => r.text === "older");
@@ -450,5 +460,33 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 
 		expect(getPracticeText("hello world")).toBeInTheDocument();
 		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A21] after typing a text, starting, and pressing Reset, the setup box is empty", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		expect(setupBox()).toHaveValue("");
+	});
+
+	it("[A22] after loading an entry and pressing Reset, the setup box is empty", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.click(resetButton());
+
+		expect(setupBox()).toHaveValue("");
 	});
 });

@@ -103,13 +103,13 @@ description: "Task list for Practice History in the Sidebar"
 - [X] T013 [P] [US2] Extend `src/components/SavedTextItem.test.tsx` (Load part) [U41] [U42] [U43]: the Load `button` has an accessible name that is "Load" followed by the entry's preview text (`getByRole("button", { name: /^Load .*quick brown fox/ })`); with `userEvent`, pressing Enter on the focused button calls `onLoadRequest` once, and pressing Space does too.
 - [X] T034 [P] [US2] Extend `src/views/Sidebar.test.tsx` [U55] [U56]: pressing Load on one of two entries calls `onLoadRequest` with exactly that entry; the Load buttons of the two entries have different accessible names.
 - [X] T014 [P] [US2] Extend `src/App.test.tsx` [A5] [A6] [A7] [A8] [A18] [A20]: after starting text A and pressing Reset, one click on Load for A's entry shows A's full text in the practice view, focuses the typing input and shows 0 characters typed; typing half of A then loading entry B replaces A with B at the first character with progress cleared; loading the entry that is currently running restarts it from the first character; loading moves that entry to the top of the list and updates its last-practiced date, leaves its practice count unchanged and creates no second entry; a Load reached and activated only by keyboard (Tab, Enter, then Tab and Space on another entry) works; activating Load several times in quick succession leaves one entry per text, one running session on the loaded text and an unchanged practice count.
-- [ ] T056 [US2] Extend `src/App.test.tsx` (after T014, same file) [A21] [A22]: after typing a text into the setup box, pressing "Start practice" and then Reset, the setup view shows an empty text box (this is red today, because the draft is kept); after starting a text, pressing Reset, loading an entry from the sidebar and pressing Reset again, the setup text box is empty.
+- [X] T056 [US2] Extend `src/App.test.tsx` (after T014, same file) [A21] [A22]: after typing a text into the setup box, pressing "Start practice" and then Reset, the setup view shows an empty text box (this is red today, because the draft is kept); after starting a text, pressing Reset, loading an entry from the sidebar and pressing Reset again, the setup text box is empty.
 
 ### Implementation for User Story 2
 
 - [X] T015 [US2] Update `src/components/SavedTextItem.tsx` (depends on T013, T034) [U41] [U42] [U43] [U55] [U56]: give the Load `button` and the preview paragraph ids from `useId()` and set `aria-labelledby` on the button to both ids so its name is "Load" plus the preview; type the props from the shared `SavedText` (import it from `../types`, not from `features/`) picking only the displayed fields plus `onLoadRequest`, per contracts/sidebar-ui.md; keep the 3-line clamp on the preview; ensure a visible focus ring on the button (Tailwind `focus-visible:` utilities). The characterization test T032 must still pass.
 - [X] T016 [US2] Update `src/App.tsx` (depends on T012, T014, T015) [A5] [A6] [A7] [A8] [A18] [A20]: replace `handleLoadRequest` (which currently ignores the selected item) with a handler that takes the `SavedText` entry and runs the same start routine as the Start button with `entry.text` (increment `runId`, set state `running`, `recordPractice(entry.text)`, clear the setup error), so the remount via `key={runId}` gives a fresh session even for the same text. Pass it to `Sidebar` as `onLoadRequest`. Run `pnpm test` until T013, T014 and T034 are green.
-- [ ] T057 [US2] Update `src/App.tsx` (depends on T016, T056) [A21] [A22]: make `handleReset` in `AppInner` also clear the setup text (`setSourceText("")`) in addition to returning the typing state to `idle` and clearing the setup error, so Reset always shows an empty setup box (FR-016). The characterization test for Reset returning to the setup view (T030, [U4]) must still pass.
+- [X] T057 [US2] Update `src/App.tsx` (depends on T016, T056) [A21] [A22]: make `handleReset` in `AppInner` also clear the setup text (`setSourceText("")`) in addition to returning the typing state to `idle` and clearing the setup error, so Reset always shows an empty setup box (FR-016). The characterization test for Reset returning to the setup view (T030, [U4]) must still pass.
 
 ### Acceptance confirmation for User Story 2
 
@@ -119,8 +119,8 @@ description: "Task list for Practice History in the Sidebar"
 - [X] T047 [US2] Confirm [A8] is green: same command with the A8 test name, at least one `passed`.
 - [X] T048 [US2] Confirm [A18] is green: same command with the A18 test name, at least one `passed`.
 - [X] T049 [US2] Confirm [A20] is green: same command with the A20 test name, at least one `passed`.
-- [ ] T058 [US2] Confirm [A21] is green: same command with the A21 test name, at least one `passed`.
-- [ ] T059 [US2] Confirm [A22] is green: same command with the A22 test name, at least one `passed`.
+- [X] T058 [US2] Confirm [A21] is green: same command with the A21 test name, at least one `passed`.
+- [X] T059 [US2] Confirm [A22] is green: same command with the A22 test name, at least one `passed`.
 
 **Checkpoint**: User Stories 1 and 2 both work: store then load, by mouse or keyboard
 

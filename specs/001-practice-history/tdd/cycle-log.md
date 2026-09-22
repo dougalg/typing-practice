@@ -440,4 +440,31 @@ unit rather than ten separate implementation steps.
 - refactor: none needed; no implementation change was required beyond what T012 already built.
 - full suite: `pnpm test` -> 71 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes. No diff in `App.tsx` (mutants fully reverted).
+- commit: `c1890f8`
+
+## Cycle: A21, A22 (Reset empties the setup box, task T056-T057) — completes User Story 2
+
+- test: two `it` blocks added to `App.test.tsx`, tagged `[A21]`, `[A22]`.
+- red: `pnpm vitest run src/App.test.tsx -t "A21|A22"` -> both failed for the right reason
+  (`expect(element).toHaveValue()` expected `""`, received `"hello world"` — the setup box kept
+  its draft, as every earlier cycle's tests already relied on and documented).
+- green: `handleReset` in `AppInner` now also calls `setSourceText("")`. `pnpm vitest run
+  src/App.test.tsx` -> 22 passed on the first try after the change.
+- **Two earlier tests broke as an intended consequence, not a regression, and were fixed as part
+  of this cycle rather than left red**: `[A3]` and `[A17]` both relied on Reset keeping the setup
+  box's draft (each said so in its own comment, written before this behavior existed) to retype
+  the same text without typing it again. Both now explicitly retype the text after Reset.
+  Confirmed both still pass, and pass for the same reason as before (their own assertions about
+  `dateModified`/entry count are unchanged).
+- **A real test flake found and fixed, not the app**: a full-suite repeat run (8 runs) caught
+  `[A7]` failing intermittently (roughly 1 in 6): `within(sidebarRegion()).findAllByRole
+  ("listitem")` resolves as soon as **any** 2 `listitem`s exist, and both entries exist from the
+  start of the test — only their *order* changes after the Load-triggered `recordPractice` write
+  resolves and `useHistory`'s live query re-sorts. The assertion on `items[0]` was therefore
+  racing an unawaited async write. Fixed by wrapping the order assertion itself in `waitFor`, so
+  it retries until the DOM actually reflects the reorder, instead of resolving on any 2-item
+  state. Re-verified: 10/10 clean in isolation, 8/8 clean full-suite repeats afterward (up from a
+  baseline of roughly 5/6 before the fix).
+- refactor: none needed.
+- full suite: `pnpm test` -> 73 passed, 0 failed (6 files). `pnpm build` passes.
 - commit: (recorded after this entry is written, see report)

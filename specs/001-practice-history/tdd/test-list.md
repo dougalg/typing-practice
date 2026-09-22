@@ -67,8 +67,8 @@ until the feature works through `App`. Integration level, hosted by `pnpm vitest
 | A18 | Activating Load on the same entry several times in a row leaves one entry per text, one running session on the loaded text, and an unchanged practice count | Edge: repeated Load, FR-009 | example    | DONE | `src/App.test.tsx::[A18]` |
 | A19 | Starting, loading and finishing a practice make no network request (fetch, XHR, beacon are never called): a guard, cannot start red    | FR-015                     | example          | PENDING |      |
 | A20 | Loading the entry that is currently running restarts it from the first character                                                        | FR-008                     | example          | DONE | `src/App.test.tsx::[A20]` |
-| A21 | After typing a text into the setup box, starting, and pressing Reset, the setup view shows an empty text box                            | FR-016                     | example          | PENDING |      |
-| A22 | After loading an entry and pressing Reset, the setup view shows an empty text box                                                       | US2.5, FR-016              | example          | PENDING |      |
+| A21 | After typing a text into the setup box, starting, and pressing Reset, the setup view shows an empty text box                            | FR-016                     | example          | DONE | `src/App.test.tsx::[A21]` |
+| A22 | After loading an entry and pressing Reset, the setup view shows an empty text box                                                       | US2.5, FR-016              | example          | DONE | `src/App.test.tsx::[A22]` |
 
 ## Inner loop: unit behaviors
 

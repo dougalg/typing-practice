@@ -86,6 +86,7 @@ function AppInner({
 	const handleReset = () => {
 		setTypingState("idle");
 		setSetupError("");
+		setSourceText("");
 	};
 
 	if (typingState === "idle") {
