@@ -104,4 +104,58 @@ describe("recordPractice (specs/001-practice-history contracts/history-module.md
 		const rows = await savedTextsDb.savedTexts.toArray();
 		expect(rows).toHaveLength(1);
 	});
+
+	it("[U20] when the store rejects the write, resolves { ok: false } and does not reject", async () => {
+		vi.spyOn(savedTextsDb.savedTexts, "add").mockRejectedValueOnce(
+			new Error("boom"),
+		);
+
+		await expect(recordPractice("hello world")).resolves.toEqual({
+			ok: false,
+		});
+	});
+
+	it("[U68] when inserting a new text loses a race (unique-text ConstraintError), retries once as an update and resolves ok", async () => {
+		// Simulate another writer winning the race: insert the row directly (as
+		// that other writer would), then make our own add() call reject with the
+		// ConstraintError a real unique-index conflict would raise.
+		await savedTextsDb.savedTexts.add({
+			text: "hello world",
+			dateCreated: new Date("2026-01-01T00:00:00Z"),
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+			numberOfLoads: 0,
+			numberOfCompletes: 0,
+		});
+		const constraintError = new Error(
+			"Key already exists in the object store.",
+		);
+		constraintError.name = "ConstraintError";
+		vi.spyOn(savedTextsDb.savedTexts, "add").mockRejectedValueOnce(
+			constraintError,
+		);
+
+		const result = await recordPractice("hello world");
+
+		expect(result).toEqual({ ok: true });
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+	});
+
+	it("[U69] when the retry also fails, resolves { ok: false } and does not reject", async () => {
+		// No row actually gets inserted this time, so the retry's lookup finds
+		// nothing to update: a genuine, unrecoverable failure.
+		const constraintError = new Error(
+			"Key already exists in the object store.",
+		);
+		constraintError.name = "ConstraintError";
+		vi.spyOn(savedTextsDb.savedTexts, "add").mockRejectedValueOnce(
+			constraintError,
+		);
+
+		await expect(recordPractice("hello world")).resolves.toEqual({
+			ok: false,
+		});
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toEqual([]);
+	});
 });

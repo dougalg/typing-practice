@@ -176,4 +176,32 @@ unit rather than ten separate implementation steps.
   `pnpm vitest run src/features/savedItems/history.test.ts` -> 11 passed, repeated 3 times clean.
 - refactor: none needed.
 - full suite: `pnpm test` -> 32 passed, 0 failed (6 files). `pnpm build` passes.
+- commit: `391e87f`
+
+## Cycle: U20, U68, U69 (recordPractice error handling and two-writer retry, task T007 slice 3)
+
+- test: three `it` blocks added to `history.test.ts`, tagged `[U20]`, `[U68]`, `[U69]`.
+- red: `pnpm vitest run src/features/savedItems/history.test.ts -t "U20|U68|U69"` -> `Tests 1 failed
+  | 2 passed | 11 skipped (14)`. U20 and U69 passed trivially: the existing outer try/catch already
+  turns any thrown error into `{ ok: false }`, which happens to satisfy both (U69's constraint
+  error, having no retry logic yet, just falls through the same path as U20's generic error). Only
+  U68 failed for the real reason: `expected { ok: false } to deeply equal { ok: true }` — no retry
+  existed, so a `ConstraintError` was treated the same as any other failure.
+- green: added a `try/catch` around the `add()` call inside the transaction. On a
+  `ConstraintError`, look up the entry by `text` (the row the other writer just inserted) and
+  update its `dateModified` instead of re-throwing; any other error, or a `ConstraintError` with no
+  such row found, re-throws to the outer catch as before. `pnpm vitest run
+  src/features/savedItems/history.test.ts` -> 14 passed, repeated 3 times clean.
+- refactor: none needed.
+- **Finding, not a behavior bug**: `pnpm test` reported all green, but `pnpm build` (tsc) failed
+  with 2 real type errors in the test file — `vi.spyOn(...).mockImplementationOnce()` requires a
+  return type of Dexie's `PromiseExtended<number>`, not a plain `Promise`, and my first draft of
+  U68/U69 returned plain promises. Vitest's esbuild/vite transform does not type-check, so this
+  compile error was invisible to `pnpm test` alone and only surfaced by also running `pnpm build`.
+  Fixed by using `mockRejectedValueOnce()` instead (looser typing) and, for U68, performing the
+  real insert as a separate `await savedTextsDb.savedTexts.add(...)` call before mocking the
+  *next* `add()` call to reject with `ConstraintError`, rather than wrapping both inside one mock
+  implementation. Confirms this feature's convention (quickstart.md) of always running both
+  `pnpm test` and `pnpm build`, never one alone.
+- full suite: `pnpm test` -> 35 passed, 0 failed (6 files). `pnpm build` passes (both errors gone).
 - commit: (recorded after this entry is written, see report)

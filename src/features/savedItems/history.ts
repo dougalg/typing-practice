@@ -35,13 +35,28 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 				return;
 			}
 
-			await savedTextsDb.savedTexts.add({
-				text: normalized,
-				dateCreated: now,
-				dateModified: now,
-				numberOfLoads: 0,
-				numberOfCompletes: 0,
-			});
+			try {
+				await savedTextsDb.savedTexts.add({
+					text: normalized,
+					dateCreated: now,
+					dateModified: now,
+					numberOfLoads: 0,
+					numberOfCompletes: 0,
+				});
+			} catch (err) {
+				if (!(err instanceof Error) || err.name !== "ConstraintError")
+					throw err;
+
+				// Lost the race to another writer that inserted this text first.
+				// Retry once as an update instead of reporting a save failure for a
+				// text that is, in fact, saved (specs/001-practice-history FR-017).
+				const winner = await savedTextsDb.savedTexts
+					.where("text")
+					.equals(normalized)
+					.first();
+				if (!winner) throw err;
+				await savedTextsDb.savedTexts.update(winner.id, { dateModified: now });
+			}
 		});
 		return { ok: true };
 	} catch {
