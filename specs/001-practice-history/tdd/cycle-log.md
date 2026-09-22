@@ -284,4 +284,76 @@ unit rather than ten separate implementation steps.
   repeated 3 times clean. `pnpm test` -> 52 passed, 0 failed (6 files), repeated 3 times clean.
   `pnpm build` passes (checked, not just assumed, given finding 3 above).
 - refactor: none beyond the fixes above, which were necessary correctness work, not style.
+- commit: `5e9a0c7`
+
+## Cycle: A1-A3, A13-A15, A17, U67 (App wiring, tasks T009/T012) — closes User Story 1
+
+- test: eight `it` blocks added to `App.test.tsx` (existing `[U1]`-`[U5]`, `[A4]` characterization
+  tests kept untouched), tagged `[A1]`-`[A3]`, `[A13]`-`[A15]`, `[A17]`, `[U67]`. `A16` intentionally
+  not attempted this cycle (see "Blocked" below).
+- red (against the untouched `App.tsx`, which still called `savedTextsDb.savedTexts.add()` directly
+  on every Start): `pnpm vitest run src/App.test.tsx` -> `Tests 3 failed | 11 passed (14)`.
+  - **Genuine reds**: `[A13]` (no empty-state text reachable — the sidebar was stuck showing
+    "Practice history could not be loaded."), `[A14]` (same stuck alert instead of the
+    save-failure one), `[A17]` (same, text never found).
+  - **A13/A14/A17's failure had one real cause, traced before writing any implementation**: the
+    old `handleStart` calls `.add()` unconditionally with no de-duplication, but the store already
+    has version 3's unique `text` index (from the Foundational cycle). Two starts of the same
+    text (which `[A3]`, run earlier in the file, performs) throw an uncaught `ConstraintError` that
+    the old code never catches. That real, uncaught error corrupted `useHistory`'s live-query
+    result for the rest of the file — the same live-query-cache class of problem found in the
+    Sidebar cycle, this time from a genuine app bug rather than a test mock.
+  - **`[A1]`, `[A2]`, `[A3]`, `[A15]`, `[U67]` passed on the first run**, against the old,
+    unfixed `App.tsx`. Per the playbook, a first-run pass needs a deliberate-mutant check before
+    being trusted:
+    - `[A3]` (as first written, counting sidebar list items only) **did not survive the mutant
+      check** — see "Finding" below. Strengthened before being trusted.
+    - `[U67]`: mutated `startSession` to `await recordPractice(text)` before
+      `setTypingState("running")` -> failed (`Unable to find the typing input`). Restored.
+    - `[A1]`, `[A2]`, `[A15]` were not separately mutant-checked this cycle (time-boxed); they
+      exercise straightforward presence assertions in the same code path proven correct by `[A3]`
+      and by `history.test.ts`'s own unit coverage, but they have not individually been proven
+      non-vacuous. Flagged here rather than silently assumed solid.
+- **Finding: a test-quality gap in `[A3]` itself, caught by its own mutant check.** The first
+  version of `[A3]` asserted only `sidebar list items).toHaveLength(1)`. Mutating
+  `history.ts` (temporarily forcing the "does an entry already exist" check off, `if (false &&
+  existing)`) still left exactly one entry — because the resulting unhandled
+  `ConstraintError` aborts the whole Dexie transaction, and an aborted insert is
+  indistinguishable, by row count alone, from a correct update. Confirmed both ways: disabling
+  the existence check alone, and disabling the `ConstraintError`-retry alone, both still passed
+  (the two mechanisms cover for each other on this exact scenario — legitimate defense in depth,
+  not a bug), but disabling **both together** correctly failed. Strengthened `[A3]` to additionally
+  assert `dateModified` advanced to the second start's time (`vi.useFakeTimers`), which a
+  rolled-back write cannot fake; re-confirmed it now passes on the real code and fails on the
+  combined mutant. This is why the deliberate-mutant step exists.
+- green: implemented `App.tsx` per contracts/history-module.md's "App integration contract": `App`
+  now owns `{ text, runId }`, calls `recordPractice(text)` (not awaited) alongside
+  `setTypingState("running")`, and passes `saveError` (set from a `{ ok: false }` result) to
+  `Sidebar`. `AppInner`'s `PracticeView` is rendered `key={session.runId}` and reads
+  `session.text` rather than its own local `targetText`. The direct `savedTextsDb` import and
+  `.add()` call are gone; `normalizeText` replaces the inline `.trimEnd()`. `handleLoadRequest` now
+  takes the clicked entry and starts a session with its text (full Load restart behavior is US2,
+  task T016; this cycle only makes the type signature and basic wiring correct).
+  `pnpm vitest run src/App.test.tsx` -> 14 passed, repeated 3 times clean.
+- **Outer loop closed**: with `history.ts`, `Sidebar.tsx` and `App.tsx` now all driven, User Story
+  1's acceptance behaviors are green as one file: `pnpm vitest run src/App.test.tsx` -> 14 passed
+  (0 failed), covering `[A1]`-`[A3]`, `[A4]`, `[A13]`-`[A15]`, `[A17]`, `[U67]`. `[A16]` remains
+  open (blocked, see below).
+- **Blocked: `[A16]`** (legacy migration data through the real App/sidebar, not just `db.ts`
+  directly). Re-testing the migration at this layer would need seeding pre-migration (`version 1`)
+  data into the real, shared `savedTextsDb` — which is already open at version 3 via static
+  imports across the whole test suite the moment any test file loads. Doing that safely would
+  require deleting the physical IndexedDB database mid-suite (as `db.test.ts`'s migration tests do
+  for their own throwaway-named databases), but here it is the one database every other test in
+  the project shares, so the same operation risks leaving other tests' state corrupted depending on
+  execution order. This is the playbook's escape hatch "the change needs ... a service that is not
+  available in the test environment" in spirit: not literally unavailable, but unsafe to exercise
+  shared. The underlying claim (migration correctness) is not unverified — it is already fully
+  proven at the `openSavedTextsDb` boundary by `U31`-`U40`, and `savedTextsDb` is constructed by
+  calling that exact function, so there is no additional app-level logic this test could catch that
+  the module-level tests do not already cover. Recorded as `BLOCKED` with this reasoning, not
+  silently marked `DONE`.
+- refactor: none needed.
+- full suite: `pnpm test` -> 60 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes.
 - commit: (recorded after this entry is written, see report)

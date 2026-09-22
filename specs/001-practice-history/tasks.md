@@ -78,15 +78,15 @@ description: "Task list for Practice History in the Sidebar"
 
 ### Acceptance confirmation for User Story 1
 
-- [ ] T035 [US1] Confirm [A1] is green: run `pnpm vitest run src/App.test.tsx -t "<the A1 test name>"` and check the summary shows at least one `passed`; set A1 to `DONE` in `tdd/test-list.md` once the full suite is green.
-- [ ] T036 [US1] Confirm [A2] is green: same command with the A2 test name, at least one `passed`.
-- [ ] T037 [US1] Confirm [A3] is green: same command with the A3 test name, at least one `passed`.
-- [ ] T038 [US1] Confirm [A4] is still green (characterization, it passed in T030 and must pass after every change): same command with the A4 test name.
-- [ ] T039 [US1] Confirm [A13] is green: same command with the A13 test name, at least one `passed`.
-- [ ] T040 [US1] Confirm [A14] is green: same command with the A14 test name, at least one `passed`.
-- [ ] T041 [US1] Confirm [A15] is green: same command with the A15 test name, at least one `passed`.
+- [X] T035 [US1] Confirm [A1] is green: run `pnpm vitest run src/App.test.tsx -t "<the A1 test name>"` and check the summary shows at least one `passed`; set A1 to `DONE` in `tdd/test-list.md` once the full suite is green.
+- [X] T036 [US1] Confirm [A2] is green: same command with the A2 test name, at least one `passed`.
+- [X] T037 [US1] Confirm [A3] is green: same command with the A3 test name, at least one `passed`.
+- [X] T038 [US1] Confirm [A4] is still green (characterization, it passed in T030 and must pass after every change): same command with the A4 test name.
+- [X] T039 [US1] Confirm [A13] is green: same command with the A13 test name, at least one `passed`.
+- [X] T040 [US1] Confirm [A14] is green: same command with the A14 test name, at least one `passed`.
+- [X] T041 [US1] Confirm [A15] is green: same command with the A15 test name, at least one `passed`.
 - [ ] T042 [US1] Confirm [A16] is green: same command with the A16 test name, at least one `passed`.
-- [ ] T043 [US1] Confirm [A17] is green: same command with the A17 test name, at least one `passed`.
+- [X] T043 [US1] Confirm [A17] is green: same command with the A17 test name, at least one `passed`.
 
 **Checkpoint**: User Story 1 works on its own: history is stored without duplicates and listed after reload
 
