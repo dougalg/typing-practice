@@ -407,4 +407,37 @@ unit rather than ten separate implementation steps.
   existing code from earlier cycles.
 - full suite: `pnpm test` -> 65 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes. No diff in `Sidebar.tsx` (mutants fully reverted).
+- commit: `239405d`
+
+## Cycle: A5-A8, A18, A20 (Load end to end, task T014) — closes User Story 2
+
+- test: six `it` blocks added to `App.test.tsx`, tagged `[A5]`-`[A8]`, `[A18]`, `[A20]`.
+- **Test-writing mistake caught before trusting any result, not an app bug**: the first draft of
+  `[A6]`, `[A7]` and `[A8]` typed a second, different text into the setup box after Reset without
+  clearing it first. Since Reset does not empty the box yet (FR-016 is its own later step), the
+  second `user.type()` appended instead of replacing, producing a single garbled entry
+  (`"alphabeta"`) instead of two. Caught by reading the actual failure DOM dump, not assumed to be
+  an app defect. Fixed by adding `user.clear(setupBox())` before each second, different text.
+- red/pass: `pnpm vitest run src/App.test.tsx -t "User Story 2"` -> all 6 passed on the first
+  run, once the test-writing mistake above was fixed. `handleLoadRequest` (from task T012, already
+  wired to call the same `startSession` that Start uses) already implements the union of these
+  behaviors, since Load and Start share one code path by design. Per the playbook, applied the
+  deliberate-mutant check to the two most implementation-specific behaviors before trusting the
+  set:
+  - `[A20]` (restart the currently-running entry): changed `startSession` to
+    `{ text, runId: prev.runId }` (never increments) -> failed (`0` character count not found,
+    since `PracticeView` was not remounted). Restored.
+  - `[A5]` (Load uses the clicked entry's own text): changed `handleLoadRequest` to always call
+    `startSession("MUTANT")` regardless of which item was clicked -> failed (`getPracticeText`
+    could not find the mutated text; the practice view showed "MUTANT" instead). Restored.
+  - `[A6]`, `[A7]`, `[A8]`, `[A18]` were not separately mutant-checked (time-boxed): they exercise
+    the same `startSession`/`recordPractice` path already proven by `[A5]`, `[A20]`, and
+    `history.test.ts`'s own unit coverage (`U15`, the upsert-updates-not-duplicates behavior).
+    Flagged rather than silently assumed solid.
+- **Outer loop closed**: User Story 2's acceptance behaviors are now green as one file:
+  `pnpm vitest run src/App.test.tsx` -> 20 passed (0 failed), covering all of US1's and US2's
+  acceptance behaviors together.
+- refactor: none needed; no implementation change was required beyond what T012 already built.
+- full suite: `pnpm test` -> 71 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes. No diff in `App.tsx` (mutants fully reverted).
 - commit: (recorded after this entry is written, see report)

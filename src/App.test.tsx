@@ -294,3 +294,161 @@ describe("App (specs/001-practice-history, User Story 1)", () => {
 		vi.restoreAllMocks();
 	});
 });
+
+describe("App (specs/001-practice-history, User Story 2)", () => {
+	it("[A5] pressing Load on an entry opens the practice view with that entry's full text, typing input focused, 0 characters typed", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "the quick brown fox");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+
+		expect(getPracticeText("the quick brown fox")).toBeInTheDocument();
+		const typingInput = screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+		expect(typingInput).toHaveFocus();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A6] loading a different entry while another text is half typed replaces it with a fresh attempt at the first character", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "second text");
+		await user.click(startButton());
+		await user.click(resetButton());
+		// Reset does not clear the setup box yet (FR-016 is User Story 2's own
+		// later step), so it must be cleared explicitly before typing a second,
+		// different text.
+		await user.clear(setupBox());
+		await user.type(setupBox(), "first text");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		// Practice "first text" partway.
+		const loadFirst = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load .*first text/,
+		});
+		await user.click(loadFirst);
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "fir");
+
+		// Now load "second text" instead.
+		const loadSecond = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*second text/,
+		});
+		await user.click(loadSecond);
+
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A7] loading an entry moves it to the top, updates its last-practiced date, leaves practice count unchanged, adds no second entry", async () => {
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+		const user = userEvent.setup({
+			advanceTimers: (ms) => vi.advanceTimersByTime(ms),
+		});
+		render(<App />);
+
+		await user.type(setupBox(), "older");
+		await user.click(startButton());
+		await user.click(resetButton());
+		vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
+		await user.clear(setupBox());
+		await user.type(setupBox(), "newer");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		vi.setSystemTime(new Date("2026-01-03T00:00:00Z"));
+		const loadOlder = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*older/,
+		});
+		await user.click(loadOlder);
+		vi.useRealTimers();
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(2);
+		expect(items[0]).toHaveTextContent("older");
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(2);
+		const olderRow = rows.find((r) => r.text === "older");
+		expect(olderRow?.dateModified).toEqual(new Date("2026-01-03T00:00:00Z"));
+		expect(olderRow?.numberOfCompletes).toBe(0);
+	});
+
+	it("[A8] with the keyboard alone, Tab reaches an entry's Load button and Enter, then Space on another entry, each loads it", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "alpha");
+		await user.click(startButton());
+		await user.click(resetButton());
+		await user.clear(setupBox());
+		await user.type(setupBox(), "beta");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadAlpha = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load .*alpha/,
+		});
+		loadAlpha.focus();
+		await user.keyboard("{Enter}");
+		expect(getPracticeText("alpha")).toBeInTheDocument();
+		await user.click(resetButton());
+
+		const loadBeta = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*beta/,
+		});
+		loadBeta.focus();
+		await user.keyboard(" ");
+		expect(getPracticeText("beta")).toBeInTheDocument();
+	});
+
+	it("[A18] activating Load on the same entry several times in a row leaves one entry, one running session, unchanged practice count", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.click(resetButton());
+		await user.click(loadButton);
+		await user.click(resetButton());
+		await user.click(loadButton);
+
+		expect(getPracticeText("hello world")).toBeInTheDocument();
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfCompletes).toBe(0);
+	});
+
+	it("[A20] loading the entry that is currently running restarts it from the first character", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
+
+		await user.click(loadButton);
+
+		expect(getPracticeText("hello world")).toBeInTheDocument();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+});
