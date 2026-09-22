@@ -162,4 +162,18 @@ unit rather than ten separate implementation steps.
 - green: `input.trimEnd()`. `pnpm vitest run src/features/savedItems/history.test.ts` -> 5 passed.
 - refactor: none needed; the implementation is already the smallest correct form.
 - full suite: `pnpm test` -> 26 passed, 0 failed (6 files).
+- commit: `4273644`
+
+## Cycle: U14-U19 (recordPractice upsert, task T007 slice 2)
+
+- test: six `it` blocks added to `history.test.ts`, tagged `[U14]` to `[U19]`.
+- red: `pnpm vitest run src/features/savedItems/history.test.ts` with `recordPractice` not yet
+  exported -> `TypeError: recordPractice is not a function`, an unresolved-symbol red per the
+  playbook (`Tests 6 failed | 5 passed (11)`, the 5 passing being U9-U13 from the earlier cycle).
+- green: implemented `recordPractice` directly (the shape was clear enough not to need a fake-it
+  stub first): normalise, no-op on empty, else a single `"rw"` transaction that looks up by
+  `text`, updates `dateModified` on a hit or adds a new row (`numberOfCompletes: 0`) on a miss.
+  `pnpm vitest run src/features/savedItems/history.test.ts` -> 11 passed, repeated 3 times clean.
+- refactor: none needed.
+- full suite: `pnpm test` -> 32 passed, 0 failed (6 files). `pnpm build` passes.
 - commit: (recorded after this entry is written, see report)
