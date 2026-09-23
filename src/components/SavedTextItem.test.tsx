@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { expectNoA11yViolations } from "../test/a11y";
 import { SavedTextItem } from "./SavedTextItem";
 
 describe("SavedTextItem (characterization: current behavior before the practice-history feature)", () => {
@@ -92,5 +93,122 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		await user.keyboard(" ");
 
 		expect(onLoadRequest).toHaveBeenCalledOnce();
+	});
+
+	it("[U44] shows 'Last practiced:' with the date of dateModified, not dateCreated, when the two differ", () => {
+		render(
+			<SavedTextItem
+				id={1}
+				text="hello world"
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-02-15T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={0}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText(/Last practiced:/)).toHaveTextContent(
+			"Last practiced: Feb 15, 2026",
+		);
+	});
+
+	it("[U45] shows 'Practiced 1 time' (singular) for a practice count of 1", () => {
+		render(
+			<SavedTextItem
+				id={1}
+				text="hello world"
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={1}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Practiced 1 time")).toBeInTheDocument();
+	});
+
+	it("[U46] shows 'Practiced 2 times' for a practice count of 2", () => {
+		render(
+			<SavedTextItem
+				id={1}
+				text="hello world"
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={2}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Practiced 2 times")).toBeInTheDocument();
+	});
+
+	it("[U47] shows 'Practiced 0 times' for a practice count of 0, and no separate 'Completed' text", () => {
+		render(
+			<SavedTextItem
+				id={1}
+				text="hello world"
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={0}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText("Practiced 0 times")).toBeInTheDocument();
+		expect(screen.queryByText(/Completed/)).not.toBeInTheDocument();
+	});
+
+	it("[U50] a text of several thousand characters still renders its full text and its Load button", () => {
+		const longText = "abcdefghij".repeat(500);
+		render(
+			<SavedTextItem
+				id={1}
+				text={longText}
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={0}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		expect(screen.getByText(longText)).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /^Load/ })).toBeInTheDocument();
+	});
+
+	it("[U51] a normal entry has no axe violations", async () => {
+		const { container } = render(
+			<SavedTextItem
+				id={1}
+				text="hello world"
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={0}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		await expectNoA11yViolations(container);
+	});
+
+	it("[U52] a long-text entry has no axe violations", async () => {
+		const { container } = render(
+			<SavedTextItem
+				id={1}
+				text={"abcdefghij".repeat(500)}
+				dateCreated={new Date("2026-01-01T12:00:00Z")}
+				dateModified={new Date("2026-01-01T12:00:00Z")}
+				numberOfLoads={0}
+				numberOfCompletes={0}
+				onLoadRequest={vi.fn()}
+			/>,
+		);
+
+		await expectNoA11yViolations(container);
 	});
 });

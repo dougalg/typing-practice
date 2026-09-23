@@ -26,8 +26,11 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 			<p id={previewId} className="line-clamp-3">
 				{props.text}
 			</p>
-			<p>Last Practiced On: </p>
-			<p>{dateFormatter.format(props.dateCreated)}</p>
+			<p>Last practiced: {dateFormatter.format(props.dateModified)}</p>
+			<p>
+				Practiced {props.numberOfCompletes}{" "}
+				{props.numberOfCompletes === 1 ? "time" : "times"}
+			</p>
 			<button
 				id={loadId}
 				aria-labelledby={`${loadId} ${previewId}`}

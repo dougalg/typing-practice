@@ -113,15 +113,15 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | U41 | The Load button's accessible name is "Load" followed by the entry's preview text                    | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U41]` |
 | U42 | Pressing Enter on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U42]` |
 | U43 | Pressing Space on the focused Load button calls onLoadRequest once                                  | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U43]` |
-| U44 | Shows "Last practiced:" with the date of dateModified, not dateCreated, when the two differ         | FR-006          | example          | PENDING  |      |
-| U45 | Shows "Practiced 1 time" (singular) for a practice count of 1                                       | FR-006          | example          | PENDING  |      |
-| U46 | Shows "Practiced 2 times" for a practice count of 2                                                 | FR-006          | example          | PENDING  |      |
-| U47 | Shows "Practiced 0 times" for a practice count of 0, and no separate "Completed" text               | FR-006          | example          | PENDING  |      |
+| U44 | Shows "Last practiced:" with the date of dateModified, not dateCreated, when the two differ         | FR-006          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U44]` |
+| U45 | Shows "Practiced 1 time" (singular) for a practice count of 1                                       | FR-006          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U45]` |
+| U46 | Shows "Practiced 2 times" for a practice count of 2                                                 | FR-006          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U46]` |
+| U47 | Shows "Practiced 0 times" for a practice count of 0, and no separate "Completed" text               | FR-006          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U47]` |
 | U48 | ~~Shows "Completed 1 time"~~ Dropped: the separate completion count no longer exists                | FR-006          | example          | DROPPED  |      |
 | U49 | ~~Shows "Completed 2 times"~~ Dropped: the separate completion count no longer exists               | FR-006          | example          | DROPPED  |      |
-| U50 | An entry with a text of several thousand characters still renders its full text and its Load button | Edge: long text | example          | PENDING  |      |
-| U51 | A normal entry has no axe violations                                                                | FR-014          | example          | PENDING  |      |
-| U52 | A long-text entry has no axe violations                                                             | FR-014          | example          | PENDING  |      |
+| U50 | An entry with a text of several thousand characters still renders its full text and its Load button | Edge: long text | example          | DONE | `src/components/SavedTextItem.test.tsx::[U50]` |
+| U51 | A normal entry has no axe violations                                                                | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U51]` |
+| U52 | A long-text entry has no axe violations                                                             | FR-014          | example          | DONE | `src/components/SavedTextItem.test.tsx::[U52]` |
 
 ### `src/features/savedItems/history.ts` (new)
 

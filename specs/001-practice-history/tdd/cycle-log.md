@@ -494,4 +494,26 @@ unit rather than ten separate implementation steps.
   for the count to reach 1). Restored.
 - full suite: `pnpm test` -> 78 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes. No diff beyond the legitimate `recordCompletion` addition (mutant fully reverted).
+- commit: `cc18b7f`
+
+## Cycle: U44-U47, U50-U52 (SavedTextItem shows date and practice count, task T017/T022)
+
+- test: seven `it` blocks added to `SavedTextItem.test.tsx`, tagged `[U44]`-`[U47]`, `[U50]`-`[U52]`.
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx` -> `Tests 4 failed | 7 passed (11)`.
+  `[U44]`-`[U47]` failed for real (the old markup showed "Last Practiced On:" using `dateCreated`
+  and had no practice-count text at all). `[U50]`-`[U52]` passed on the first run: the existing
+  markup already renders the full text and an accessible Load button regardless of length.
+- green: replaced the old "Last Practiced On: {dateCreated}" line with one `<p>` combining
+  "Last practiced: " and `dateFormatter.format(dateModified)`, and added "Practiced {n}
+  time(s)" using `numberOfCompletes` (singular only for exactly 1). `pnpm vitest run
+  src/components/SavedTextItem.test.tsx` -> 11 passed, repeated 3 times clean. Confirmed `[U7]`
+  (characterization) still passes unaffected.
+- **deliberate-mutant checks for the first-run passes**:
+  - `[U50]`: truncated the preview to `text.slice(0, 10)` -> failed (`Unable to find the full
+    long text`). Restored.
+  - `[U51]`/`[U52]`: removed the Load button's `aria-labelledby` and its text -> both failed
+    (`button-name: Buttons must have discernible text`). Restored.
+- refactor: none needed.
+- full suite: `pnpm test` -> 85 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes.
 - commit: (recorded after this entry is written, see report)
