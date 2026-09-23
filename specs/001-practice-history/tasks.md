@@ -161,8 +161,8 @@ description: "Task list for Practice History in the Sidebar"
 
 **Purpose**: Gates from the constitution and the quickstart
 
-- [ ] T054 Write the guard test for [A19] in `src/App.test.tsx`: spy on `globalThis.fetch`, `XMLHttpRequest.prototype.open` and `navigator.sendBeacon`, run start, load and finish through the UI, and assert none was called. This is a guard, not a driver: it passes on the first run, so it cannot be seen failing. Prove it is not vacuous by temporarily adding a `fetch("/x")` call in `src/App.tsx`, observing the test fail, and removing the call again; record both runs in `tdd/cycle-log.md`.
-- [ ] T055 Confirm [A19] is green on the restored code: run `pnpm vitest run src/App.test.tsx -t "<the A19 test name>"`, at least one `passed`.
+- [X] T054 Write the guard test for [A19] in `src/App.test.tsx`: spy on `globalThis.fetch`, `XMLHttpRequest.prototype.open` and `navigator.sendBeacon`, run start, load and finish through the UI, and assert none was called. This is a guard, not a driver: it passes on the first run, so it cannot be seen failing. Prove it is not vacuous by temporarily adding a `fetch("/x")` call in `src/App.tsx`, observing the test fail, and removing the call again; record both runs in `tdd/cycle-log.md`.
+- [X] T055 Confirm [A19] is green on the restored code: run `pnpm vitest run src/App.test.tsx -t "<the A19 test name>"`, at least one `passed`.
 - [ ] T025 Run `pnpm format` and commit the result so it produces no diff on the committed code (Constitution: Formatting).
 - [ ] T026 Run `pnpm test` and `pnpm build` from the worktree root and confirm both pass, including all axe checks (Constitution: Quality Gates).
 - [ ] T027 Confirm FR-015 by searching `src/` for any network use (`fetch(`, `XMLHttpRequest`, `sendBeacon`, `WebSocket`) and confirming there are none introduced by this feature.

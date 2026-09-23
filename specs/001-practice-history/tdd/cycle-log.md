@@ -600,4 +600,22 @@ test, just the two style changes each task's text names, applied to the already-
   overlapping other content"). Full suite re-run: `pnpm test` -> 92 passed, `pnpm build` passes.
 - Both remain to be confirmed visually in the manual quickstart pass (contrast measurement,
   scroll behaviour and reflow at narrow widths are outside what an automated test here can prove).
+- commit: `11bc1d8`
+
+## Cycle: A19 (no network requests, tasks T054-T055) — completes the test list except A16
+
+- test: one `it` block added to `App.test.tsx`, tagged `[A19]`, spying on `globalThis.fetch`,
+  `XMLHttpRequest.prototype.open`, and `navigator.sendBeacon` (only if present; jsdom's `navigator`
+  does have it here), then driving Start, Load and Finish through the real UI.
+- As the test list itself already noted, this is a guard that cannot be seen failing on a correct
+  codebase: `pnpm vitest run src/App.test.tsx -t "A19"` -> 1 passed on the first run.
+- **Proved non-vacuous per task T054's explicit instruction**: temporarily added `fetch("/x")` to
+  `startSession` in `App.tsx` -> failed (`expect(fetchSpy).not.toHaveBeenCalled()`, 2 calls
+  recorded, since the test starts and loads a session). Removed the call; re-ran ->
+  `pnpm vitest run src/App.test.tsx -t "A19"` -> 1 passed again. Both runs recorded here per the
+  task's instruction to log both in this file.
+- full suite: `pnpm test` -> 93 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes. No diff in `App.tsx` (mutant fully reverted).
+- **The test list is now `DONE` for every behavior except `[A16]`**, which remains `BLOCKED` with
+  its reasoning recorded in its own row and in the "Cycle: A5-A8..." entry above.
 - commit: (recorded after this entry is written, see report)

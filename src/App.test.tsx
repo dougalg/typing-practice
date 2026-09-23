@@ -558,6 +558,34 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		).toBeInTheDocument();
 	});
 
+	it("[A19] starting, loading and finishing a practice make no network request", async () => {
+		const fetchSpy = vi.spyOn(globalThis, "fetch");
+		const xhrOpenSpy = vi.spyOn(XMLHttpRequest.prototype, "open");
+		const sendBeaconSpy =
+			typeof navigator.sendBeacon === "function"
+				? vi.spyOn(navigator, "sendBeacon")
+				: undefined;
+
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.type(
+			screen.getByPlaceholderText(TYPING_PLACEHOLDER),
+			"hello world",
+		);
+
+		expect(fetchSpy).not.toHaveBeenCalled();
+		expect(xhrOpenSpy).not.toHaveBeenCalled();
+		if (sendBeaconSpy) expect(sendBeaconSpy).not.toHaveBeenCalled();
+	});
+
 	it("[A12] with 100 entries, the sidebar lists all of them, most recently practiced first", async () => {
 		await savedTextsDb.savedTexts.bulkAdd(
 			Array.from({ length: 100 }, (_, i) => ({
