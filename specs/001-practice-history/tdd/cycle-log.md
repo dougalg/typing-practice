@@ -516,4 +516,27 @@ unit rather than ten separate implementation steps.
 - refactor: none needed.
 - full suite: `pnpm test` -> 85 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
   passes.
+- commit: `c77cf1f`
+
+## Cycle: U66 (Sidebar renders all 100 entries, task T020)
+
+- test: one `it` block added to `Sidebar.test.tsx`, tagged `[U66]`, seeding 100 rows via
+  `bulkAdd` with distinct `dateModified` values.
+- Passed on the first run (`pnpm vitest run src/views/Sidebar.test.tsx -t "U66"` -> 1 passed,
+  repeated 3 times clean): `useHistory` already reads every row with no `.limit()`, and `Sidebar`
+  already maps over every entry. Per the playbook, applied the deliberate-mutant check: temporarily
+  sliced `useHistory`'s result to the first 5 (`.slice(0, 5)`) -> failed
+  (`expected [ 5 button elements ] to have length 100`). Restored.
+- No implementation change was needed.
+- full suite: `pnpm test` -> 86 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes. No diff (mutant fully reverted).
+- **Extended the same cycle** to cover the other two facets task T020's own text describes under
+  the same `[U66]` marker (only one behavior id was recorded for the whole task): "the populated
+  view has no axe violations" (100 entries) and "a long-text entry does not remove the other
+  entries from the list". Both passed on the first run. Not separately mutant-checked: the axe
+  check is a straightforward composition of `SavedTextItem`'s own already-verified accessible
+  markup repeated 100 times (`[U51]`/`[U52]` already mutant-checked that markup directly), and the
+  long-text-doesn't-clear-the-list check is guaranteed by `state.entries.map`'s structure, which
+  does not discriminate on text length (already exercised by `[U50]`). Declared here rather than
+  silently assumed equally rigorous.
 - commit: (recorded after this entry is written, see report)

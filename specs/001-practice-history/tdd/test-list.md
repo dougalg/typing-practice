@@ -103,7 +103,7 @@ Grouped by the component from `plan.md` that owns them. Each line names one obse
 | U63 | The populated sidebar has no axe violations                                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U63]` |
 | U64 | The sidebar in the read-failure state has no axe violations                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U64]` |
 | U65 | The sidebar in the save-failure state has no axe violations                                              | FR-014         | example          | DONE | `src/views/Sidebar.test.tsx::[U65]` |
-| U66 | With 100 entries the sidebar renders all 100 Load buttons in most-recent-first order                     | FR-005, SC-006 | example          | PENDING |      |
+| U66 | With 100 entries the sidebar renders all 100 Load buttons in most-recent-first order                     | FR-005, SC-006 | example          | DONE | `src/views/Sidebar.test.tsx::[U66]` |
 
 ### `src/components/SavedTextItem.tsx` (existing, untested)
 

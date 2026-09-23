@@ -194,4 +194,52 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 		const betaButton = screen.getByRole("button", { name: /^Load .*beta/ });
 		expect(alphaButton).not.toBe(betaButton);
 	});
+
+	it("[U66] with 100 entries, renders all 100 Load buttons in most-recent-first order", async () => {
+		await savedTextsDb.savedTexts.bulkAdd(
+			Array.from({ length: 100 }, (_, i) => ({
+				text: `text ${i}`,
+				dateCreated: new Date(2026, 0, i + 1),
+				dateModified: new Date(2026, 0, i + 1),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			})),
+		);
+
+		render(<Sidebar onLoadRequest={vi.fn()} />);
+
+		const buttons = await screen.findAllByRole("button", { name: /^Load/ });
+		expect(buttons).toHaveLength(100);
+		expect(buttons[0]).toHaveAccessibleName(/text 99/);
+		expect(buttons[99]).toHaveAccessibleName(/text 0/);
+	});
+
+	it("[U66] with 100 entries, the populated sidebar has no axe violations", async () => {
+		await savedTextsDb.savedTexts.bulkAdd(
+			Array.from({ length: 100 }, (_, i) => ({
+				text: `text ${i}`,
+				dateCreated: new Date(2026, 0, i + 1),
+				dateModified: new Date(2026, 0, i + 1),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			})),
+		);
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findAllByRole("button", { name: /^Load/ });
+
+		await expectNoA11yViolations(container);
+	});
+
+	it("[U66] a long-text entry does not remove the other entries from the list", async () => {
+		await addEntry({ text: "abcdefghij".repeat(500) });
+		await addEntry({
+			text: "short",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+
+		render(<Sidebar onLoadRequest={vi.fn()} />);
+
+		const items = await screen.findAllByRole("listitem");
+		expect(items).toHaveLength(2);
+	});
 });
