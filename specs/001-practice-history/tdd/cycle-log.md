@@ -583,4 +583,21 @@ unit rather than ten separate implementation steps.
   the task's explicit request and reported here rather than claimed as tested.
 - full suite (after the extension): `pnpm test` -> 92 passed, 0 failed (6 files), repeated 3 times
   clean. `pnpm build` passes.
+- commit: `1260ebb`
+
+## Structural: contrast class and scroll container (tasks T022, T024 remainder)
+
+No new behavior; these are the styling-only parts of T022 and T024 that no jsdom test can drive
+(colour contrast and CSS overflow are not observable in jsdom). Not a TDD cycle: no red, no new
+test, just the two style changes each task's text names, applied to the already-`DONE` component.
+
+- `SavedTextItem.tsx`: added `text-slate-600` to the "Last practiced" and "Practiced N time(s)"
+  paragraphs, per T022 ("Use `text-slate-600` or darker on white for secondary text so AA
+  contrast holds"). Full suite re-run after the change: `pnpm test` -> 92 passed, `pnpm build`
+  passes.
+- `Sidebar.tsx`: the entry list now has `max-h-[70vh] overflow-y-auto` per T024 ("put the list in
+  a container with a bounded height and `overflow-y-auto` so 100 or more entries scroll ... without
+  overlapping other content"). Full suite re-run: `pnpm test` -> 92 passed, `pnpm build` passes.
+- Both remain to be confirmed visually in the manual quickstart pass (contrast measurement,
+  scroll behaviour and reflow at narrow widths are outside what an automated test here can prove).
 - commit: (recorded after this entry is written, see report)

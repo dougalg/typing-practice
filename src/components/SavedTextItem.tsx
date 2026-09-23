@@ -26,8 +26,10 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 			<p id={previewId} className="line-clamp-3">
 				{props.text}
 			</p>
-			<p>Last practiced: {dateFormatter.format(props.dateModified)}</p>
-			<p>
+			<p className="text-slate-600">
+				Last practiced: {dateFormatter.format(props.dateModified)}
+			</p>
+			<p className="text-slate-600">
 				Practiced {props.numberOfCompletes}{" "}
 				{props.numberOfCompletes === 1 ? "time" : "times"}
 			</p>

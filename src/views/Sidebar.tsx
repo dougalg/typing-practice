@@ -37,7 +37,7 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 			)}
 
 			{state.status === "ready" && state.entries.length > 0 && (
-				<ul className="flex flex-col gap-2">
+				<ul className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto">
 					{state.entries.map((item) => (
 						<li key={item.id}>
 							<SavedTextItem
