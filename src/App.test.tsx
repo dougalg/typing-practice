@@ -490,3 +490,88 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 		expect(setupBox()).toHaveValue("");
 	});
 });
+
+describe("App (specs/001-practice-history, User Story 3)", () => {
+	it("[A9] a very long entry stays listed alongside others, and Load types its full text", async () => {
+		const longText = "abcdefghij".repeat(500);
+		await savedTextsDb.savedTexts.add({
+			text: longText,
+			dateCreated: new Date("2026-01-01T00:00:00Z"),
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+			numberOfLoads: 0,
+			numberOfCompletes: 0,
+		});
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "short");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(2);
+
+		const loadLong = within(sidebarRegion()).getByRole("button", {
+			name: new RegExp(`^Load .*${longText.slice(0, 10)}`),
+		});
+		await user.click(loadLong);
+
+		expect(getPracticeText(longText)).toBeInTheDocument();
+	});
+
+	it("[A10] typing a text to its last character, even after a mistake, raises the practice count by exactly one, visible without a reload", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hi");
+		await user.click(startButton());
+		const typingInput = screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+		await user.type(typingInput, "X"); // mistake: expected "h"
+		await user.type(typingInput, "hi"); // corrected, then completes
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 1 time"),
+		).toBeInTheDocument();
+
+		// Finishing the same text again, in a separate session, shows 2.
+		await user.click(resetButton());
+		await user.type(setupBox(), "hi");
+		await user.click(startButton());
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hi");
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 2 times"),
+		).toBeInTheDocument();
+	});
+
+	it("[A11] pressing Reset before finishing leaves the practice count unchanged", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
+		await user.click(resetButton());
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 0 times"),
+		).toBeInTheDocument();
+	});
+
+	it("[A12] with 100 entries, the sidebar lists all of them, most recently practiced first", async () => {
+		await savedTextsDb.savedTexts.bulkAdd(
+			Array.from({ length: 100 }, (_, i) => ({
+				text: `text ${i}`,
+				dateCreated: new Date(2026, 0, i + 1),
+				dateModified: new Date(2026, 0, i + 1),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			})),
+		);
+		render(<App />);
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(100);
+		expect(items[0]).toHaveTextContent("text 99");
+	});
+});

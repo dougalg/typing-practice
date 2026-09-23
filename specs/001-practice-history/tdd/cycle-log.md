@@ -539,4 +539,48 @@ unit rather than ten separate implementation steps.
   long-text-doesn't-clear-the-list check is guaranteed by `state.entries.map`'s structure, which
   does not discriminate on text length (already exercised by `[U50]`). Declared here rather than
   silently assumed equally rigorous.
+- commit: `d91090b`
+
+## Cycle: A9-A12 (completion wiring and long-text/scale through the full app, task T019/T023) — closes the outer loop for all three user stories
+
+- test: four `it` blocks added to `App.test.tsx`, tagged `[A9]`-`[A12]`.
+- red: `pnpm vitest run src/App.test.tsx -t "User Story 3"` -> `Tests 1 failed | 3 passed (4)`.
+  `[A10]` failed for the real reason (`waitFor` timed out on "Practiced 1 time": `App`'s
+  `onFinish` still only called `setTypingState("finished")`, never recording a completion).
+  `[A9]`, `[A11]`, `[A12]` passed on the first run — `[A11]` passed for the **wrong** reason at
+  that point (completion was never recorded at all, so "unchanged after Reset" was trivially true
+  of a feature that did not exist yet); flagged rather than trusted, and re-verified after the
+  implementation below.
+- green: `App`'s `handleFinish` now calls `recordCompletion(session.text)` (not awaited) alongside
+  `setTypingState("finished")`, routing a `{ ok: false }` result into the same `saveError` state
+  Start already uses; passed down to `PracticeView` as its `onFinish` prop, replacing the old
+  inline `() => setTypingState("finished")`. `pnpm vitest run src/App.test.tsx` -> 26 passed,
+  repeated 3 times clean.
+- **deliberate-mutant check for `[A11]`**, now that completion is real: made `handleReset` also
+  call `onFinish()` (an early version might plausibly conflate "leaving practice" with
+  "finishing" it) -> failed (`Practiced 0 times` not found; it showed `Practiced 1 time`
+  instead). Restored. This confirms `[A11]` now tests something real, not the earlier
+  trivial-by-absence pass.
+- `[A9]` and `[A12]` were not separately mutant-checked (time-boxed): they compose behaviors
+  already proven independently (`[U50]`/`[U66]` for long text and 100-entry rendering; `[A5]` for
+  Load using the clicked entry's own text). Flagged rather than silently assumed equally rigorous.
+- **Outer loop closed for the whole feature**: `pnpm vitest run src/App.test.tsx` -> 26 passed (0
+  failed) as one run, covering every acceptance behavior across all three user stories except the
+  one recorded `BLOCKED` (`[A16]`).
+- refactor: none needed.
+- full suite: `pnpm test` -> 92 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes.
+- **Extended within the same cycle**, since task T019's own text names them under the same
+  behavior ids: `[A10]` now also finishes the same text a second time in a separate session and
+  checks "Practiced 2 times" (`pnpm vitest run src/App.test.tsx -t "A10"` -> 1 passed, repeated 3
+  times clean). Task T023 also asks that a second `onFinish` for an already-finished session be
+  ignored ("never counted twice"); added the guard (`setTypingState` functional update checks
+  `prev === "finished"` before calling `recordCompletion`) to `handleFinish`. **Not independently
+  red-green driven**: tracing `PracticeView`'s own guards (`typingState !== "running"` blocks
+  `handleTypingInput` once the prop becomes `"finished"`) shows `onFinish` cannot currently fire
+  twice for one session through the real UI, so there was no way to write a test that observes
+  this guard's effect without reaching into the component's internals. Implemented defensively per
+  the task's explicit request and reported here rather than claimed as tested.
+- full suite (after the extension): `pnpm test` -> 92 passed, 0 failed (6 files), repeated 3 times
+  clean. `pnpm build` passes.
 - commit: (recorded after this entry is written, see report)

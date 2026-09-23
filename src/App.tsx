@@ -5,7 +5,11 @@ import SetupView from "./views/SetupView";
 import PracticeView from "./views/PracticeView";
 import { PageLayout } from "./layouts/Page";
 import { Sidebar } from "./views/Sidebar";
-import { normalizeText, recordPractice } from "./features/savedItems/history";
+import {
+	normalizeText,
+	recordCompletion,
+	recordPractice,
+} from "./features/savedItems/history";
 
 interface Session {
 	text: string;
@@ -32,6 +36,19 @@ function App() {
 		[startSession],
 	);
 
+	const handleFinish = useCallback(() => {
+		// Guards against a text being counted twice if onFinish is ever invoked
+		// more than once for the same session (PracticeView's own guards should
+		// already prevent this, but recordCompletion is not itself idempotent).
+		setTypingState((prev) => {
+			if (prev === "finished") return prev;
+			recordCompletion(session.text).then((result) => {
+				if (!result.ok) setSaveError(true);
+			});
+			return "finished";
+		});
+	}, [session.text]);
+
 	return (
 		<PageLayout
 			main={
@@ -40,6 +57,7 @@ function App() {
 					setTypingState={setTypingState}
 					session={session}
 					onStartSession={startSession}
+					onFinish={handleFinish}
 				/>
 			}
 			sidebar={
@@ -54,6 +72,7 @@ interface AppInnerProps {
 	setTypingState: (typingState: TypingState) => void;
 	session: Session;
 	onStartSession: (text: string) => void;
+	onFinish: () => void;
 }
 
 function AppInner({
@@ -61,6 +80,7 @@ function AppInner({
 	setTypingState,
 	session,
 	onStartSession,
+	onFinish,
 }: AppInnerProps) {
 	const [sourceText, setSourceText] = useState("");
 	const [setupError, setSetupError] = useState("");
@@ -106,7 +126,7 @@ function AppInner({
 			key={session.runId}
 			targetText={session.text}
 			typingState={typingState}
-			onFinish={() => setTypingState("finished")}
+			onFinish={onFinish}
 			onReset={handleReset}
 		/>
 	);
