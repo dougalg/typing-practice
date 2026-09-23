@@ -467,4 +467,31 @@ unit rather than ten separate implementation steps.
   baseline of roughly 5/6 before the fix).
 - refactor: none needed.
 - full suite: `pnpm test` -> 73 passed, 0 failed (6 files). `pnpm build` passes.
+- commit: `f73cbe9`
+
+## Cycle: U21-U24 (recordCompletion, task T018) — opens User Story 3
+
+- test: four `it` blocks added to `history.test.ts`, tagged `[U21]`-`[U24]`.
+- red: `pnpm vitest run src/features/savedItems/history.test.ts -t "recordCompletion"` ->
+  `Tests 4 failed | 1 passed (24)` — `TypeError: recordCompletion is not a function`
+  (unresolved-symbol red).
+- green: added `recordCompletion(text)`: one `"rw"` transaction that finds the entry by `text` and
+  increments `numberOfCompletes` by one, tolerating a missing entry (no-op, still `{ ok: true }`),
+  and resolving `{ ok: false }` on any error rather than rejecting. `pnpm vitest run
+  src/features/savedItems/history.test.ts` -> 24 passed, repeated 3 times clean.
+- refactor: none needed.
+- full suite: `pnpm test` -> 77 passed, 0 failed (6 files). `pnpm build` passes.
+
+## Cycle: U70 (useHistory reflects recordCompletion, split from U29, task T021)
+
+- test: one `it` block added to `history.test.ts`, tagged `[U70]` (the half of the original `U29`
+  deferred in the `useHistory` cycle until `recordCompletion` existed).
+- Passed on the first run (`pnpm vitest run src/features/savedItems/history.test.ts -t "U70"` -> 1
+  passed, repeated 3 times clean): `useHistory`'s live query already reacts to any write to the
+  `savedTexts` table, so no new code was needed once `recordCompletion` existed. Per the playbook,
+  applied the deliberate-mutant check: changed the increment to
+  `numberOfCompletes: existing.numberOfCompletes` (no `+1`) -> failed (`waitFor` timed out waiting
+  for the count to reach 1). Restored.
+- full suite: `pnpm test` -> 78 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
+  passes. No diff beyond the legitimate `recordCompletion` addition (mutant fully reverted).
 - commit: (recorded after this entry is written, see report)

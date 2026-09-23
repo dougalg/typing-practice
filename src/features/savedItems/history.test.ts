@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
-import { normalizeText, recordPractice, useHistory } from "./history";
+import {
+	normalizeText,
+	recordCompletion,
+	recordPractice,
+	useHistory,
+} from "./history";
 import { savedTextsDb } from "./db";
 
 describe("normalizeText (specs/001-practice-history contracts/history-module.md)", () => {
@@ -258,6 +263,24 @@ describe("useHistory (specs/001-practice-history contracts/history-module.md)", 
 		});
 	});
 
+	it("[U70] updates without remounting after recordCompletion", async () => {
+		await recordPractice("hello world");
+		const { result } = renderHook(() => useHistory());
+		await waitFor(() => {
+			const state = result.current;
+			if (state.status !== "ready") throw new Error("expected ready");
+			expect(state.entries[0]?.numberOfCompletes).toBe(0);
+		});
+
+		await recordCompletion("hello world");
+
+		await waitFor(() => {
+			const state = result.current;
+			if (state.status !== "ready") throw new Error("expected ready");
+			expect(state.entries[0]?.numberOfCompletes).toBe(1);
+		});
+	});
+
 	it("[U30] when the store cannot be read, returns { status: 'error' } and does not throw during render", async () => {
 		vi.spyOn(savedTextsDb.savedTexts, "orderBy").mockImplementation(() => {
 			throw new Error("boom");
@@ -266,5 +289,62 @@ describe("useHistory (specs/001-practice-history contracts/history-module.md)", 
 		const { result } = renderHook(() => useHistory());
 
 		await waitFor(() => expect(result.current).toEqual({ status: "error" }));
+	});
+});
+
+describe("recordCompletion (specs/001-practice-history contracts/history-module.md)", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("[U21] raises the practice count by one and leaves both dates unchanged", async () => {
+		await recordPractice("hello world");
+		const before = await savedTextsDb.savedTexts
+			.where("text")
+			.equals("hello world")
+			.first();
+
+		const result = await recordCompletion("hello world");
+
+		expect(result).toEqual({ ok: true });
+		const after = await savedTextsDb.savedTexts
+			.where("text")
+			.equals("hello world")
+			.first();
+		expect(after?.numberOfCompletes).toBe(1);
+		expect(after?.dateCreated).toEqual(before?.dateCreated);
+		expect(after?.dateModified).toEqual(before?.dateModified);
+	});
+
+	it("[U22] two calls for one text give a practice count of 2", async () => {
+		await recordPractice("hello world");
+
+		await recordCompletion("hello world");
+		await recordCompletion("hello world");
+
+		const row = await savedTextsDb.savedTexts
+			.where("text")
+			.equals("hello world")
+			.first();
+		expect(row?.numberOfCompletes).toBe(2);
+	});
+
+	it("[U23] for a text with no entry resolves ok and creates no entry", async () => {
+		const result = await recordCompletion("never started");
+
+		expect(result).toEqual({ ok: true });
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toEqual([]);
+	});
+
+	it("[U24] when the store rejects the write, resolves { ok: false } and does not reject", async () => {
+		await recordPractice("hello world");
+		vi.spyOn(savedTextsDb.savedTexts, "update").mockRejectedValueOnce(
+			new Error("boom"),
+		);
+
+		await expect(recordCompletion("hello world")).resolves.toEqual({
+			ok: false,
+		});
 	});
 });

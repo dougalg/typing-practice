@@ -66,6 +66,29 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 	}
 }
 
+/**
+ * Called when a session for `text` reaches its last character, with or without
+ * mistakes made on the way. Increments numberOfCompletes, the practice count,
+ * on the entry with that text; a missing entry is not an error. Never rejects.
+ */
+export async function recordCompletion(text: string): Promise<WriteResult> {
+	try {
+		await savedTextsDb.transaction("rw", savedTextsDb.savedTexts, async () => {
+			const existing = await savedTextsDb.savedTexts
+				.where("text")
+				.equals(text)
+				.first();
+			if (!existing) return;
+			await savedTextsDb.savedTexts.update(existing.id, {
+				numberOfCompletes: existing.numberOfCompletes + 1,
+			});
+		});
+		return { ok: true };
+	} catch {
+		return { ok: false };
+	}
+}
+
 export type HistoryState =
 	| { status: "loading" }
 	| { status: "ready"; entries: SavedText[] }
