@@ -65,3 +65,14 @@ role="alert"` (1 failed | 29 skipped); restored.
   `vitest-axe` examples) left as is and reported.
 - commit: the migration commit that contains this entry (`test(setup): run the suite in vitest
 browser mode`); its SHA is recorded in the next entry.
+
+## Preflight: screen-reader helper and TDD profile (tasks T008, T009)
+
+Not a TDD cycle (test infrastructure only). Ticked as preflight.
+
+- Migration commit from the previous entry: `fa1e8fc`.
+- T009 `src/test/screenReader.ts`: `spokenPhrases(container)` starts a fresh `Virtual` from `@guidepup/virtual-screen-reader` 0.33.0 on the container, steps `next()` to the end, and returns `spokenPhraseLog()`. Found while proving it: with a container other than `document.body` the reader never says "end of document" and wraps back to the first item (first attempt returned 2001 phrases: `expected [ 'button, Save draft', 'S', …(1999) ] to deeply equal []`). The helper now stops when it is back on the first item's node with the first item's phrase. Proved under browser mode with a throwaway test file, then deleted as the task says:
+  - a labelled button: `["button, Save draft", "S", "end of button, Save draft"]` (passed);
+  - two list items with the same paragraph text, read once and in order, observed through a deliberately failing assertion: `list | listitem, level 1, position 1, set size 2 | paragraph | same | end of paragraph | end of listitem, level 1, position 1, set size 2 | listitem, level 1, position 2, set size 2 | paragraph | same | end of paragraph | end of listitem, level 1, position 2, set size 2 | end of list`.
+- The first run of that throwaway failed as a suite with "Vite unexpectedly reloaded a test" (new dependency optimised mid-run). Fix: `optimizeDeps.include: ["@guidepup/virtual-screen-reader"]` in `vite.config.ts`. Then `node_modules/.vite` removed and `pnpm test` run cold -> 109 passed, 5.92 s, no reload.
+- T008 `.specify/memory/tdd-profile.md` refreshed (`/speckit-tdd-setup refresh`, detected at `fa1e8fc`). Verified by running: `pnpm test` -> 109 passed (5.7-6.1 s); `pnpm vitest run src/App.test.tsx -t "\[A14\]"` -> `1 passed | 29 skipped (30)`; `pnpm vitest run src/App.test.tsx -t "no such test xyz"` -> `30 skipped (30)`, exit 0; `pnpm vitest run src/components/Heading.test.tsx` -> `2 passed (2)`, exit 0. Changes from the jsdom profile: runner is browser mode; `acceptance` is now `src/App.test.tsx` through the same runner (was null); exemplars are `SavedTextItem.test.tsx` (unit) and `App.test.tsx` (acceptance) instead of `Heading.test.tsx` alone; helpers add `a11y.ts` and `screenReader.ts`; notes rewritten (IndexedDB, module spying, `tsc` gate, cold-cache reload, areas with no tests). Coverage, mutation and property tools are still absent.
