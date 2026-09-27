@@ -40,8 +40,9 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 				</p>
 			)}
 
+			{/* Explicit role: Safari drops list semantics when list-style is none. */}
 			{state.status === "ready" && state.entries.length > 0 && (
-				<ul className="m-0 -mr-2 flex max-h-[70vh] list-none flex-col gap-3 overflow-y-auto p-0 pr-2">
+				<ul role="list" className="m-0 flex list-none flex-col gap-3 p-0">
 					{state.entries.map((item) => (
 						<li key={item.id}>
 							<SavedTextItem

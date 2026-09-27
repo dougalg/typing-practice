@@ -6,6 +6,7 @@ type PageLayoutProps = {
 	sidebar: ReactElement;
 };
 
+/** A single column at every width: the practice area, then history below it. */
 export const PageLayout = ({ main, sidebar }: PageLayoutProps) => {
 	return (
 		<>
@@ -28,13 +29,11 @@ export const PageLayout = ({ main, sidebar }: PageLayoutProps) => {
 				</span>
 				<Heading level={1}>Typing Practice</Heading>
 			</header>
-			{/* minmax(0, …) lets columns shrink below their content's min width,
-			    so long unbroken text wraps instead of overflowing the page. */}
-			<div className="grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
+			{/* min-w-0 lets each item shrink below its content's min width, so
+			    long unbroken text wraps instead of overflowing the page. */}
+			<div className="flex flex-col gap-6">
 				<main className="min-w-0">{main}</main>
-				<div className="min-w-0">
-					{sidebar}
-				</div>
+				<div className="min-w-0">{sidebar}</div>
 			</div>
 		</>
 	);
