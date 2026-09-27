@@ -1,0 +1,605 @@
+import { describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import App from "./App";
+import * as historyModule from "./features/savedItems/history";
+import { savedTextsDb } from "./features/savedItems/db";
+
+const SETUP_PLACEHOLDER = "Type or paste any text you want to practice...";
+const TYPING_PLACEHOLDER =
+	"Start typing… (this box stays empty; it captures keystrokes)";
+
+function setupBox() {
+	return screen.getByPlaceholderText(SETUP_PLACEHOLDER);
+}
+function startButton() {
+	return screen.getByRole("button", { name: "Start practice" });
+}
+function resetButton() {
+	return screen.getByRole("button", { name: "Reset" });
+}
+function sidebarRegion() {
+	return screen.getByRole("region", { name: "Practice History" });
+}
+
+// PracticeView renders the target text as one <span> per character, so it can
+// never be found as a single text node. Match on the <p> whose combined text
+// content is exactly the target text, scoped to the "Type the text below"
+// section so it can't collide with the sidebar's own preview of the same text
+// (the current code already saves every started text there too).
+function getPracticeText(text: string) {
+	const heading = screen.getByText("Type the text below");
+	const section = heading.closest("section");
+	if (!section)
+		throw new Error('Expected a <section> ancestor of "Type the text below"');
+	return within(section).getByText(
+		(_content, element) =>
+			element?.tagName === "P" && element.textContent === text,
+	);
+}
+
+describe("App (characterization: current behavior before the practice-history feature)", () => {
+	it("[U1] the idle app shows the setup text box and a Start practice button", () => {
+		render(<App />);
+
+		expect(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole("button", { name: "Start practice" }),
+		).toBeInTheDocument();
+	});
+
+	it("[U2] starting with a text switches to the practice view showing that text with the typing input present", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+			"hello",
+		);
+		await user.click(screen.getByRole("button", { name: "Start practice" }));
+
+		expect(getPracticeText("hello")).toBeInTheDocument();
+		expect(
+			screen.getByPlaceholderText(
+				"Start typing… (this box stays empty; it captures keystrokes)",
+			),
+		).toBeInTheDocument();
+	});
+
+	it("[U3] pressing Ctrl+Enter in the setup text box starts practice", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		const textbox = screen.getByPlaceholderText(
+			"Type or paste any text you want to practice...",
+		);
+		await user.type(textbox, "hello{Control>}{Enter}{/Control}");
+
+		expect(
+			screen.getByPlaceholderText(
+				"Start typing… (this box stays empty; it captures keystrokes)",
+			),
+		).toBeInTheDocument();
+	});
+
+	it("[U4] pressing Reset in the practice view returns to the setup view", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+			"hello",
+		);
+		await user.click(screen.getByRole("button", { name: "Start practice" }));
+		await user.click(screen.getByRole("button", { name: "Reset" }));
+
+		expect(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+		).toBeInTheDocument();
+	});
+
+	it("[U5] typing the whole text correctly shows the finished message (progress stays one character short: a pre-existing quirk, not introduced here)", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+			"hi",
+		);
+		await user.click(screen.getByRole("button", { name: "Start practice" }));
+
+		const typingInput = screen.getByPlaceholderText(
+			"Start typing… (this box stays empty; it captures keystrokes)",
+		);
+		await user.type(typingInput, "hi");
+
+		expect(screen.getByText("Nice work! You finished.")).toBeInTheDocument();
+		// Pre-existing quirk, captured as-is: PracticeView's onInput handler calls
+		// onFinish() instead of setPosition() on the last character, so `position`
+		// never reaches targetText.length and the progress bar reports one
+		// character short (here (2-1)/2 = 50%), even though typing is complete.
+		expect(screen.getByText("50%")).toBeInTheDocument();
+	});
+
+	it("[A4] starting with empty or whitespace-only text shows the setup error and adds no entry", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+			"   ",
+		);
+		await user.click(screen.getByRole("button", { name: "Start practice" }));
+
+		expect(
+			screen.getByText("Please enter some text to practice first."),
+		).toBeInTheDocument();
+		// Still on the setup view: practice never started.
+		expect(
+			screen.getByPlaceholderText(
+				"Type or paste any text you want to practice...",
+			),
+		).toBeInTheDocument();
+	});
+});
+
+describe("App (specs/001-practice-history, User Story 1)", () => {
+	it("[A1] with an empty history, starting practice with a new text makes it appear in the sidebar", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+
+		expect(
+			await within(sidebarRegion()).findByText("hello world"),
+		).toBeInTheDocument();
+	});
+
+	it("[A2] a text started earlier is still listed after the app is unmounted and mounted again", async () => {
+		const user = userEvent.setup();
+		const { unmount } = render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await within(sidebarRegion()).findByText("hello world");
+		unmount();
+
+		render(<App />);
+
+		expect(
+			await within(sidebarRegion()).findByText("hello world"),
+		).toBeInTheDocument();
+	});
+
+	it("[A3] starting practice again with exactly the same text leaves one entry, with its last-practiced date advanced", async () => {
+		// A weaker version of this test (counting entries only) cannot tell a
+		// correct upsert apart from a write that silently fails and rolls back:
+		// both leave exactly one row. Asserting dateModified actually advanced
+		// rules that out (found via a deliberate mutant, see tdd/cycle-log.md).
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+		const user = userEvent.setup({
+			advanceTimers: (ms) => vi.advanceTimersByTime(ms),
+		});
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await within(sidebarRegion()).findByText("hello world");
+		await user.click(resetButton());
+		vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
+		// Reset now clears the setup box (FR-016, driven in User Story 2), so the
+		// same text has to be retyped before starting again.
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		vi.useRealTimers();
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(1);
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.dateModified).toEqual(new Date("2026-01-02T00:00:00Z"));
+	});
+
+	it("[A13] on first visit with no history, the sidebar shows the empty-state message", async () => {
+		render(<App />);
+
+		expect(
+			await within(sidebarRegion()).findByText(
+				"No practice history yet. Texts you practice will appear here.",
+			),
+		).toBeInTheDocument();
+	});
+
+	it("[A14] when saving to the store fails, practice still starts and the sidebar announces the save failure", async () => {
+		vi.spyOn(historyModule, "recordPractice").mockResolvedValueOnce({
+			ok: false,
+		});
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+
+		expect(screen.getByPlaceholderText(TYPING_PLACEHOLDER)).toBeInTheDocument();
+		expect(await within(sidebarRegion()).findByRole("alert")).toHaveTextContent(
+			"Your practice history could not be saved. You can keep practicing.",
+		);
+		vi.restoreAllMocks();
+	});
+
+	it("[A15] when reading the store fails, the sidebar announces it and practice can still be started", async () => {
+		await savedTextsDb.close();
+		render(<App />);
+
+		expect(await within(sidebarRegion()).findByRole("alert")).toHaveTextContent(
+			"Practice history could not be loaded.",
+		);
+
+		// Restore the connection before starting, so the write this cycle drives
+		// (recordPractice) is not itself also broken by the same closed handle.
+		await savedTextsDb.open();
+		const user = userEvent.setup();
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+
+		expect(screen.getByPlaceholderText(TYPING_PLACEHOLDER)).toBeInTheDocument();
+	});
+
+	it("[A17] starting with a text and again with the same text plus trailing whitespace leaves one entry", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await within(sidebarRegion()).findByText("hello world");
+		await user.click(resetButton());
+		// Reset now clears the setup box (FR-016), so the same text plus
+		// trailing whitespace is retyped in full.
+		await user.type(setupBox(), "hello world  \n");
+		await user.click(startButton());
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(1);
+	});
+
+	it("[U67] the practice view is shown immediately when Start is pressed, while the history write is still pending", async () => {
+		let resolveWrite!: (r: { ok: true }) => void;
+		vi.spyOn(historyModule, "recordPractice").mockReturnValueOnce(
+			new Promise((resolve) => {
+				resolveWrite = resolve;
+			}),
+		);
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+
+		expect(screen.getByPlaceholderText(TYPING_PLACEHOLDER)).toBeInTheDocument();
+
+		resolveWrite({ ok: true });
+		vi.restoreAllMocks();
+	});
+});
+
+describe("App (specs/001-practice-history, User Story 2)", () => {
+	it("[A5] pressing Load on an entry opens the practice view with that entry's full text, typing input focused, 0 characters typed", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "the quick brown fox");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+
+		expect(getPracticeText("the quick brown fox")).toBeInTheDocument();
+		const typingInput = screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+		expect(typingInput).toHaveFocus();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A6] loading a different entry while another text is half typed replaces it with a fresh attempt at the first character", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "second text");
+		await user.click(startButton());
+		await user.click(resetButton());
+		// Reset does not clear the setup box yet (FR-016 is User Story 2's own
+		// later step), so it must be cleared explicitly before typing a second,
+		// different text.
+		await user.clear(setupBox());
+		await user.type(setupBox(), "first text");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		// Practice "first text" partway.
+		const loadFirst = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load .*first text/,
+		});
+		await user.click(loadFirst);
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "fir");
+
+		// Now load "second text" instead.
+		const loadSecond = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*second text/,
+		});
+		await user.click(loadSecond);
+
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A7] loading an entry moves it to the top, updates its last-practiced date, leaves practice count unchanged, adds no second entry", async () => {
+		vi.useFakeTimers({ toFake: ["Date"] });
+		vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+		const user = userEvent.setup({
+			advanceTimers: (ms) => vi.advanceTimersByTime(ms),
+		});
+		render(<App />);
+
+		await user.type(setupBox(), "older");
+		await user.click(startButton());
+		await user.click(resetButton());
+		vi.setSystemTime(new Date("2026-01-02T00:00:00Z"));
+		await user.clear(setupBox());
+		await user.type(setupBox(), "newer");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		vi.setSystemTime(new Date("2026-01-03T00:00:00Z"));
+		const loadOlder = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*older/,
+		});
+		await user.click(loadOlder);
+		vi.useRealTimers();
+
+		// Two listitems exist throughout (both entries always existed; only their
+		// order changes), so findAllByRole resolving on "2 items present" would
+		// race the asynchronous recordPractice write and its live-query re-sort.
+		// Wait for the actual reordering instead.
+		await waitFor(() => {
+			const items = within(sidebarRegion()).getAllByRole("listitem");
+			expect(items[0]).toHaveTextContent("older");
+		});
+		const items = within(sidebarRegion()).getAllByRole("listitem");
+		expect(items).toHaveLength(2);
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(2);
+		const olderRow = rows.find((r) => r.text === "older");
+		expect(olderRow?.dateModified).toEqual(new Date("2026-01-03T00:00:00Z"));
+		expect(olderRow?.numberOfCompletes).toBe(0);
+	});
+
+	it("[A8] with the keyboard alone, Tab reaches an entry's Load button and Enter, then Space on another entry, each loads it", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "alpha");
+		await user.click(startButton());
+		await user.click(resetButton());
+		await user.clear(setupBox());
+		await user.type(setupBox(), "beta");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadAlpha = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load .*alpha/,
+		});
+		loadAlpha.focus();
+		await user.keyboard("{Enter}");
+		expect(getPracticeText("alpha")).toBeInTheDocument();
+		await user.click(resetButton());
+
+		const loadBeta = within(sidebarRegion()).getByRole("button", {
+			name: /^Load .*beta/,
+		});
+		loadBeta.focus();
+		await user.keyboard(" ");
+		expect(getPracticeText("beta")).toBeInTheDocument();
+	});
+
+	it("[A18] activating Load on the same entry several times in a row leaves one entry, one running session, unchanged practice count", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.click(resetButton());
+		await user.click(loadButton);
+		await user.click(resetButton());
+		await user.click(loadButton);
+
+		expect(getPracticeText("hello world")).toBeInTheDocument();
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfCompletes).toBe(0);
+	});
+
+	it("[A20] loading the entry that is currently running restarts it from the first character", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
+
+		await user.click(loadButton);
+
+		expect(getPracticeText("hello world")).toBeInTheDocument();
+		expect(screen.getByText("0")).toBeInTheDocument();
+	});
+
+	it("[A21] after typing a text, starting, and pressing Reset, the setup box is empty", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		expect(setupBox()).toHaveValue("");
+	});
+
+	it("[A22] after loading an entry and pressing Reset, the setup box is empty", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.click(resetButton());
+
+		expect(setupBox()).toHaveValue("");
+	});
+});
+
+describe("App (specs/001-practice-history, User Story 3)", () => {
+	it("[A9] a very long entry stays listed alongside others, and Load types its full text", async () => {
+		const longText = "abcdefghij".repeat(500);
+		await savedTextsDb.savedTexts.add({
+			text: longText,
+			dateCreated: new Date("2026-01-01T00:00:00Z"),
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+			numberOfLoads: 0,
+			numberOfCompletes: 0,
+		});
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "short");
+		await user.click(startButton());
+		await user.click(resetButton());
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(2);
+
+		const loadLong = within(sidebarRegion()).getByRole("button", {
+			name: new RegExp(`^Load .*${longText.slice(0, 10)}`),
+		});
+		await user.click(loadLong);
+
+		expect(getPracticeText(longText)).toBeInTheDocument();
+	});
+
+	it("[A10] typing a text to its last character, even after a mistake, raises the practice count by exactly one, visible without a reload", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hi");
+		await user.click(startButton());
+		const typingInput = screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+		await user.type(typingInput, "X"); // mistake: expected "h"
+		await user.type(typingInput, "hi"); // corrected, then completes
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 1 time"),
+		).toBeInTheDocument();
+
+		// Finishing the same text again, in a separate session, shows 2.
+		await user.click(resetButton());
+		await user.type(setupBox(), "hi");
+		await user.click(startButton());
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hi");
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 2 times"),
+		).toBeInTheDocument();
+	});
+
+	it("[A11] pressing Reset before finishing leaves the practice count unchanged", async () => {
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
+		await user.click(resetButton());
+
+		expect(
+			await within(sidebarRegion()).findByText("Practiced 0 times"),
+		).toBeInTheDocument();
+	});
+
+	it("[A19] starting, loading and finishing a practice make no network request", async () => {
+		const fetchSpy = vi.spyOn(globalThis, "fetch");
+		const xhrOpenSpy = vi.spyOn(XMLHttpRequest.prototype, "open");
+		const sendBeaconSpy =
+			typeof navigator.sendBeacon === "function"
+				? vi.spyOn(navigator, "sendBeacon")
+				: undefined;
+
+		const user = userEvent.setup();
+		render(<App />);
+
+		await user.type(setupBox(), "hello world");
+		await user.click(startButton());
+		await user.click(resetButton());
+		const loadButton = await within(sidebarRegion()).findByRole("button", {
+			name: /^Load/,
+		});
+		await user.click(loadButton);
+		await user.type(
+			screen.getByPlaceholderText(TYPING_PLACEHOLDER),
+			"hello world",
+		);
+
+		expect(fetchSpy).not.toHaveBeenCalled();
+		expect(xhrOpenSpy).not.toHaveBeenCalled();
+		if (sendBeaconSpy) expect(sendBeaconSpy).not.toHaveBeenCalled();
+	});
+
+	it("[A12] with 100 entries, the sidebar lists all of them, most recently practiced first", async () => {
+		await savedTextsDb.savedTexts.bulkAdd(
+			Array.from({ length: 100 }, (_, i) => ({
+				text: `text ${i}`,
+				dateCreated: new Date(2026, 0, i + 1),
+				dateModified: new Date(2026, 0, i + 1),
+				numberOfLoads: 0,
+				numberOfCompletes: 0,
+			})),
+		);
+		render(<App />);
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items).toHaveLength(100);
+		expect(items[0]).toHaveTextContent("text 99");
+	});
+});
