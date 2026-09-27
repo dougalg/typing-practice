@@ -9,6 +9,10 @@ type PracticeViewProps = {
 	onReset: () => void;
 };
 
+const graphemeSegmenter = new Intl.Segmenter(undefined, {
+	granularity: "grapheme",
+});
+
 function displayChar(ch: string) {
 	if (ch === " ") return "space";
 	if (ch === "\n") return "newline";
@@ -40,6 +44,15 @@ function PracticeView({
 			setTimeout(() => typingInputRef.current?.focus(), 0);
 		}
 	}, [targetText, typingState]);
+
+	// Render one span per grapheme cluster, not per code point: a Thai vowel or
+	// tone mark only stacks on its consonant when both are in the same element.
+	// Typing still advances one code point at a time; a cluster takes its style
+	// from the marks of the code points inside it.
+	const clusters = useMemo(
+		() => Array.from(graphemeSegmenter.segment(targetText)),
+		[targetText],
+	);
 
 	const progressPercentage = useMemo(
 		() =>
@@ -245,26 +258,27 @@ function PracticeView({
 					}`}
 				>
 					<p className="m-0 font-mono text-[1.5rem] leading-relaxed wrap-break-word whitespace-pre-wrap">
-						{Array.from(targetText).map((ch, i) => {
-							const mark = typedMarks[i] ?? null;
-							const isCaret = typingState === "running" && i === position;
+						{clusters.map(({ segment, index }) => {
+							const end = index + segment.length;
+							const marks = typedMarks.slice(index, end);
+							const isCaret =
+								typingState === "running" &&
+								position >= index &&
+								position < end;
 
 							// Incorrect characters are tinted and underlined so they are
 							// distinguishable without relying on color alone.
-							const className =
-								mark === "correct"
+							const className = marks.includes("incorrect")
+								? "bg-miss-bg text-miss underline decoration-4 underline-offset-4"
+								: marks.length > 0 && marks.every((mark) => mark === "correct")
 									? "text-ok"
-									: mark === "incorrect"
-										? "bg-miss-bg text-miss underline decoration-4 underline-offset-4"
-										: isCaret
-											? "bg-hit text-panel"
-											: "text-muted";
-
-							const key = `${i}-${ch ?? ""}`;
+									: isCaret
+										? "bg-hit text-panel"
+										: "text-muted";
 
 							return (
-								<span key={key} className={className}>
-									{ch}
+								<span key={`${index}-${segment}`} className={className}>
+									{segment}
 								</span>
 							);
 						})}
