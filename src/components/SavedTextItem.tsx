@@ -1,5 +1,6 @@
 import { useId, type MouseEventHandler } from "react";
 import type { SavedText } from "../types";
+import { Button } from "./Button";
 
 export type SavedTextItemProps = Pick<
 	SavedText,
@@ -22,25 +23,33 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 	const loadId = useId();
 
 	return (
-		<div>
-			<p id={previewId} className="line-clamp-3">
+		<div className="border-line bg-surface-sunken hover:border-line-strong min-w-0 rounded-xl border p-4 transition-colors duration-150">
+			<p
+				id={previewId}
+				className="text-ink m-0 line-clamp-3 text-sm leading-relaxed [overflow-wrap:anywhere]"
+			>
 				{props.text}
 			</p>
-			<p className="text-slate-600">
-				Last practiced: {dateFormatter.format(props.dateModified)}
-			</p>
-			<p className="text-slate-600">
-				Practiced {props.numberOfCompletes}{" "}
-				{props.numberOfCompletes === 1 ? "time" : "times"}
-			</p>
-			<button
-				id={loadId}
-				aria-labelledby={`${loadId} ${previewId}`}
-				className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600"
-				onClick={props.onLoadRequest}
-			>
-				Load
-			</button>
+			<div className="mt-3 flex items-end justify-between gap-3">
+				<div className="text-ink-muted min-w-0 text-xs leading-relaxed">
+					<p className="m-0">
+						Last practiced: {dateFormatter.format(props.dateModified)}
+					</p>
+					<p className="m-0">
+						Practiced {props.numberOfCompletes}{" "}
+						{props.numberOfCompletes === 1 ? "time" : "times"}
+					</p>
+				</div>
+				<Button
+					id={loadId}
+					aria-labelledby={`${loadId} ${previewId}`}
+					variant="secondary"
+					size="sm"
+					onClick={props.onLoadRequest}
+				>
+					Load
+				</Button>
+			</div>
 		</div>
 	);
 };
