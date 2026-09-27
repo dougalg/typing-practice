@@ -49,14 +49,24 @@ export const ConfirmDiscardDialog = ({
 			// The native `cancel` event: Escape (or the platform's back gesture).
 			onCancel={() => onCancel()}
 			onKeyDown={handleKeyDown}
+			// Styled like the app's panels; the backdrop dims the inert page.
+			className="border-line bg-surface text-ink m-auto w-[calc(100%-2rem)] max-w-md border-4 p-5 shadow-[6px_6px_0_var(--color-line)] backdrop:bg-[#141414]/50 sm:p-7"
 		>
-			<p id={questionId}>Discard your progress on this text?</p>
-			<Button ref={cancelRef} autoFocus onClick={onCancel}>
-				Cancel
-			</Button>
-			<Button ref={confirmRef} onClick={onConfirm}>
-				Discard and load
-			</Button>
+			<p
+				id={questionId}
+				className="font-pixel m-0 text-sm leading-relaxed sm:text-base"
+			>
+				Discard your progress on this text?
+			</p>
+			{/* Cancel is the safe choice, so it is first and the primary style. */}
+			<div className="mt-6 flex flex-wrap justify-end gap-3">
+				<Button ref={cancelRef} variant="primary" autoFocus onClick={onCancel}>
+					Cancel
+				</Button>
+				<Button ref={confirmRef} variant="secondary" onClick={onConfirm}>
+					Discard and load
+				</Button>
+			</div>
 		</dialog>
 	);
 };

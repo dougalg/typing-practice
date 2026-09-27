@@ -359,3 +359,10 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none in this commit; the dialog's visual styling is its own commit next
 - commit: previous commit was `50805e5`
 - state: DONE
+
+## Styling: ConfirmDiscardDialog looks like the app's panels (no behavior change)
+
+- change: `src/components/ConfirmDiscardDialog.tsx` gets the panel look (`border-line bg-surface text-ink`, 4 px border, hard drop shadow, `max-w-md`, centred), a dimmed backdrop, the question in the pixel font, and the two buttons in a right-aligned row: Cancel first as `primary` (the safe default, which has focus), "Discard and load" as `secondary`. No test changed.
+- suite: `pnpm test` x3 -> 135 passed each (6.67 s, 6.34 s, 6.40 s); `pnpm build` passes
+- follow-up on cycle 27's surviving mutant 2: with the real styling, the question paragraph is no longer `incomplete` for axe. Question `text-[#cccccc]` -> `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U23\]"` -> `Expected no accessibility violations, found 1: - color-contrast: ... (1 node(s))` (1 failed); restored exactly
+- commit: previous commit was `d95815e`
