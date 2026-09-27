@@ -208,4 +208,22 @@ describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/
 
 		expect(onTypingStarted).toHaveBeenCalledOnce();
 	});
+
+	it("[U11] onTypingStarted is not called when nothing has been typed", async () => {
+		const onTypingStarted = vi.fn();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>,
+		);
+
+		// The run has fully started once the input has focus.
+		await waitFor(() => expect(typingInput()).toHaveFocus());
+
+		expect(onTypingStarted).not.toHaveBeenCalled();
+	});
 });

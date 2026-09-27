@@ -405,3 +405,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `4bc9d47`
 - state: DONE
+
+## Cycle 32: U11 onTypingStarted is not called when nothing has been typed (first-run pass)
+
+- test: `src/views/PracticeView.test.tsx::[U11] onTypingStarted is not called when nothing has been typed` (new; waits until the input has focus, i.e. the run-start effect has run, before asserting)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U11\]"` -> `1 passed | 10 skipped (11)`. Passed: U8-U10 call it only from input handlers.
+- mutant: `onTypingStarted?.()` added to the run-start effect -> same command -> `AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 140 passed each (6.59 s, 6.24 s, 6.19 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `e36d24d`
+- state: DONE
