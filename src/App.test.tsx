@@ -694,4 +694,34 @@ describe("App (specs/002-history-refinements, checks carried over from 001)", ()
 			"alpha",
 		]);
 	});
+
+	it("[A18] with IndexedDB unusable from the start, practice can still be started and the sidebar shows an alert", async () => {
+		// Closed but still allowed to auto-open, so the app's first query opens
+		// the database afresh, and that open fails the way it does in a browser
+		// where storage is blocked.
+		savedTextsDb.close({ disableAutoOpen: false });
+		const openSpy = vi.spyOn(indexedDB, "open").mockImplementation(() => {
+			throw new DOMException(
+				"IndexedDB is not available.",
+				"InvalidStateError",
+			);
+		});
+		try {
+			const user = userEvent.setup();
+			render(<App />);
+
+			expect(
+				await within(sidebarRegion()).findByRole("alert"),
+			).toHaveTextContent("Practice history could not be loaded.");
+
+			await user.type(setupBox(), "hello world");
+			await user.click(startButton());
+			expect(
+				screen.getByPlaceholderText(TYPING_PLACEHOLDER),
+			).toBeInTheDocument();
+		} finally {
+			openSpy.mockRestore();
+			await savedTextsDb.open();
+		}
+	});
 });

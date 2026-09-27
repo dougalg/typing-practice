@@ -165,3 +165,15 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `a28332c`
 - state: DONE. Ticked T011 and T035 (confirmed with the qualified filter).
+
+## Cycle 9: A18 with IndexedDB unusable from the start, practice can still be started and the sidebar shows an alert
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, checks carried over from 001) > [A18] with IndexedDB unusable from the start, ...` (new)
+- approach (research.md R9, adjusted): `Dexie.dependencies.indexedDB` is read when a `Dexie` instance is constructed, so stubbing it cannot affect the already-built `savedTextsDb`. Instead the test closes `savedTextsDb` with `{ disableAutoOpen: false }` (Dexie 4's plain `close()` disables auto-open, which is what 001's `close()` tests rely on) and spies on `indexedDB.open` to throw `InvalidStateError`, as a browser with storage blocked does. The app's first query then opens the database afresh and that open fails. The spy is restored and `savedTextsDb` reopened in `finally`.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A18\]"` -> `1 passed | 31 skipped (32)`. Expected: 001 built the failure handling; this automates its manual check.
+- mechanics check: spy left calling through (no throw) -> same command -> `TestingLibraryElementError: Unable to find role="alert"` (1 failed): the stub, not the close, is what makes storage unusable.
+- product mutant: `useHistory`'s `catch` returns `{ status: "ready", entries: [] }` instead of `{ status: "error" }` -> same command -> `TestingLibraryElementError: Unable to find role="alert"` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 118 passed each (5.89 s, 6.41 s, 5.95 s), no unhandled errors; `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `dfec71f`
+- state: DONE. Ticked T012 and T036 (qualified filter).
