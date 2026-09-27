@@ -260,3 +260,17 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed. (U32 and U33 repeat a two-line "find `alert`, take the next phrase" step; left inline, two uses.)
 - commit: previous commit was `cee8923`
 - state: DONE. Ticked T015 (U28-U33 all DONE).
+
+## US1 ordering note
+
+The outer loop is opened per acceptance behavior after its units, not before: this loop commits only at green, and an acceptance test left red while several unit cycles are committed would put reds in those commits. Each `A` behavior below still gets its own red (against the missing `App` wiring) before its implementation.
+
+## Cycle 18: U14 with open true, ConfirmDiscardDialog shows a modal dialog named by its question
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U14] with open true, shows a modal dialog named by its question` (new file). Modality is observed as `dialog.matches(":modal")`, true only for a dialog opened with `showModal()`.
+- stub: `ConfirmDiscardDialog.tsx` created returning `null` so the import resolves
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U14\]"` -> `TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Discard your progress on this text?"` (1 failed)
+- green: native `<dialog aria-labelledby={questionId}>` holding the question, `showModal()` in an effect when `open` is true. `pnpm vitest run ... -t "\[U14\]"` -> `1 passed (1)`. Suite `pnpm test` x3 -> 126 passed each (6.36 s, 6.19 s, 6.71 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `58bbf98`
+- state: DONE

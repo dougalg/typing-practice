@@ -83,19 +83,19 @@ checks 11, 12 and 16, now automated.
 
 ### `src/components/ConfirmDiscardDialog.tsx` (new)
 
-| id  | behavior                                                                              | traces | kind    | state   | test |
-| --- | ------------------------------------------------------------------------------------- | ------ | ------- | ------- | ---- |
-| U14 | With `open` true, it shows a modal dialog named "Discard your progress on this text?" | FR-005 | example | PENDING |      |
-| U15 | When it opens, "Cancel" has focus                                                     | FR-005 | example | PENDING |      |
-| U16 | Pressing "Cancel" calls `onCancel` once and not `onConfirm`                           | FR-003 | example | PENDING |      |
-| U17 | Pressing Escape calls `onCancel` once                                                 | FR-003 | example | PENDING |      |
-| U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | PENDING |      |
-| U19 | Tab from the last button keeps focus inside the dialog                                | FR-005 | example | PENDING |      |
-| U20 | Shift+Tab from the first button keeps focus inside the dialog                         | FR-005 | example | PENDING |      |
-| U21 | With `open` false, no dialog is shown                                                 | FR-004 | example | PENDING |      |
-| U22 | Changing `open` from true to false closes it                                          | FR-003 | example | PENDING |      |
-| U23 | The open dialog has no axe violations                                                 | FR-005 | example | PENDING |      |
-| U24 | A screen reader announces it as a dialog with its question                            | FR-005 | example | PENDING |      |
+| id  | behavior                                                                              | traces | kind    | state   | test                                                  |
+| --- | ------------------------------------------------------------------------------------- | ------ | ------- | ------- | ----------------------------------------------------- |
+| U14 | With `open` true, it shows a modal dialog named "Discard your progress on this text?" | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U14]` |
+| U15 | When it opens, "Cancel" has focus                                                     | FR-005 | example | PENDING |                                                       |
+| U16 | Pressing "Cancel" calls `onCancel` once and not `onConfirm`                           | FR-003 | example | PENDING |                                                       |
+| U17 | Pressing Escape calls `onCancel` once                                                 | FR-003 | example | PENDING |                                                       |
+| U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | PENDING |                                                       |
+| U19 | Tab from the last button keeps focus inside the dialog                                | FR-005 | example | PENDING |                                                       |
+| U20 | Shift+Tab from the first button keeps focus inside the dialog                         | FR-005 | example | PENDING |                                                       |
+| U21 | With `open` false, no dialog is shown                                                 | FR-004 | example | PENDING |                                                       |
+| U22 | Changing `open` from true to false closes it                                          | FR-003 | example | PENDING |                                                       |
+| U23 | The open dialog has no axe violations                                                 | FR-005 | example | PENDING |                                                       |
+| U24 | A screen reader announces it as a dialog with its question                            | FR-005 | example | PENDING |                                                       |
 
 ### `src/views/Sidebar.tsx`
 
