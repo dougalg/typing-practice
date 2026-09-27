@@ -378,3 +378,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - note: the restore after the mutant first used a copy saved before Prettier reformatted the file at commit time; `git status` showed the difference (line wrapping only), and the file was restored from `HEAD` instead. Mutant restores now use the committed file.
 - commit: previous commit was `12e1853`
 - state: DONE. Ticked T016 and T020 (U14-U24 all DONE).
+
+## Cycle 29: U8 onTypingStarted is called once when the first character typed is correct
+
+- test: `src/views/PracticeView.test.tsx::[U8] onTypingStarted is called once when the first character typed is correct` (new describe block for `onTypingStarted`)
+- red: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U8\]"` -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed)
+- green: optional `onTypingStarted?: () => void` prop, called in the input handler's correct-character branch (fake-it step: it is called on every correct character until U12 forces "once per run"). Same command -> `1 passed | 7 skipped (8)`. Suite `pnpm test` x3 -> 137 passed each (6.47 s, 6.53 s, 6.62 s); `pnpm build` passes. U1-U7 (characterization) still pass.
+- refactor: none needed
+- commit: previous commit was `3bdbf5e`
+- state: DONE

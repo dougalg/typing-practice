@@ -10,6 +10,8 @@ type PracticeViewProps = {
 	typingState: TypingState;
 	onFinish: () => void;
 	onReset: () => void;
+	/** Called on the first input of this run, correct or wrong. */
+	onTypingStarted?: () => void;
 };
 
 // Incorrect glyphs are tinted and underlined so they are distinguishable
@@ -37,6 +39,7 @@ function PracticeView({
 	typingState,
 	onFinish,
 	onReset,
+	onTypingStarted,
 }: PracticeViewProps) {
 	const [position, setPosition] = useState(0);
 	const [typedMarks, setTypedMarks] = useState<TypedMark[]>([]);
@@ -105,6 +108,7 @@ function PracticeView({
 				return;
 			}
 
+			onTypingStarted?.();
 			setTypedMarks((prev) => {
 				const next = prev.slice();
 				next[position] = "correct";

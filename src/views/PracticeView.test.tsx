@@ -149,3 +149,23 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 		await expectNoA11yViolations(container);
 	});
 });
+
+describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/ui.md)", () => {
+	it("[U8] onTypingStarted is called once when the first character typed is correct", async () => {
+		const user = userEvent.setup();
+		const onTypingStarted = vi.fn();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>,
+		);
+
+		await user.type(typingInput(), "h");
+
+		expect(onTypingStarted).toHaveBeenCalledOnce();
+	});
+});
