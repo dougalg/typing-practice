@@ -274,4 +274,16 @@ describe("Sidebar screen-reader output (specs/002-history-refinements, 001's man
 		const entryTexts = phrases.filter((p) => p === "older" || p === "newer");
 		expect(entryTexts).toEqual(["newer", "older"]);
 	});
+
+	it("[U30] a screen reader announces each Load button as Load plus that entry's text", async () => {
+		await addEntry({ text: "alpha" });
+		await addEntry({ text: "beta" });
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText("alpha");
+
+		const phrases = await spokenPhrases(container);
+
+		const buttons = phrases.filter((p) => p.startsWith("button,"));
+		expect(buttons.sort()).toEqual(["button, Load alpha", "button, Load beta"]);
+	});
 });

@@ -218,3 +218,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `e996544`
 - state: DONE
+
+## Cycle 14: U30 a screen reader announces each Load button as "Load" plus that entry's text (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U30] a screen reader announces each Load button as Load plus that entry's text` (new)
+- first run: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U30\]"` -> `1 passed | 19 skipped (20)`. Expected: 001 built the button names.
+- mutant: the Load button's `aria-labelledby={`${loadId} ${previewId}`}` -> `aria-labelledby={loadId}` -> same command -> `AssertionError: expected [ 'button, Load', 'button, Load' ] to deeply equal [ 'button, Load alpha', …(1) ]` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 122 passed each (6.40 s, 5.96 s, 6.03 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `dbf475d`
+- state: DONE
