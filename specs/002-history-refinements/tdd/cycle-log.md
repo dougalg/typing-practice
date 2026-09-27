@@ -481,3 +481,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `479d08b`
 - state: DONE. Ticked T040 (qualified filter).
+
+## Cycle 39: A4 choosing "Discard and load" starts the chosen entry from its first character (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A4] choosing Discard and load starts the chosen entry from its first character` (new)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A4\]"` -> `1 passed | 36 skipped (37)`. Expected: confirm was wired in cycle 36 (A1), because 001's updated A6/A20 needed it.
+- mutant: `handleConfirmDiscard` clears the pending load without starting it -> same command -> `TestingLibraryElementError: Unable to find an element with the text: (_content, element) => element?.tagName === "P" && element.textContent === text` (1 failed: "second text" never loads); restored from the committed file
+- suite: `pnpm test` x3 -> 147 passed each (7.26 s, 7.18 s, 7.09 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `adca1a6`
+- state: DONE. Ticked T041 (qualified filter).

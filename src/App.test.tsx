@@ -869,4 +869,20 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
 		).toBeInTheDocument();
 	});
+
+	it("[A4] choosing Discard and load starts the chosen entry from its first character", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Discard and load" }),
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("0 / 11");
+	});
 });
