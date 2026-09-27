@@ -673,3 +673,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `d645aea`
 - state: DONE
+
+## Cycle 58: U37 a screen reader reads both counts
+
+- test: `src/components/SavedTextItem.test.tsx::[U37] a screen reader reads both counts` (new; expects the phrases "Loaded: 3" and "Completed: 1")
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx -t "\[U37\]"` -> `AssertionError: expected [ 'paragraph', 'hello world', …(16) ] to deeply equal ArrayContaining{…}` (1 failed). The log showed `paragraph | Loaded: | 3 | end of paragraph | paragraph | Completed: | 1 | end of paragraph`: JSX `Loaded: {n}` renders two text nodes, and the reader stops between label and number. Treated as a real red, since announcing each count as one phrase is what the test and the user's accessibility bar ask for.
+- green: each count rendered as one string (`{`Loaded: ${n}`}`, `{`Completed: ${n}`}`). Same command -> `1 passed | 14 skipped (15)`. Suite `pnpm test` x3 -> 166 passed each (8.45 s, 7.91 s, 7.86 s); `pnpm build` passes
+- noticed, not changed: 001's "Last practiced:" line splits the same way (`Last practiced: | Jan 1, 2026`); outside this behavior, reported.
+- refactor: none needed
+- commit: previous commit was `d45101f`
+- state: DONE. Ticked T026 and T030 (U34-U37 all DONE).

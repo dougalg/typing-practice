@@ -115,12 +115,12 @@ checks 11, 12 and 16, now automated.
 
 ### `src/components/SavedTextItem.tsx`
 
-| id  | behavior                               | traces | kind    | state   | test                                           |
-| --- | -------------------------------------- | ------ | ------- | ------- | ---------------------------------------------- |
-| U34 | Shows "Loaded: {numberOfLoads}"        | FR-007 | example | DONE    | `src/components/SavedTextItem.test.tsx::[U34]` |
-| U35 | Shows "Completed: {numberOfCompletes}" | FR-007 | example | DONE    | `src/components/SavedTextItem.test.tsx::[U35]` |
-| U36 | Shows no "Practiced" text              | FR-007 | example | DONE    | `src/components/SavedTextItem.test.tsx::[U36]` |
-| U37 | A screen reader reads both counts      | FR-007 | example | PENDING |                                                |
+| id  | behavior                               | traces | kind    | state | test                                           |
+| --- | -------------------------------------- | ------ | ------- | ----- | ---------------------------------------------- |
+| U34 | Shows "Loaded: {numberOfLoads}"        | FR-007 | example | DONE  | `src/components/SavedTextItem.test.tsx::[U34]` |
+| U35 | Shows "Completed: {numberOfCompletes}" | FR-007 | example | DONE  | `src/components/SavedTextItem.test.tsx::[U35]` |
+| U36 | Shows no "Practiced" text              | FR-007 | example | DONE  | `src/components/SavedTextItem.test.tsx::[U36]` |
+| U37 | A screen reader reads both counts      | FR-007 | example | DONE  | `src/components/SavedTextItem.test.tsx::[U37]` |
 
 ### `src/features/savedItems/history.ts`
 

@@ -35,8 +35,10 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 					<p className="m-0">
 						Last practiced: {dateFormatter.format(props.dateModified)}
 					</p>
-					<p className="m-0">Loaded: {props.numberOfLoads}</p>
-					<p className="m-0">Completed: {props.numberOfCompletes}</p>
+					{/* One string each, so a screen reader reads "Loaded: 3" as one
+					    phrase rather than stopping between the label and the number. */}
+					<p className="m-0">{`Loaded: ${props.numberOfLoads}`}</p>
+					<p className="m-0">{`Completed: ${props.numberOfCompletes}`}</p>
 				</div>
 				<Button
 					id={loadId}

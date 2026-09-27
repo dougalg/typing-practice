@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
+import { spokenPhrases } from "../test/screenReader";
 import { SavedTextItem } from "./SavedTextItem";
 
 describe("SavedTextItem (characterization: current behavior before the practice-history feature)", () => {
@@ -249,5 +250,18 @@ describe("SavedTextItem counts (specs/002-history-refinements contracts/ui.md)",
 
 		// Case-sensitive: "Last practiced:" is the date line, and stays.
 		expect(screen.queryByText(/Practiced/)).not.toBeInTheDocument();
+	});
+
+	it("[U37] a screen reader reads both counts", async () => {
+		const { container } = renderEntry({
+			numberOfLoads: 3,
+			numberOfCompletes: 1,
+		});
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases).toEqual(
+			expect.arrayContaining(["Loaded: 3", "Completed: 1"]),
+		);
 	});
 });
