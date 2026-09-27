@@ -1018,3 +1018,24 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(loadSecond).toHaveFocus();
 	});
 });
+
+/** The sidebar entry (list item) for `text`, once it is listed. */
+async function historyEntry(text: string) {
+	const preview = await within(sidebarRegion()).findByText(text);
+	const entry = preview.closest("li");
+	if (!entry) throw new Error(`Expected a list item around "${text}"`);
+	return within(entry);
+}
+
+describe("App (specs/002-history-refinements, User Story 2)", () => {
+	it("[A9] starting a new text shows Loaded: 1 and Completed: 0 on its entry", async () => {
+		render(<App />);
+
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 1")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
+});

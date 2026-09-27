@@ -683,3 +683,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `d45101f`
 - state: DONE. Ticked T026 and T030 (U34-U37 all DONE).
+
+## Cycle 59: A9 starting a new text shows "Loaded: 1" and "Completed: 0" on its entry (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A9] starting a new text shows Loaded: 1 and Completed: 0 on its entry` (new; new helper `historyEntry(text)` scopes queries to that entry's list item)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A9\]"` -> `1 passed | 44 skipped (45)`. Expected: U38 and U34/U35 built it; this closes the outer loop.
+- mutant: `recordPractice` creates new entries with `numberOfLoads: 0` -> same command -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 1.` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 167 passed each (8.05 s, 7.96 s, 7.98 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `5189b07`
+- state: DONE. Ticked T048 (qualified filter).
