@@ -1,5 +1,4 @@
 import "@testing-library/jest-dom/vitest";
-import "fake-indexeddb/auto";
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { savedTextsDb } from "../features/savedItems/db";
@@ -16,6 +15,8 @@ afterEach(() => {
 	cleanup();
 });
 
+// The browser's IndexedDB is real and shared by every test file (one origin),
+// so each test must leave the table empty for the next one.
 afterEach(async () => {
 	await savedTextsDb.savedTexts.clear();
 });

@@ -5,6 +5,11 @@ import App from "./App";
 import * as historyModule from "./features/savedItems/history";
 import { savedTextsDb } from "./features/savedItems/db";
 
+// In the browser, ES module namespaces are real and their exports cannot be
+// redefined, so `vi.spyOn(historyModule, ...)` needs the module to be wrapped
+// first. `spy: true` keeps every export's real implementation.
+vi.mock("./features/savedItems/history", { spy: true });
+
 const SETUP_PLACEHOLDER = "Type or paste any text you want to practice...";
 const TYPING_PLACEHOLDER =
 	"Start typing… (this box stays empty; it captures keystrokes)";

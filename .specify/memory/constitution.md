@@ -1,6 +1,15 @@
 <!--
 Sync Impact Report
-Version change: 1.1.0 → 1.2.0 (2026-09-21, MINOR: materially expanded guidance)
+Version change: 1.2.0 → 1.3.0 (2026-09-27, MINOR: tooling guidance changed, approved by the user
+  for specs/002-history-refinements)
+Modified sections:
+  - Technology & Tooling Constraints: "Vitest with jsdom and Testing Library" → "Vitest in browser
+    mode (Playwright provider, Chromium) with Testing Library".
+  - V. Accessible by Default: "Because jsdom cannot compute rendered contrast, ..." → contrast
+    is checked by axe in the real browser.
+Compliance plan for existing code: none needed; the whole suite moved to browser mode in the same
+  commit, with the same tests passing.
+Previous change: 1.1.0 → 1.2.0 (2026-09-21, MINOR: materially expanded guidance)
 Modified principles:
   - III. Test-First for Behavior → III. Test-Driven Development (NON-NEGOTIABLE)
     ("tests written before or alongside" tightened to "a test that failed first", with recorded
@@ -107,9 +116,8 @@ MUST be verified by tests. Specifically:
   fully operable by keyboard, focus MUST move to the typing input when a run starts, and every
   interactive control MUST have an accessible name and a visible focus indicator.
 - Text and UI-component colors MUST meet AA contrast (4.5:1 for normal text, 3:1 for large text
-  and UI components) in every theme. Because jsdom cannot compute rendered contrast, contrast
-  MUST be checked against the actual palette (design tokens or a browser tool) and the result
-  noted in the PR when colors change.
+  and UI components) in every theme. Contrast is checked by axe in the real browser, which
+  computes rendered colors; the result MUST be noted in the PR when colors change.
 - Correct/incorrect feedback MUST NOT rely on color alone, and status or error messages MUST be
   announced to assistive technology (e.g. via `role="alert"` or a live region).
 - Input handling MUST respect IME composition (`isComposing`) and MUST NOT swallow browser or OS
@@ -122,10 +130,10 @@ regresses silently, so conformance is a merge requirement rather than an aspirat
 
 ## Technology & Tooling Constraints
 
-- Stack: React 19, TypeScript, Vite, Tailwind CSS v4, Dexie, Vitest with jsdom and Testing
-  Library, plus an axe-core matcher (e.g. `vitest-axe`) for accessibility tests. Adding a
-  runtime dependency MUST be justified in the PR description; prefer the platform and existing
-  dependencies first.
+- Stack: React 19, TypeScript, Vite, Tailwind CSS v4, Dexie, Vitest in browser mode (Playwright
+  provider, Chromium) with Testing Library, plus an axe-core matcher (e.g. `vitest-axe`) for
+  accessibility tests. Adding a runtime dependency MUST be justified in the PR description;
+  prefer the platform and existing dependencies first.
 - Package manager: pnpm only, at the version pinned in `packageManager`. The lockfile
   (`pnpm-lock.yaml`) MUST be committed and MUST NOT be edited by hand.
 - Formatting: Prettier (with the Tailwind plugin) is the sole formatter; `pnpm format` output
@@ -162,4 +170,4 @@ Compliance is reviewed at PR time (see Development Workflow) and whenever a feat
 produced, where the plan MUST include a check of the Core Principles. Runtime development
 guidance for agents lives in `CLAUDE.md` when present.
 
-**Version**: 1.2.0 | **Ratified**: 2026-09-20 | **Last Amended**: 2026-09-21
+**Version**: 1.3.0 | **Ratified**: 2026-09-20 | **Last Amended**: 2026-09-27

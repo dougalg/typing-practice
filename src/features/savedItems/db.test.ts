@@ -31,9 +31,16 @@ describe("savedTextsDb (characterization: current behavior before the practice-h
 });
 
 let migrationDbCounter = 0;
-function migrationDbName() {
+/**
+ * A throwaway database name, deleted first: the browser's IndexedDB is real and
+ * outlives a test file, so a rerun in the same browser (watch mode) would
+ * otherwise find last run's upgraded database under the same name.
+ */
+async function migrationDbName() {
 	migrationDbCounter += 1;
-	return `savedTextsDb_migration_test_${migrationDbCounter}`;
+	const name = `savedTextsDb_migration_test_${migrationDbCounter}`;
+	await Dexie.delete(name);
+	return name;
 }
 
 /**
@@ -70,7 +77,7 @@ function row(
 
 describe("openSavedTextsDb migration from version 1 (specs/001-practice-history FR-012)", () => {
 	it("[U31] a row with a unique text is unchanged after the upgrade, including its id", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [row({ id: 1, text: "solo" })]);
 
 		const db = openSavedTextsDb(name);
@@ -80,7 +87,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U32] two rows with the same text become one row, keeping the lowest id", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [
 			row({ id: 5, text: "dup" }),
 			row({ id: 2, text: "dup" }),
@@ -94,7 +101,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U33] the merged row's dateCreated is the earliest and dateModified the latest of the group", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [
 			row({
 				id: 1,
@@ -119,7 +126,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U34] the merged row's numberOfCompletes and numberOfLoads are the sums of the group", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [
 			row({ id: 1, text: "dup", numberOfLoads: 2, numberOfCompletes: 1 }),
 			row({ id: 2, text: "dup", numberOfLoads: 5, numberOfCompletes: 3 }),
@@ -134,7 +141,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U35] a group of three rows with the same text merges into one row", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [
 			row({ id: 3, text: "triple" }),
 			row({ id: 1, text: "triple" }),
@@ -149,7 +156,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U36] rows with different texts stay separate: the row count equals the number of distinct texts", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [
 			row({ id: 1, text: "a" }),
 			row({ id: 2, text: "a" }),
@@ -166,7 +173,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U37] an empty version-1 database upgrades successfully and leaves an empty table", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, []);
 
 		const db = openSavedTextsDb(name);
@@ -176,7 +183,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U38] after the upgrade, adding a row whose text already exists is rejected", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [row({ id: 1, text: "existing" })]);
 
 		const db = openSavedTextsDb(name);
@@ -186,7 +193,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U39] after the upgrade, adding a row with a new text succeeds", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		await seedV1(name, [row({ id: 1, text: "existing" })]);
 
 		const db = openSavedTextsDb(name);
@@ -196,7 +203,7 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 	});
 
 	it("[U40] a database created fresh, with no earlier version, enforces the same unique-text rule", async () => {
-		const name = migrationDbName();
+		const name = await migrationDbName();
 		const db = openSavedTextsDb(name);
 
 		await db.savedTexts.add(row({ id: 1, text: "first" }));
