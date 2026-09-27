@@ -253,4 +253,8 @@ describe("openSavedTextsDb version 4 count correction (specs/002-history-refinem
 	it("[U44] a row with a loaded count of 2 and a completed count of 3 gets a loaded count of 3", async () => {
 		expect(await loadsAfterUpgrade(2, 3)).toBe(3);
 	});
+
+	it("[U45] a row with a loaded count of 3 and a completed count of 3 is unchanged", async () => {
+		expect(await loadsAfterUpgrade(3, 3)).toBe(3);
+	});
 });

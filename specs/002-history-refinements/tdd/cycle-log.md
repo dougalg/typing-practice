@@ -620,3 +620,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: the version 4 comment names the completed-count bound too (comment only)
 - commit: previous commit was `4eaa8f3`
 - state: DONE
+
+## Cycle 53: U45 a row with numberOfLoads = 3 and numberOfCompletes = 3 is unchanged (first-run pass)
+
+- test: `src/features/savedItems/db.test.ts::[U45] a row with a loaded count of 3 and a completed count of 3 is unchanged` (new; the boundary where the two terms are equal)
+- first run: `pnpm vitest run src/features/savedItems/db.test.ts -t "\[U45\]"` -> `1 passed | 13 skipped (14)`. Expected: U44's `max` already leaves equal counts alone.
+- mutant: off-by-one bound `numberOfCompletes + 1` -> same command -> `AssertionError: expected 4 to be 3` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 161 passed each (8.02 s, 7.86 s, 7.75 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `39bd805`
+- state: DONE

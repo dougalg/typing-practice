@@ -139,7 +139,7 @@ Boundary: "max(numberOfLoads, numberOfCompletes, 1)", sampled on both sides of e
 | --- | -------------------------------------------------------------------------------------- | ------ | ------- | ------- | ------------------------------------------- |
 | U43 | A row with `numberOfLoads = 0` and `numberOfCompletes = 0` becomes `numberOfLoads = 1` | FR-011 | example | DONE    | `src/features/savedItems/db.test.ts::[U43]` |
 | U44 | A row with `numberOfLoads = 2` and `numberOfCompletes = 3` becomes `numberOfLoads = 3` | FR-011 | example | DONE    | `src/features/savedItems/db.test.ts::[U44]` |
-| U45 | A row with `numberOfLoads = 3` and `numberOfCompletes = 3` is unchanged                | FR-011 | example | PENDING |                                             |
+| U45 | A row with `numberOfLoads = 3` and `numberOfCompletes = 3` is unchanged                | FR-011 | example | DONE    | `src/features/savedItems/db.test.ts::[U45]` |
 | U46 | A row with `numberOfLoads = 1` and `numberOfCompletes = 0` is unchanged                | FR-011 | example | PENDING |                                             |
 
 (`U25` and `U42` are not used: dropped while planning as duplicates of `U19`/`U20` and of `001`'s
