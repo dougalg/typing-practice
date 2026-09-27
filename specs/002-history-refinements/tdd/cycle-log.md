@@ -531,3 +531,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `a157c70`
 - state: DONE. Ticked T045 (qualified filter).
+
+## Cycle 44: A14 pressing Load several times quickly while a session is in progress shows exactly one confirmation (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A14] pressing Load several times quickly ...` (new). Three DOM `click()`s in a row on the same Load button (real input cannot reach an inert page once the modal is open, and Playwright would wait on the backdrop), then: exactly one dialog, and one Cancel leaves none.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A14\]"` -> `1 passed | 41 skipped (42)`. Expected: `App` holds a single pending load and renders a single dialog.
+- mutant: a second `ConfirmDiscardDialog` rendered for the same pending load -> same command -> `TestingLibraryElementError: Found multiple elements with the role "dialog" and name "Discard your progress on this text?"` (1 failed); restored from the committed file. (A crude mutant; a queue of pending loads would fail the same way.)
+- suite: `pnpm test` x3 -> 152 passed each (7.94 s, 7.93 s, 8.15 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `31d252e`
+- state: DONE. Ticked T046 (qualified filter).

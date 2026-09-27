@@ -94,7 +94,7 @@ description: "Task list for Practice History Refinements"
 - [x] T043 [US1] [A6] Confirm A6 is green: run `pnpm vitest run src/App.test.tsx -t "\[A6\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [x] T044 [US1] [A7] Confirm A7 is green: run `pnpm vitest run src/App.test.tsx -t "\[A7\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [x] T045 [US1] [A8] Confirm A8 is green: run `pnpm vitest run src/App.test.tsx -t "\[A8\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
-- [ ] T046 [US1] [A14] Confirm A14 is green: run `pnpm vitest run src/App.test.tsx -t "\[A14\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
+- [x] T046 [US1] [A14] Confirm A14 is green: run `pnpm vitest run src/App.test.tsx -t "\[A14\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T047 [US1] [A15] Confirm A15 is green: run `pnpm vitest run src/App.test.tsx -t "\[A15\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 
 **Checkpoint**: US1 works on its own. A stray Load can no longer discard a session.

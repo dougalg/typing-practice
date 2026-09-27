@@ -956,4 +956,29 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(getPracticeText("second text")).toBeInTheDocument();
 		expect(charactersTyped()).toHaveTextContent("0 / 11");
 	});
+
+	it("[A14] pressing Load several times quickly while a session is in progress shows exactly one confirmation", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+
+		// Real input cannot reach the page once the modal is open (it is inert),
+		// so the repeat presses are DOM clicks, as fast as they come.
+		loadSecond.click();
+		loadSecond.click();
+		loadSecond.click();
+
+		await waitFor(() =>
+			expect(
+				screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+			).toBeInTheDocument(),
+		);
+		expect(screen.getAllByRole("dialog")).toHaveLength(1);
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
 });
