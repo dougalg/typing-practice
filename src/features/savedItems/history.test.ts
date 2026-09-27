@@ -194,6 +194,17 @@ describe("recordPractice loaded count (specs/002-history-refinements contracts/h
 		expect(rows).toHaveLength(1);
 		expect(rows[0]).toMatchObject({ numberOfLoads: 4, numberOfCompletes: 2 });
 	});
+
+	it("[U40] two calls for a new text issued together leave one entry with a loaded count of 2", async () => {
+		await Promise.all([
+			recordPractice("hello world"),
+			recordPractice("hello world"),
+		]);
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfLoads).toBe(2);
+	});
 });
 
 describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {

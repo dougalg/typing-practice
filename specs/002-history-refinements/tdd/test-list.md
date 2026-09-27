@@ -128,7 +128,7 @@ checks 11, 12 and 16, now automated.
 | --- | ----------------------------------------------------------------------------------------------------- | -------------- | ------- | ------- | ------------------------------------------------ |
 | U38 | `recordPractice` on a new text creates one entry with `numberOfLoads = 1` and `numberOfCompletes = 0` | FR-008         | example | DONE    | `src/features/savedItems/history.test.ts::[U38]` |
 | U39 | `recordPractice` on an existing text adds 1 to `numberOfLoads` and leaves `numberOfCompletes`         | FR-008, FR-009 | example | DONE    | `src/features/savedItems/history.test.ts::[U39]` |
-| U40 | Two `recordPractice` calls for a new text issued together leave one entry with `numberOfLoads = 2`    | FR-008         | example | PENDING |                                                  |
+| U40 | Two `recordPractice` calls for a new text issued together leave one entry with `numberOfLoads = 2`    | FR-008         | example | DONE    | `src/features/savedItems/history.test.ts::[U40]` |
 | U41 | When the insert loses a two-writer race, the retry path also adds 1 to `numberOfLoads`                | FR-008         | example | PENDING |                                                  |
 
 ### `src/features/savedItems/db.ts` (schema version 4)

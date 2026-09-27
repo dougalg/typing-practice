@@ -580,3 +580,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: doc comment mentions "loaded count + 1" for an existing entry (comment only)
 - commit: previous commit was `adfb4e4`
 - state: DONE
+
+## Cycle 49: U40 two recordPractice calls for a new text issued together leave one entry with numberOfLoads = 2 (first-run pass)
+
+- test: `src/features/savedItems/history.test.ts::[U40] two calls for a new text issued together leave one entry with a loaded count of 2` (new)
+- first run: `pnpm vitest run src/features/savedItems/history.test.ts -t "\[U40\]"` -> `1 passed | 27 skipped (28)`. Passed: in the browser's real IndexedDB, two read-write transactions on the same store run one after the other, so the second call finds the first call's row and takes U39's existing-entry path. (The two-writer ConstraintError path is not reached this way; U41 drives it directly.)
+- mutant: the existing-entry path's `numberOfLoads + 1` removed -> same command -> `AssertionError: expected 1 to be 2` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 157 passed each (7.94 s, 7.64 s, 7.67 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `b09c502`
+- state: DONE
