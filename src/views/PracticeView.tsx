@@ -247,11 +247,12 @@ function PracticeView({
 				aria-valuemin={0}
 				aria-valuemax={100}
 				aria-valuenow={progressPercentage}
-				className="bg-line mb-7 h-2 overflow-hidden rounded-full"
+				className="border-line bg-track mb-7 h-5 border-3 p-0.5"
 			>
+				{/* Segmented like a retro health bar. */}
 				<div
-					className={`h-full rounded-full motion-safe:transition-[width] motion-safe:duration-300 ${
-						isFinished ? "bg-success" : "bg-accent"
+					className={`h-full bg-[repeating-linear-gradient(90deg,currentColor_0_12px,transparent_12px_16px)] motion-safe:transition-[width] motion-safe:duration-200 ${
+						isFinished ? "text-success" : "text-accent"
 					}`}
 					style={{ width: `${progressPercentage}%` }}
 				/>
@@ -261,10 +262,10 @@ function PracticeView({
 				Type the text below
 			</Eyebrow>
 			<div
-				className={`rounded-xl border px-5 py-4 transition-colors duration-300 ${
+				className={`border-3 px-5 py-4 ${
 					isFinished
-						? "border-success/50 bg-success-soft"
-						: "border-line bg-surface-sunken"
+						? "border-success bg-success-soft"
+						: "border-line bg-surface"
 				}`}
 			>
 				{/* overflow-wrap:anywhere (unlike break-word) also lowers the element's
@@ -274,13 +275,15 @@ function PracticeView({
 						const mark = typedMarks[i] ?? null;
 						const isCaret = typingState === "running" && i === position;
 
+						// Incorrect characters are tinted and underlined so they are
+						// distinguishable without relying on color alone.
 						const className =
 							mark === "correct"
 								? "text-success"
 								: mark === "incorrect"
-									? "rounded-sm bg-danger-soft text-danger underline decoration-wavy decoration-1 underline-offset-4"
+									? "bg-danger-soft text-danger underline decoration-4 underline-offset-4"
 									: isCaret
-										? "rounded-sm bg-accent-soft text-accent-ink font-semibold underline decoration-2 underline-offset-[6px]"
+										? "bg-accent text-on-accent"
 										: "text-ink-muted";
 
 						const key = `${i}-${ch ?? ""}`;
@@ -310,10 +313,10 @@ function PracticeView({
 			/>
 			{errorMessage && (
 				<p
-					className={`mt-3 rounded-lg px-3 py-2 text-sm font-medium ${
+					className={`mt-3 border-3 px-3 py-2 text-sm font-bold ${
 						isFinished
-							? "bg-success-soft text-success"
-							: "bg-danger-soft text-danger"
+							? "border-success bg-success-soft text-success"
+							: "border-danger bg-danger-soft text-danger"
 					}`}
 					role="alert"
 				>

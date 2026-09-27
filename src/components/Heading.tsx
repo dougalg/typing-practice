@@ -18,11 +18,13 @@ export const Heading = ({
 };
 
 // Mobile-first: the base size is for small screens, `sm:` scales up.
+// Press Start 2P is drawn on an 8px grid, so sizes stay on multiples of 8px
+// where possible to keep the pixels crisp.
 const classNameByLevel = {
-	1: `m-0 text-[1.8rem] leading-tight font-bold tracking-[-0.03em] text-balance sm:text-[2.2rem]`,
-	2: `m-0 text-[1.4rem] leading-tight font-semibold tracking-[-0.02em] text-balance sm:text-[1.8rem]`,
-	3: `m-0 text-[1.2rem] leading-snug font-semibold tracking-[-0.01em] sm:text-[1.6rem]`,
-	4: `m-0 text-[1rem] leading-snug font-semibold sm:text-[1.4rem]`,
-	5: `m-0 text-[0.9rem] leading-snug font-semibold sm:text-[1.2rem]`,
-	6: `m-0 text-[0.85rem] leading-snug font-semibold sm:text-[1rem]`,
+	1: `m-0 font-pixel text-2xl leading-tight font-normal text-balance sm:text-[2rem]`,
+	2: `m-0 font-pixel text-base leading-snug font-normal text-balance sm:text-2xl`,
+	3: `m-0 font-pixel text-sm leading-snug font-normal sm:text-base`,
+	4: `m-0 font-pixel text-xs leading-snug font-normal sm:text-sm`,
+	5: `m-0 font-mono text-base leading-snug font-bold`,
+	6: `m-0 font-mono text-sm leading-snug font-bold`,
 };

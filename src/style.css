@@ -1,11 +1,14 @@
 @import "tailwindcss";
+/* Bundled with the app (no network request), per the local-first principle. */
+@import "@fontsource/press-start-2p/latin-400.css";
 
 /*
  * Semantic colour tokens. Components use these (bg-surface, text-ink-muted,
- * border-line, outline-focus, …) so light and dark mode are defined in one place.
+ * border-line, outline-focus, …) so the palette is defined in one place.
  */
 @theme inline {
   --color-canvas: var(--canvas);
+  --color-canvas-dot: var(--canvas-dot);
   --color-surface: var(--surface);
   --color-surface-sunken: var(--surface-sunken);
   --color-surface-raised: var(--surface-raised);
@@ -19,66 +22,51 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
   --color-on-accent: var(--on-accent);
+  --color-coin: var(--coin);
+  --color-coin-hover: var(--coin-hover);
+  --color-track: var(--track);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-focus: var(--focus);
 
-  --font-sans:
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
   --font-mono:
     ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas,
     monospace;
 }
 
 @layer base {
+  /*
+   * Light, high-contrast 8-bit palette. Every text pairing used in the app
+   * meets WCAG AA (lowest: danger on danger-soft, 5.78:1).
+   */
   :root {
     color-scheme: light;
-    --canvas: #f4f5f9;
+    --canvas: #f4efd9;
+    --canvas-dot: #e4dcbc;
     --surface: #ffffff;
-    --surface-sunken: #f7f8fb;
+    --surface-sunken: #f4efd9;
     --surface-raised: #ffffff;
-    --line: #e2e5ee;
-    --line-strong: #c5cbd8;
-    --ink: #151a2d;
-    --ink-muted: #545d75;
-    --accent: #4f46e5;
-    --accent-hover: #4338ca;
-    --accent-active: #3730a3;
-    --accent-soft: #eef0ff;
-    --accent-ink: #3f37c9;
+    --line: #141414;
+    --line-strong: #141414;
+    --ink: #141414;
+    --ink-muted: #454545;
+    --accent: #1d3fbb;
+    --accent-hover: #16309a;
+    --accent-active: #10256f;
+    --accent-soft: #dfe9ff;
+    --accent-ink: #1d3fbb;
     --on-accent: #ffffff;
-    --success: #0f7a45;
-    --success-soft: #e5f6ec;
-    --danger: #c0262d;
-    --danger-soft: #fdecec;
-    --focus: #4f46e5;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      color-scheme: dark;
-      --canvas: #0e111b;
-      --surface: #161a28;
-      --surface-sunken: #0f1320;
-      --surface-raised: #1d2233;
-      --line: #282e42;
-      --line-strong: #3a415a;
-      --ink: #e8eaf2;
-      --ink-muted: #9aa2b8;
-      --accent: #8b87ff;
-      --accent-hover: #a29fff;
-      --accent-active: #b7b5ff;
-      --accent-soft: #23234a;
-      --accent-ink: #b4b1ff;
-      --on-accent: #0e0f1f;
-      --success: #4ade80;
-      --success-soft: #11291d;
-      --danger: #ff7b7b;
-      --danger-soft: #331618;
-      --focus: #a29fff;
-    }
+    --coin: #ffcd1f;
+    --coin-hover: #ffe066;
+    --track: #d8d2b8;
+    --success: #0b6a26;
+    --success-soft: #e3f5e1;
+    --danger: #b0140c;
+    --danger-soft: #ffe1dc;
+    --focus: #1d3fbb;
   }
 
   body {
@@ -87,22 +75,17 @@
     min-height: 100vh;
     color: var(--ink);
     background-color: var(--canvas);
-    background-image: radial-gradient(
-      ellipse 80% 50% at 50% -10%,
-      color-mix(in oklab, var(--accent) 14%, transparent),
-      transparent
-    );
-    background-repeat: no-repeat;
-    font-family: var(--font-sans);
+    background-image: radial-gradient(var(--canvas-dot) 2px, transparent 2px);
+    background-size: 16px 16px;
+    font-family: var(--font-mono);
+    line-height: 1.5;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   #root {
     width: 100%;
-    max-width: 72rem;
+    max-width: 50rem;
     margin-inline: auto;
     padding: 2.5rem 1.5rem 4rem;
   }

@@ -12,7 +12,7 @@ export interface SidebarProps {
 const HEADING_ID = "practice-history-heading";
 
 const alertClassName =
-	"bg-danger-soft text-danger m-0 mb-3 rounded-lg px-3 py-2 text-sm font-medium";
+	"border-danger bg-danger-soft text-danger m-0 mb-3 border-3 px-3 py-2 text-sm font-bold";
 
 export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 	const state = useHistory();
@@ -35,7 +35,7 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 			)}
 
 			{state.status === "ready" && state.entries.length === 0 && (
-				<p className="border-line-strong text-ink-muted m-0 rounded-xl border border-dashed px-4 py-6 text-center text-sm">
+				<p className="border-line text-ink-muted m-0 border-3 border-dashed px-4 py-6 text-center text-sm">
 					No practice history yet. Texts you practice will appear here.
 				</p>
 			)}
