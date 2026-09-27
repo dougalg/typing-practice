@@ -138,7 +138,7 @@ Boundary: "max(numberOfLoads, numberOfCompletes, 1)", sampled on both sides of e
 | id  | behavior                                                                               | traces | kind    | state   | test                                        |
 | --- | -------------------------------------------------------------------------------------- | ------ | ------- | ------- | ------------------------------------------- |
 | U43 | A row with `numberOfLoads = 0` and `numberOfCompletes = 0` becomes `numberOfLoads = 1` | FR-011 | example | DONE    | `src/features/savedItems/db.test.ts::[U43]` |
-| U44 | A row with `numberOfLoads = 2` and `numberOfCompletes = 3` becomes `numberOfLoads = 3` | FR-011 | example | PENDING |                                             |
+| U44 | A row with `numberOfLoads = 2` and `numberOfCompletes = 3` becomes `numberOfLoads = 3` | FR-011 | example | DONE    | `src/features/savedItems/db.test.ts::[U44]` |
 | U45 | A row with `numberOfLoads = 3` and `numberOfCompletes = 3` is unchanged                | FR-011 | example | PENDING |                                             |
 | U46 | A row with `numberOfLoads = 1` and `numberOfCompletes = 0` is unchanged                | FR-011 | example | PENDING |                                             |
 

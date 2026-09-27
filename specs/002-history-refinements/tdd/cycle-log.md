@@ -611,3 +611,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `d5abcf2`
 - state: DONE
+
+## Cycle 52: U44 a row with numberOfLoads = 2 and numberOfCompletes = 3 becomes numberOfLoads = 3
+
+- test: `src/features/savedItems/db.test.ts::[U44] a row with a loaded count of 2 and a completed count of 3 gets a loaded count of 3` (new)
+- red: `pnpm vitest run src/features/savedItems/db.test.ts -t "\[U44\]"` -> `AssertionError: expected 2 to be 3` (1 failed)
+- green: the upgrade uses `Math.max(numberOfLoads, numberOfCompletes, 1)`. Same command -> `1 passed | 12 skipped (13)`. Suite `pnpm test` x3 -> 160 passed each (7.86 s, 7.81 s, 7.89 s); `pnpm build` passes
+- refactor: the version 4 comment names the completed-count bound too (comment only)
+- commit: previous commit was `4eaa8f3`
+- state: DONE
