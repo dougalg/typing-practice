@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { expectNoA11yViolations } from "../test/a11y";
 import PracticeView from "./PracticeView";
 
 function typingInput() {
@@ -106,5 +107,18 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 		await user.click(screen.getByRole("button", { name: "Reset" }));
 
 		expect(onReset).toHaveBeenCalledOnce();
+	});
+
+	it("[U6] the running view has no axe violations", async () => {
+		const { container } = render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+			/>,
+		);
+
+		await expectNoA11yViolations(container);
 	});
 });

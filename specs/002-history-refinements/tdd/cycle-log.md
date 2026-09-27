@@ -125,3 +125,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous cycle's commit was `95f6014`
 - state: BASELINE
+
+## Cycle 6: U6 the running view has no axe violations (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U6] the running view has no axe violations` (new; uses `expectNoA11yViolations` from `src/test/a11y.ts`)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U6\]"` -> `1 passed | 5 skipped (6)`, as expected (in the real browser this includes axe's computed colour-contrast rule)
+- mutant: removed the progress bar's `aria-label="Progress"` -> same command -> `Expected no accessibility violations, found 1: - aria-progressbar-name: ARIA progressbar nodes must have an accessible name (1 node(s))` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 115 passed each (6.81 s, 6.36 s, 6.10 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous cycle's commit was `b661c11`
+- state: BASELINE
