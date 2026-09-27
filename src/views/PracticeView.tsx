@@ -76,6 +76,7 @@ function PracticeView({
 		const newValue = inputElement.value;
 
 		if (newValue.length > currentInputValue.length) {
+			onTypingStarted?.();
 			const typedChar = newValue.slice(currentInputValue.length);
 			const actual = typedChar[0];
 			const expected = targetText[position];
@@ -108,7 +109,6 @@ function PracticeView({
 				return;
 			}
 
-			onTypingStarted?.();
 			setTypedMarks((prev) => {
 				const next = prev.slice();
 				next[position] = "correct";

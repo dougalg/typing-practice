@@ -387,3 +387,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `3bdbf5e`
 - state: DONE
+
+## Cycle 30: U9 onTypingStarted is called once when the first character typed is wrong
+
+- test: `src/views/PracticeView.test.tsx::[U9] onTypingStarted is called once when the first character typed is wrong` (new)
+- red: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U9\]"` -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed)
+- green: the call moved from the correct-character branch to the top of the "a character was added" branch, before the right/wrong check. Same command -> `1 passed | 8 skipped (9)`. Suite `pnpm test` x3 -> 138 passed each (6.37 s, 6.25 s, 6.64 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `bebfeee`
+- state: DONE

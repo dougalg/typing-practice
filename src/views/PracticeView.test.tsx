@@ -168,4 +168,22 @@ describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/
 
 		expect(onTypingStarted).toHaveBeenCalledOnce();
 	});
+
+	it("[U9] onTypingStarted is called once when the first character typed is wrong", async () => {
+		const user = userEvent.setup();
+		const onTypingStarted = vi.fn();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>,
+		);
+
+		await user.type(typingInput(), "x");
+
+		expect(onTypingStarted).toHaveBeenCalledOnce();
+	});
 });
