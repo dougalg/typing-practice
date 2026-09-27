@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import type { TypingState, TypedMark } from "../types";
+import { Heading } from "../components/Heading";
 
 type PracticeViewProps = {
 	targetText: string;
@@ -204,60 +205,60 @@ function PracticeView({
 		setCurrentInputValue("");
 	};
 
+	const isFinished = typingState === "finished";
+
 	return (
-		<div className="rounded-[18px] bg-white/96 p-8 pb-9 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px] sm:p-6 sm:pb-7">
-			<div className="mb-6 flex items-center justify-between">
-				<button
-					onClick={onReset}
-					className="cursor-pointer rounded-full border-none bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-200"
-				>
+		<div className="pixel-panel p-5 pb-6 sm:p-6">
+			<div className="mb-5 flex flex-wrap items-center gap-x-6 gap-y-4">
+				<button onClick={onReset} className="pixel-btn">
 					Reset
 				</button>
+				<div className="text-muted flex flex-wrap items-center gap-x-6 gap-y-1">
+					<div>
+						<span className="text-ink font-bold">{position}</span> /{" "}
+						<span>{targetText.length}</span> characters
+					</div>
+					<div>
+						<span className="text-ink font-bold">{progressPercentage}%</span>{" "}
+						complete
+					</div>
+				</div>
 			</div>
 
-			<div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-200">
+			{/* Segmented like a retro health bar; the counts above carry the value. */}
+			<div className="border-ink bg-track mb-6 h-5 border-3 p-0.5">
 				<div
-					className={`h-full transition-all duration-300 ${
-						typingState === "finished" ? "bg-green-500" : "bg-blue-500"
+					className={`h-full bg-[repeating-linear-gradient(90deg,currentColor_0_12px,transparent_12px_16px)] transition-[width] duration-200 motion-reduce:transition-none ${
+						isFinished ? "text-ok" : "text-hit"
 					}`}
 					style={{ width: `${progressPercentage}%` }}
 				/>
 			</div>
 
-			<div className="mb-6 flex items-center gap-6 text-sm text-slate-600">
-				<div>
-					<span className="font-semibold">{position}</span> /{" "}
-					<span>{targetText.length}</span> characters
-				</div>
-				<div>
-					<span className="font-semibold">{progressPercentage}%</span> complete
-				</div>
-			</div>
-
-			<section className="mb-5 rounded-[14px] border border-slate-300/40 bg-gradient-to-br from-slate-50 to-blue-50 p-5 pb-6">
-				<h2 className="m-0 mb-3 text-[0.95rem] tracking-[0.09em] text-slate-500 uppercase">
+			<section>
+				<Heading level={2} className="mb-4">
 					Type the text below
-				</h2>
+				</Heading>
 				<div
-					className={`mt-2 flex min-h-20 items-center rounded-[10px] px-[0.9rem] py-3 text-left text-[1.5rem] ${
-						typingState === "finished"
-							? "border border-solid border-green-500 bg-linear-to-br from-green-50 to-green-50/50"
-							: "border border-solid border-blue-500"
+					className={`flex min-h-20 items-center border-3 border-solid px-[0.9rem] py-3 text-left ${
+						isFinished ? "border-ok bg-ok-bg" : "border-ink bg-panel"
 					}`}
 				>
-					<p className="m-0 font-mono text-[1.5rem] wrap-break-word whitespace-pre-wrap">
+					<p className="m-0 font-mono text-[1.5rem] leading-relaxed wrap-break-word whitespace-pre-wrap">
 						{Array.from(targetText).map((ch, i) => {
 							const mark = typedMarks[i] ?? null;
 							const isCaret = typingState === "running" && i === position;
 
+							// Incorrect characters are tinted and underlined so they are
+							// distinguishable without relying on color alone.
 							const className =
 								mark === "correct"
-									? "text-green-600"
+									? "text-ok"
 									: mark === "incorrect"
-										? "text-red-600"
+										? "bg-miss-bg text-miss underline decoration-4 underline-offset-4"
 										: isCaret
-											? "text-blue-600 font-semibold underline"
-											: "text-slate-600";
+											? "bg-hit text-panel"
+											: "text-muted";
 
 							const key = `${i}-${ch ?? ""}`;
 
@@ -276,7 +277,7 @@ function PracticeView({
 					onKeyDown={handleTypingKeyDown}
 					onCompositionStart={handleCompositionStart}
 					onCompositionEnd={handleCompositionEnd}
-					className="font-inherit mt-3 w-full rounded-[10px] border border-slate-300 bg-white px-[0.9rem] py-2.5 transition-all duration-150 ease-out placeholder:text-slate-400 focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-200"
+					className="pixel-field mt-4 px-[0.9rem] py-2.5"
 					type="text"
 					autoComplete="off"
 					spellCheck={false}
@@ -284,7 +285,10 @@ function PracticeView({
 					placeholder="Start typing… (this box stays empty; it captures keystrokes)"
 				/>
 				{errorMessage && (
-					<p className="mt-2.5 min-h-5 text-sm text-red-700" role="alert">
+					<p
+						className={`mt-3 font-bold ${isFinished ? "text-ok" : "text-miss"}`}
+						role="alert"
+					>
 						{errorMessage}
 					</p>
 				)}

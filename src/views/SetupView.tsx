@@ -1,4 +1,5 @@
 import React from "react";
+import { Heading } from "../components/Heading";
 
 type SetupViewProps = {
 	sourceText: string;
@@ -16,27 +17,24 @@ function SetupView({
 	onStart,
 }: SetupViewProps) {
 	return (
-		<section className="rounded-[14px] border border-slate-300/40 bg-linear-to-br from-slate-50 to-blue-50 p-5 pb-6">
-			<h2 className="m-0 mb-3 text-[0.95rem] tracking-[0.09em] text-slate-500 uppercase">
+		<section className="pixel-panel p-5 pb-6 sm:p-6">
+			<Heading level={2} className="mb-4">
 				Enter text to practice
-			</h2>
+			</Heading>
 			<textarea
 				value={sourceText}
 				onChange={(e) => onChangeText(e.target.value)}
 				onKeyDown={onKeyDown}
-				className="font-inherit max-h-[200px] min-h-[80px] w-full resize-y rounded-[10px] border border-slate-300 bg-white px-[0.9rem] py-3 text-[1.5rem] leading-relaxed text-slate-950 transition-all duration-150 ease-out placeholder:text-slate-400 focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] focus:outline-none"
+				className="pixel-field max-h-[200px] min-h-[80px] resize-y px-[0.9rem] py-3 text-[1.5rem] leading-relaxed"
 				rows={4}
 				placeholder="Type or paste any text you want to practice..."
 			/>
 			{errorMessage && (
-				<p className="mt-2.5 min-h-[1.25rem] text-sm text-red-700" role="alert">
+				<p className="text-miss mt-3 font-bold" role="alert">
 					{errorMessage}
 				</p>
 			)}
-			<button
-				onClick={onStart}
-				className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full border-none bg-gradient-to-br from-blue-500 to-blue-700 px-5 py-[0.55rem] text-[0.95rem] font-semibold tracking-[0.03em] text-blue-50 uppercase shadow-[0_10px_25px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.7)] transition-all duration-[120ms] ease-out hover:-translate-y-[1px] hover:shadow-[0_14px_30px_rgba(37,99,235,0.4),0_0_0_1px_rgba(30,64,175,0.75)] hover:brightness-105 active:translate-y-0 active:shadow-[0_6px_18px_rgba(37,99,235,0.35),0_0_0_1px_rgba(30,64,175,0.8)]"
-			>
+			<button onClick={onStart} className="pixel-btn pixel-btn-primary mt-4">
 				Start practice
 			</button>
 		</section>
