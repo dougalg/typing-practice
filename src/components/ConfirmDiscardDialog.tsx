@@ -13,7 +13,10 @@ export interface ConfirmDiscardDialogProps {
  * opened with showModal(), so the browser keeps focus inside it and makes the
  * rest of the page inert.
  */
-export const ConfirmDiscardDialog = ({ open }: ConfirmDiscardDialogProps) => {
+export const ConfirmDiscardDialog = ({
+	open,
+	onCancel,
+}: ConfirmDiscardDialogProps) => {
 	const dialogRef = useRef<HTMLDialogElement>(null);
 	const questionId = useId();
 
@@ -25,7 +28,9 @@ export const ConfirmDiscardDialog = ({ open }: ConfirmDiscardDialogProps) => {
 	return (
 		<dialog ref={dialogRef} aria-labelledby={questionId}>
 			<p id={questionId}>Discard your progress on this text?</p>
-			<Button autoFocus>Cancel</Button>
+			<Button autoFocus onClick={onCancel}>
+				Cancel
+			</Button>
 		</dialog>
 	);
 };

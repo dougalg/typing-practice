@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+// Real input through Playwright: the dialog's behavior is the browser's own.
+import { userEvent } from "vitest/browser";
 import { ConfirmDiscardDialog } from "./ConfirmDiscardDialog";
 
 const QUESTION = "Discard your progress on this text?";
@@ -22,5 +24,18 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		);
 
 		expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+	});
+
+	it("[U16] pressing Cancel calls onCancel once and not onConfirm", async () => {
+		const onCancel = vi.fn();
+		const onConfirm = vi.fn();
+		render(
+			<ConfirmDiscardDialog open onConfirm={onConfirm} onCancel={onCancel} />,
+		);
+
+		await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+		expect(onCancel).toHaveBeenCalledOnce();
+		expect(onConfirm).not.toHaveBeenCalled();
 	});
 });
