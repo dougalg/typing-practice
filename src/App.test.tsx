@@ -1053,4 +1053,15 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
 		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
 	});
+
+	it("[A11] loading an entry from the sidebar raises its Loaded by one and leaves Completed", async () => {
+		await addHistory("hello world"); // Loaded: 1, Completed: 0
+		render(<App />);
+
+		await browserUserEvent.click(await loadButtonFor("hello world"));
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
 });

@@ -703,3 +703,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `5d7858b`
 - state: DONE. Ticked T049 (qualified filter).
+
+## Cycle 61: A11 loading an entry from the sidebar raises its "Loaded" by one and leaves "Completed" (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A11] loading an entry from the sidebar raises its Loaded by one and leaves Completed` (new; seeds an entry at Loaded 1 / Completed 0)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A11\]"` -> `1 passed | 46 skipped (47)`. Expected: Load goes through `startSession`, which records the start (U39).
+- mutant (Load-specific): the Load path starts the session without calling `recordPractice` -> same command -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 2.` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 169 passed each (8.18 s, 8.19 s, 8.35 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `4f08ffd`
+- state: DONE. Ticked T050 (qualified filter).
