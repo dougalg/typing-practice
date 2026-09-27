@@ -366,3 +366,15 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - suite: `pnpm test` x3 -> 135 passed each (6.67 s, 6.34 s, 6.40 s); `pnpm build` passes
 - follow-up on cycle 27's surviving mutant 2: with the real styling, the question paragraph is no longer `incomplete` for axe. Question `text-[#cccccc]` -> `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U23\]"` -> `Expected no accessibility violations, found 1: - color-contrast: ... (1 node(s))` (1 failed); restored exactly
 - commit: previous commit was `d95815e`
+
+## Cycle 28: U24 a screen reader announces it as a dialog with its question (first-run pass)
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U24] a screen reader announces it as a dialog with its question` (new)
+- test mechanics: a first draft asserted a deliberately wrong empty string to print the reader's phrasing: `dialog, Discard your progress on this text? | dialog, Discard your progress on this text? | paragraph | Discard your progress on this text? | end of paragraph | button, Cancel | button, Discard and load | end of dialog, Discard your progress on this text?`. The assertion is `phrases[0] === "dialog, Discard your progress on this text?"`. The draft run is not red evidence.
+- first run of the real assertion: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U24\]"` -> `1 passed | 10 skipped (11)`. Passed: U14 already names the dialog.
+- mutant: `aria-labelledby={questionId}` removed -> same command -> `AssertionError: expected 'dialog' to be 'dialog, Discard your progress on this…'` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 136 passed each (6.30 s, 6.18 s, 6.59 s); `pnpm build` passes
+- refactor: none needed
+- note: the restore after the mutant first used a copy saved before Prettier reformatted the file at commit time; `git status` showed the difference (line wrapping only), and the file was restored from `HEAD` instead. Mutant restores now use the committed file.
+- commit: previous commit was `12e1853`
+- state: DONE. Ticked T016 and T020 (U14-U24 all DONE).

@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 // Real input through Playwright: the dialog's behavior is the browser's own.
 import { userEvent } from "vitest/browser";
 import { expectNoA11yViolations } from "../test/a11y";
+import { spokenPhrases } from "../test/screenReader";
 import { ConfirmDiscardDialog } from "./ConfirmDiscardDialog";
 
 const QUESTION = "Discard your progress on this text?";
@@ -132,5 +133,15 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		);
 
 		await expectNoA11yViolations(container);
+	});
+
+	it("[U24] a screen reader announces it as a dialog with its question", async () => {
+		const { container } = render(
+			<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />,
+		);
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases[0]).toBe(`dialog, ${QUESTION}`);
 	});
 });
