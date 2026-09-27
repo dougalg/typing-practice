@@ -1038,4 +1038,19 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 		expect(await entry.findByText("Loaded: 1")).toBeInTheDocument();
 		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
 	});
+
+	it("[A10] starting the same text again from the setup box raises Loaded by one and leaves Completed", async () => {
+		render(<App />);
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+		await (await historyEntry("hello world")).findByText("Loaded: 1");
+		await browserUserEvent.click(resetButton());
+
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
 });

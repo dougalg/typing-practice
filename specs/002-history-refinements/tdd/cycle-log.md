@@ -693,3 +693,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `5189b07`
 - state: DONE. Ticked T048 (qualified filter).
+
+## Cycle 60: A10 starting the same text again from the setup box raises "Loaded" by one and leaves "Completed" (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A10] starting the same text again from the setup box raises Loaded by one and leaves Completed` (new; waits for "Loaded: 1" before resetting, so the second start is not racing the first write)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A10\]"` -> `1 passed | 45 skipped (46)`. Expected: U39 built it.
+- mutant: the existing-entry path's `numberOfLoads + 1` removed -> same command -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 2.` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 168 passed each (8.66 s, 8.15 s, 8.23 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `5d7858b`
+- state: DONE. Ticked T049 (qualified filter).
