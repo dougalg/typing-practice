@@ -911,4 +911,17 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(getPracticeText("second text")).toBeInTheDocument();
 	});
+
+	it("[A7] with a session finished, pressing Load loads immediately with no confirmation", async () => {
+		await addHistory("second text", "hi");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("hi"));
+		await browserUserEvent.type(typingInput(), "hi");
+		expect(screen.getByText("Nice work! You finished.")).toBeInTheDocument();
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+	});
 });

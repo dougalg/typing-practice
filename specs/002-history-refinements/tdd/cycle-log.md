@@ -511,3 +511,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `a3ffe39`
 - state: DONE. Ticked T043 (qualified filter).
+
+## Cycle 42: A7 with a session finished, Load loads immediately with no confirmation (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A7] with a session finished, pressing Load loads immediately with no confirmation` (new; types "hi" to the end and checks the finished message first)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A7\]"` -> `1 passed | 39 skipped (40)`. Expected: A1's condition requires `typingState === "running"`.
+- mutant: `sessionInProgress = typingState !== "idle" && sessionTouched` (finished counts as in progress) -> same command -> `Error: expect(element).not.toBeInTheDocument() expected document not to contain element, found <dialog` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 150 passed each (7.83 s, 7.96 s, 7.48 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `9b37463`
+- state: DONE. Ticked T044 (qualified filter).
