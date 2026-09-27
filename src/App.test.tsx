@@ -660,19 +660,28 @@ interface Version1Row {
 	numberOfCompletes: number;
 }
 
+/** The savedTexts store definitions of earlier schema versions. */
+const OLD_SCHEMAS = {
+	1: "++id, dateCreated, dateLastUsed, text", // before 001
+	3: "++id, dateCreated, dateModified, &text", // as 001 shipped it
+} as const;
+
 /**
- * Replaces the app's database with one in the ORIGINAL (version 1) schema,
- * holding `rows`, as a user of the app from before 001 would have it. Dexie
- * opens lazily, so reopening `savedTextsDb` afterwards runs every upgrade.
+ * Replaces the app's database with one at an earlier schema `version`, holding
+ * `rows`. Dexie opens lazily, so reopening `savedTextsDb` afterwards runs every
+ * upgrade from that version on.
  */
-async function seedVersion1Database(rows: Version1Row[]) {
+async function seedOldDatabase(
+	version: keyof typeof OLD_SCHEMAS,
+	rows: Version1Row[],
+) {
 	savedTextsDb.close();
 	await Dexie.delete(savedTextsDb.name);
-	const v1 = new Dexie(savedTextsDb.name);
-	v1.version(1).stores({ savedTexts: "++id, dateCreated, dateLastUsed, text" });
-	await v1.open();
-	await v1.table("savedTexts").bulkAdd(rows);
-	v1.close();
+	const old = new Dexie(savedTextsDb.name);
+	old.version(version).stores({ savedTexts: OLD_SCHEMAS[version] });
+	await old.open();
+	await old.table("savedTexts").bulkAdd(rows);
+	old.close();
 	await savedTextsDb.open();
 }
 
@@ -696,7 +705,7 @@ const DEFAULT_VIEWPORT = { width: 414, height: 896 };
 // name too: -t "002-history-refinements.*\[A17\]".
 describe("App (specs/002-history-refinements, checks carried over from 001)", () => {
 	it("[A17] data from before 001, with duplicate rows of one text, shows one entry per text", async () => {
-		await seedVersion1Database([
+		await seedOldDatabase(1, [
 			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 1) }),
 			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 2) }),
 			version1Row({ text: "beta", dateModified: new Date(2026, 0, 3) }),
@@ -1108,18 +1117,9 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 
 	it("[A16] an entry stored with a loaded count of 0 shows Loaded: 1 after the upgrade", async () => {
 		// Written by 001 (schema version 3), which stored 0 for new entries.
-		savedTextsDb.close();
-		await Dexie.delete(savedTextsDb.name);
-		const v3 = new Dexie(savedTextsDb.name);
-		v3.version(3).stores({
-			savedTexts: "++id, dateCreated, dateModified, &text",
-		});
-		await v3.open();
-		await v3
-			.table("savedTexts")
-			.add(version1Row({ text: "from 001", numberOfLoads: 0 }));
-		v3.close();
-		await savedTextsDb.open();
+		await seedOldDatabase(3, [
+			version1Row({ text: "from 001", numberOfLoads: 0 }),
+		]);
 
 		render(<App />);
 

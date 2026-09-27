@@ -743,3 +743,9 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: the database replacement duplicates `seedVersion1Database`'s steps; extracted in the next, structural commit
 - commit: previous commit was `2dffd17`
 - state: DONE. Ticked T053 (qualified filter), and T025 and T029 (U43-U46 and A16 all DONE).
+
+## Refactor (A16): one helper seeds an older schema version
+
+- change: `src/App.test.tsx`'s `seedVersion1Database(rows)` became `seedOldDatabase(version, rows)` with an `OLD_SCHEMAS` table (version 1: before 001; version 3: as 001 shipped it). A17 calls it with 1, A16 with 3 instead of repeating the steps inline. No assertion changed.
+- suite: `pnpm test` x3 -> 172 passed each (8.84 s, 9.04 s, 8.44 s); `pnpm build` passes
+- commit: previous commit was `71cb109`
