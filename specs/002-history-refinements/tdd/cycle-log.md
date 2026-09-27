@@ -749,3 +749,10 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - change: `src/App.test.tsx`'s `seedVersion1Database(rows)` became `seedOldDatabase(version, rows)` with an `OLD_SCHEMAS` table (version 1: before 001; version 3: as 001 shipped it). A17 calls it with 1, A16 with 3 instead of repeating the steps inline. No assertion changed.
 - suite: `pnpm test` x3 -> 172 passed each (8.84 s, 9.04 s, 8.44 s); `pnpm build` passes
 - commit: previous commit was `71cb109`
+
+## Close-out of 001 (task T031) and T027
+
+- T027 (`[A9]`-`[A13]`) ticked: all five are DONE (cycles 59-63). Of the 001 tests it names, `[A10]` and `[A11]` were updated in cycle 57. `[A7]` and `[A18]` assert the stored completed count, not the "Practiced" text, so they needed no change.
+- T031: in `specs/001-practice-history/tasks.md`, T009, T012 and T042 ticked, and the close-out section says which 002 tests automate 001's checks 11, 12, 15, 16 and 17. Check 16 is automated for reflow at 320 CSS px only; the 200% zoom step is not separately automated. In `specs/001-practice-history/tdd/test-list.md`, 001's `A16` is `DONE` (was `BLOCKED`), naming 002's `[A17]` test. 001's own `tdd/cycle-log.md` was not touched.
+- No code or test changed; suite as after cycle 64's refactor (172 passed).
+- commit: previous commit was `1443b4c`
