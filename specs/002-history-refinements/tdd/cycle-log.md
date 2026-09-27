@@ -274,3 +274,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `58bbf98`
 - state: DONE
+
+## Cycle 19: U15 when the dialog opens, Cancel has focus
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U15] when it opens, Cancel has focus` (new)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U15\]"` -> `TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Cancel"` (1 failed)
+- green: a "Cancel" `Button` (shared component) with `autoFocus`, first focusable in the dialog. Same command -> `1 passed | 1 skipped (2)`. Suite `pnpm test` x3 -> 127 passed each (5.99 s, 6.03 s, 6.71 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `bb6542d`
+- state: DONE

@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { Button } from "./Button";
 
 export interface ConfirmDiscardDialogProps {
 	open: boolean;
@@ -24,6 +25,7 @@ export const ConfirmDiscardDialog = ({ open }: ConfirmDiscardDialogProps) => {
 	return (
 		<dialog ref={dialogRef} aria-labelledby={questionId}>
 			<p id={questionId}>Discard your progress on this text?</p>
+			<Button autoFocus>Cancel</Button>
 		</dialog>
 	);
 };

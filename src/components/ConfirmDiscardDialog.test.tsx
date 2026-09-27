@@ -15,4 +15,12 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		// inside it and the rest of the page is inert.
 		expect(dialog.matches(":modal")).toBe(true);
 	});
+
+	it("[U15] when it opens, Cancel has focus", () => {
+		render(
+			<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />,
+		);
+
+		expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+	});
 });

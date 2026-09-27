@@ -86,7 +86,7 @@ checks 11, 12 and 16, now automated.
 | id  | behavior                                                                              | traces | kind    | state   | test                                                  |
 | --- | ------------------------------------------------------------------------------------- | ------ | ------- | ------- | ----------------------------------------------------- |
 | U14 | With `open` true, it shows a modal dialog named "Discard your progress on this text?" | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U14]` |
-| U15 | When it opens, "Cancel" has focus                                                     | FR-005 | example | PENDING |                                                       |
+| U15 | When it opens, "Cancel" has focus                                                     | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U15]` |
 | U16 | Pressing "Cancel" calls `onCancel` once and not `onConfirm`                           | FR-003 | example | PENDING |                                                       |
 | U17 | Pressing Escape calls `onCancel` once                                                 | FR-003 | example | PENDING |                                                       |
 | U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | PENDING |                                                       |
