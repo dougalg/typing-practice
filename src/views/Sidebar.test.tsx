@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
+import { spokenPhrases } from "../test/screenReader";
 import { Sidebar } from "./Sidebar";
 import { savedTextsDb } from "../features/savedItems/db";
 
@@ -241,5 +242,18 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 
 		const items = await screen.findAllByRole("listitem");
 		expect(items).toHaveLength(2);
+	});
+});
+
+describe("Sidebar screen-reader output (specs/002-history-refinements, 001's manual checks 15 and 17)", () => {
+	it("[U28] a screen reader announces the region as Practice History", async () => {
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText(
+			"No practice history yet. Texts you practice will appear here.",
+		);
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases[0]).toBe("region, Practice History");
 	});
 });

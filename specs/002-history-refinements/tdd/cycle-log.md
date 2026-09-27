@@ -198,3 +198,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - suite: unchanged since cycle 10 (119 passed x3); no code or test changed in this cycle
 - commit: previous commit was `e3a60c9`
 - state: DONE (test: U63). Ticked T014: its contrast check exists and is proven to compute colours, although no new test was added.
+
+## Cycle 12: U28 a screen reader announces the region as "Practice History" (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U28] a screen reader announces the region as Practice History` (new; first use of `spokenPhrases` from `src/test/screenReader.ts`)
+- first run: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U28\]"` -> `1 passed | 17 skipped (18)`. Expected: 001 built the named region; this automates its manual screen-reader check.
+- mutant: the panel's `aria-labelledby={HEADING_ID}` -> `aria-labelledby="mutant-missing-id"` -> same command -> `AssertionError: expected 'heading, Practice History, level 2' to be 'region, Practice History'` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 120 passed each (5.96 s, 5.94 s, 6.12 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `54bc87b`
+- state: DONE
