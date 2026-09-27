@@ -110,7 +110,7 @@ checks 11, 12 and 16, now automated.
 | U30 | A screen reader announces each Load button as "Load" plus that entry's text                                      | 001:FR-014 | example | DONE    | `src/views/Sidebar.test.tsx::[U30]`                                                                                                        |
 | U31 | A screen reader reads the empty-state message                                                                    | 001:FR-011 | example | DONE    | `src/views/Sidebar.test.tsx::[U31]`                                                                                                        |
 | U32 | A screen reader announces the read-failure alert                                                                 | 001:FR-013 | example | DONE    | `src/views/Sidebar.test.tsx::[U32]`                                                                                                        |
-| U33 | A screen reader announces the save-failure alert                                                                 | 001:FR-013 | example | PENDING |                                                                                                                                            |
+| U33 | A screen reader announces the save-failure alert                                                                 | 001:FR-013 | example | DONE    | `src/views/Sidebar.test.tsx::[U33]`                                                                                                        |
 
 ### `src/components/SavedTextItem.tsx`
 

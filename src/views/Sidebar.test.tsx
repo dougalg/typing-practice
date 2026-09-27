@@ -316,4 +316,19 @@ describe("Sidebar screen-reader output (specs/002-history-refinements, 001's man
 			await savedTextsDb.open();
 		}
 	});
+
+	it("[U33] a screen reader announces the save-failure alert", async () => {
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} saveError />);
+		await screen.findByText(
+			"No practice history yet. Texts you practice will appear here.",
+		);
+
+		const phrases = await spokenPhrases(container);
+
+		const alertAt = phrases.indexOf("alert");
+		expect(phrases.slice(alertAt, alertAt + 2)).toEqual([
+			"alert",
+			"Your practice history could not be saved. You can keep practicing.",
+		]);
+	});
 });

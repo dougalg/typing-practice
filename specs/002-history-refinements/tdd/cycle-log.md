@@ -250,3 +250,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `ed60c18`
 - state: DONE
+
+## Cycle 17: U33 a screen reader announces the save-failure alert (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U33] a screen reader announces the save-failure alert` (new)
+- first run: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U33\]"` -> `1 passed | 22 skipped (23)`. Expected.
+- mutant: kept `role="alert"`, wrapped the save-failure message in `<span aria-hidden="true">` -> same command -> `AssertionError: expected [ 'alert', 'paragraph' ] to deeply equal [ 'alert', …(1) ]` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 125 passed each (6.24 s, 6.49 s, 6.39 s); `pnpm build` passes
+- refactor: none needed. (U32 and U33 repeat a two-line "find `alert`, take the next phrase" step; left inline, two uses.)
+- commit: previous commit was `cee8923`
+- state: DONE. Ticked T015 (U28-U33 all DONE).
