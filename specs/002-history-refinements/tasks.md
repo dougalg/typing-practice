@@ -127,7 +127,7 @@ description: "Task list for Practice History Refinements"
 - [x] T048 [US2] [A9] Confirm A9 is green: run `pnpm vitest run src/App.test.tsx -t "\[A9\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [x] T049 [US2] [A10] Confirm A10 is green: run `pnpm vitest run src/App.test.tsx -t "\[A10\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [x] T050 [US2] [A11] Confirm A11 is green: run `pnpm vitest run src/App.test.tsx -t "\[A11\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
-- [ ] T051 [US2] [A12] Confirm A12 is green: run `pnpm vitest run src/App.test.tsx -t "\[A12\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
+- [x] T051 [US2] [A12] Confirm A12 is green: run `pnpm vitest run src/App.test.tsx -t "\[A12\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T052 [US2] [A13] Confirm A13 is green: run `pnpm vitest run src/App.test.tsx -t "\[A13\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T053 [US2] [A16] Confirm A16 is green: run `pnpm vitest run src/App.test.tsx -t "\[A16\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 

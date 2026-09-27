@@ -713,3 +713,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `4f08ffd`
 - state: DONE. Ticked T050 (qualified filter).
+
+## Cycle 62: A12 finishing a text, with a mistake on the way, raises "Completed" by one and leaves "Loaded" (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A12] finishing a text, with a mistake on the way, raises Completed by one and leaves Loaded` (new)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A12\]"` -> `1 passed | 47 skipped (48)`. Expected: `recordCompletion` is unchanged from 001 and does not touch the loaded count.
+- mutant: `recordCompletion` also adds 1 to `numberOfLoads` -> same command -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 1.` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 170 passed each (8.41 s, 8.28 s, 8.21 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `1789da5`
+- state: DONE. Ticked T051 (qualified filter).

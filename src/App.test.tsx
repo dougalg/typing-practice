@@ -1064,4 +1064,18 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
 		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
 	});
+
+	it("[A12] finishing a text, with a mistake on the way, raises Completed by one and leaves Loaded", async () => {
+		render(<App />);
+		await browserUserEvent.type(setupBox(), "hi");
+		await browserUserEvent.click(startButton());
+		await (await historyEntry("hi")).findByText("Loaded: 1");
+
+		await browserUserEvent.type(typingInput(), "X"); // mistake: expected "h"
+		await browserUserEvent.type(typingInput(), "hi");
+
+		const entry = await historyEntry("hi");
+		expect(await entry.findByText("Completed: 1")).toBeInTheDocument();
+		expect(entry.getByText("Loaded: 1")).toBeInTheDocument();
+	});
 });
