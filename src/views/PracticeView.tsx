@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { Eyebrow, Panel } from "../components/Panel";
 import { fieldClassName } from "../components/field";
+import { toGlyphs, type GlyphState } from "../features/practice/glyphs";
 import type { TypingState, TypedMark } from "../types";
 
 type PracticeViewProps = {
@@ -9,6 +10,19 @@ type PracticeViewProps = {
 	typingState: TypingState;
 	onFinish: () => void;
 	onReset: () => void;
+};
+
+// Incorrect glyphs are tinted and underlined so they are distinguishable
+// without relying on color alone. The caret's background is padded
+// vertically: marks drawn above or below a letter (e.g. Thai vowels) can
+// extend past the line box, and would be white-on-white outside it. Inline
+// padding grows the background without changing the line height.
+const glyphClassName: Record<GlyphState, string> = {
+	correct: "text-success",
+	incorrect:
+		"bg-danger-soft text-danger underline decoration-4 underline-offset-4",
+	caret: "bg-accent text-on-accent py-[0.3em]",
+	pending: "text-ink-muted",
 };
 
 function displayChar(ch: string) {
@@ -209,6 +223,10 @@ function PracticeView({
 	};
 
 	const isFinished = typingState === "finished";
+	const glyphs = useMemo(
+		() => toGlyphs(targetText, typedMarks, position, typingState === "running"),
+		[targetText, typedMarks, position, typingState],
+	);
 
 	return (
 		<Panel aria-labelledby={headingId}>
@@ -236,7 +254,17 @@ function PracticeView({
 					</div>
 				</dl>
 				<Button variant="secondary" size="sm" onClick={onReset}>
-					<span aria-hidden="true">↺</span>
+					{/* Pixel-art ↺: the pixel font has no such glyph, and the fallback
+					    font draws it tiny at the button's size. */}
+					<svg
+						aria-hidden="true"
+						viewBox="0 0 10 7"
+						fill="currentColor"
+						shapeRendering="crispEdges"
+						className="h-[14px] w-[20px] shrink-0"
+					>
+						<path d="M2 0h3v1h-3zM7 0h1v1h-1zM1 1h1v1h-1zM6 1h3v1h-3zM0 2h1v3h-1zM5 2h5v1h-5zM7 3h1v2h-1zM1 5h1v1h-1zM6 5h1v1h-1zM2 6h4v1h-4z" />
+					</svg>
 					Reset
 				</Button>
 			</div>
@@ -247,11 +275,12 @@ function PracticeView({
 				aria-valuemin={0}
 				aria-valuemax={100}
 				aria-valuenow={progressPercentage}
-				className="bg-line mb-7 h-2 overflow-hidden rounded-full"
+				className="border-line bg-track mb-7 h-5 border-3 p-0.5"
 			>
+				{/* Segmented like a retro health bar. */}
 				<div
-					className={`h-full rounded-full motion-safe:transition-[width] motion-safe:duration-300 ${
-						isFinished ? "bg-success" : "bg-accent"
+					className={`h-full bg-[repeating-linear-gradient(90deg,currentColor_0_12px,transparent_12px_16px)] motion-safe:transition-[width] motion-safe:duration-200 ${
+						isFinished ? "text-success" : "text-accent"
 					}`}
 					style={{ width: `${progressPercentage}%` }}
 				/>
@@ -261,36 +290,23 @@ function PracticeView({
 				Type the text below
 			</Eyebrow>
 			<div
-				className={`rounded-xl border px-5 py-4 transition-colors duration-300 ${
+				className={`border-3 px-5 py-4 ${
 					isFinished
-						? "border-success/50 bg-success-soft"
-						: "border-line bg-surface-sunken"
+						? "border-success bg-success-soft"
+						: "border-line bg-surface"
 				}`}
 			>
 				{/* overflow-wrap:anywhere (unlike break-word) also lowers the element's
 				    min-content width, so a long unbroken run can't widen the layout. */}
 				<p className="m-0 font-mono text-xl leading-[1.9] [overflow-wrap:anywhere] whitespace-pre-wrap sm:text-2xl">
-					{Array.from(targetText).map((ch, i) => {
-						const mark = typedMarks[i] ?? null;
-						const isCaret = typingState === "running" && i === position;
-
-						const className =
-							mark === "correct"
-								? "text-success"
-								: mark === "incorrect"
-									? "rounded-sm bg-danger-soft text-danger underline decoration-wavy decoration-1 underline-offset-4"
-									: isCaret
-										? "rounded-sm bg-accent-soft text-accent-ink font-semibold underline decoration-2 underline-offset-[6px]"
-										: "text-ink-muted";
-
-						const key = `${i}-${ch ?? ""}`;
-
-						return (
-							<span key={key} className={className}>
-								{ch}
-							</span>
-						);
-					})}
+					{glyphs.map((glyph, i) => (
+						<span
+							key={`${i}-${glyph.text}`}
+							className={glyphClassName[glyph.state]}
+						>
+							{glyph.text}
+						</span>
+					))}
 				</p>
 			</div>
 			<input
@@ -310,10 +326,10 @@ function PracticeView({
 			/>
 			{errorMessage && (
 				<p
-					className={`mt-3 rounded-lg px-3 py-2 text-sm font-medium ${
+					className={`mt-3 border-3 px-3 py-2 text-sm font-bold ${
 						isFinished
-							? "bg-success-soft text-success"
-							: "bg-danger-soft text-danger"
+							? "border-success bg-success-soft text-success"
+							: "border-danger bg-danger-soft text-danger"
 					}`}
 					role="alert"
 				>

@@ -40,7 +40,7 @@ function SetupView({
 			/>
 			{errorMessage && (
 				<p
-					className="bg-danger-soft text-danger mt-3 rounded-lg px-3 py-2 text-sm font-medium"
+					className="border-danger bg-danger-soft text-danger mt-3 border-3 px-3 py-2 text-sm font-bold"
 					role="alert"
 				>
 					{errorMessage}
@@ -49,15 +49,15 @@ function SetupView({
 			<div className="mt-5 flex flex-wrap items-center justify-between gap-3">
 				<p id={hintId} className="text-ink-muted m-0 text-sm">
 					Press{" "}
-					<kbd className="border-line-strong bg-surface-sunken text-ink rounded-md border px-1.5 py-0.5 font-mono text-xs">
+					<kbd className="border-line bg-surface text-ink border-2 border-b-4 px-1.5 py-0.5 font-mono text-xs font-bold">
 						Ctrl
 					</kbd>{" "}
 					/{" "}
-					<kbd className="border-line-strong bg-surface-sunken text-ink rounded-md border px-1.5 py-0.5 font-mono text-xs">
+					<kbd className="border-line bg-surface text-ink border-2 border-b-4 px-1.5 py-0.5 font-mono text-xs font-bold">
 						Cmd
 					</kbd>{" "}
 					+{" "}
-					<kbd className="border-line-strong bg-surface-sunken text-ink rounded-md border px-1.5 py-0.5 font-mono text-xs">
+					<kbd className="border-line bg-surface text-ink border-2 border-b-4 px-1.5 py-0.5 font-mono text-xs font-bold">
 						Enter
 					</kbd>{" "}
 					to start

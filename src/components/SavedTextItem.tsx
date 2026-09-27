@@ -23,15 +23,15 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 	const loadId = useId();
 
 	return (
-		<div className="border-line bg-surface-sunken hover:border-line-strong min-w-0 rounded-xl border p-4 transition-colors duration-150">
+		<div className="border-line bg-surface-sunken min-w-0 border-3 p-4">
 			<p
 				id={previewId}
-				className="text-ink m-0 line-clamp-3 text-sm leading-relaxed [overflow-wrap:anywhere]"
+				className="text-ink m-0 line-clamp-3 leading-relaxed font-bold [overflow-wrap:anywhere]"
 			>
 				{props.text}
 			</p>
 			<div className="mt-3 flex items-end justify-between gap-3">
-				<div className="text-ink-muted min-w-0 text-xs leading-relaxed">
+				<div className="text-ink-muted min-w-0 text-sm leading-relaxed">
 					<p className="m-0">
 						Last practiced: {dateFormatter.format(props.dateModified)}
 					</p>
