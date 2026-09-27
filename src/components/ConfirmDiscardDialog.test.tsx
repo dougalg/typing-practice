@@ -64,4 +64,20 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		expect(onConfirm).toHaveBeenCalledOnce();
 		expect(onCancel).not.toHaveBeenCalled();
 	});
+
+	it("[U19] Tab from the last button keeps focus inside the dialog", async () => {
+		render(
+			<>
+				<button type="button">Outside</button>
+				<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />
+			</>,
+		);
+		screen.getByRole("button", { name: "Discard and load" }).focus();
+
+		await userEvent.tab();
+
+		expect(screen.getByRole("dialog")).toContainElement(
+			document.activeElement as HTMLElement,
+		);
+	});
 });

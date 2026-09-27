@@ -310,3 +310,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `a46ec54`
 - state: DONE
+
+## Cycle 23: U19 Tab from the last button keeps focus inside the dialog
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U19] Tab from the last button keeps focus inside the dialog` (new; an "Outside" button is rendered too; real Tab via `vitest/browser`)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U19\]"` -> `Error: expect(element).toContainElement(element) ... <dialog aria-labelledby="_r_0_" open="" /> does not contain: <body />` (1 failed). Finding: research.md R6 expected `showModal()` alone to contain focus. In Chromium it makes the page inert (the "Outside" button is skipped) but lets Tab leave the document from the last button (to browser UI, or here the runner's parent frame), leaving `document.activeElement` as `<body>`. FR-005 asks for focus kept inside, so this is a real missing behavior, not a test artefact.
+- green: `onKeyDown` on the dialog: Tab (without Shift) on "Discard and load" is prevented and moves focus to "Cancel". Same command -> `1 passed | 5 skipped (6)`. Suite `pnpm test` x3 -> 131 passed each (6.13 s, 6.02 s, 5.96 s); `pnpm build` passes
+- refactor: none needed; component comment updated to say what the browser does and does not do
+- commit: previous commit was `0a3090f`
+- state: DONE
