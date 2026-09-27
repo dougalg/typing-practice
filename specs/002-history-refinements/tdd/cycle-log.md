@@ -602,3 +602,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: `src/types.ts` comments: `numberOfLoads` is the "Loaded count" (was "Legacy, unused"), `numberOfCompletes` the "Completed count" (T028; comments only)
 - commit: previous commit was `b79fe7c`
 - state: DONE. Ticked T024 and T028 (U38-U41 all DONE).
+
+## Cycle 51: U43 a row with numberOfLoads = 0 and numberOfCompletes = 0 becomes numberOfLoads = 1
+
+- test: `src/features/savedItems/db.test.ts::[U43] a row with a loaded count of 0 and a completed count of 0 gets a loaded count of 1` (new describe block; new helpers `seedV3()`, which seeds a raw database at schema version 3 as 001 shipped it, and `loadsAfterUpgrade(loads, completes)`)
+- red: `pnpm vitest run src/features/savedItems/db.test.ts -t "\[U43\]"` -> `AssertionError: expected +0 to be 1` (1 failed)
+- green: `db.version(4)` with version 3's stores and an upgrade that sets `numberOfLoads = Math.max(numberOfLoads, 1)` on every row (fake-it step: the completed-count term waits for U44). Same command -> `1 passed | 11 skipped (12)`. Suite `pnpm test` x3 -> 159 passed each (7.85 s, 7.96 s, 7.75 s); `pnpm build` passes. 001's migration tests (U31-U40) still pass through the new version.
+- refactor: none needed
+- commit: previous commit was `d5abcf2`
+- state: DONE

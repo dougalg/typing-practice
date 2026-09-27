@@ -213,3 +213,40 @@ describe("openSavedTextsDb migration from version 1 (specs/001-practice-history 
 		).rejects.toMatchObject({ name: "ConstraintError" });
 	});
 });
+
+/**
+ * Seeds a database under `name` at schema version 3 (the version 001 shipped),
+ * bypassing openSavedTextsDb, so opening it afterwards runs only the upgrades
+ * added since.
+ */
+async function seedV3(name: string, rows: SavedText[]) {
+	const raw = new Dexie(name) as Dexie & {
+		savedTexts: Dexie.Table<SavedText, number>;
+	};
+	raw
+		.version(3)
+		.stores({ savedTexts: "++id, dateCreated, dateModified, &text" });
+	await raw.open();
+	await raw.table("savedTexts").bulkAdd(rows);
+	raw.close();
+}
+
+async function loadsAfterUpgrade(
+	numberOfLoads: number,
+	numberOfCompletes: number,
+) {
+	const name = await migrationDbName();
+	await seedV3(name, [
+		row({ id: 1, text: "entry", numberOfLoads, numberOfCompletes }),
+	]);
+	const rows = await openSavedTextsDb(name).savedTexts.toArray();
+	return rows[0]?.numberOfLoads;
+}
+
+// Version 4 sets numberOfLoads to max(numberOfLoads, numberOfCompletes, 1),
+// sampled on both sides of each term (no property-based library here).
+describe("openSavedTextsDb version 4 count correction (specs/002-history-refinements FR-011)", () => {
+	it("[U43] a row with a loaded count of 0 and a completed count of 0 gets a loaded count of 1", async () => {
+		expect(await loadsAfterUpgrade(0, 0)).toBe(1);
+	});
+});
