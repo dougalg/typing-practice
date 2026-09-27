@@ -162,7 +162,7 @@ description: "Task list for Practice History in the Sidebar"
 
 - [x] T054 Write the guard test for [A19] in `src/App.test.tsx`: spy on `globalThis.fetch`, `XMLHttpRequest.prototype.open` and `navigator.sendBeacon`, run start, load and finish through the UI, and assert none was called. This is a guard, not a driver: it passes on the first run, so it cannot be seen failing. Prove it is not vacuous by temporarily adding a `fetch("/x")` call in `src/App.tsx`, observing the test fail, and removing the call again; record both runs in `tdd/cycle-log.md`.
 - [x] T055 Confirm [A19] is green on the restored code: run `pnpm vitest run src/App.test.tsx -t "<the A19 test name>"`, at least one `passed`.
-- [X] T025 Run `pnpm format` and commit the result so it produces no diff on the committed code (Constitution: Formatting).
+- [x] T025 Run `pnpm format` and commit the result so it produces no diff on the committed code (Constitution: Formatting).
 - [x] T026 Run `pnpm test` and `pnpm build` from the worktree root and confirm both pass, including all axe checks (Constitution: Quality Gates).
 - [x] T027 Confirm FR-015 by searching `src/` for any network use (`fetch(`, `XMLHttpRequest`, `sendBeacon`, `WebSocket`) and confirming there are none introduced by this feature.
 - [ ] T028 Run the manual scenarios in `specs/001-practice-history/quickstart.md` in `pnpm dev`, including the keyboard-only pass, 200% zoom and narrow width reflow, the legacy-data upgrade, the storage-unavailable case, and the contrast check of the new text colours (at least 4.5:1). Record the results for the PR.
