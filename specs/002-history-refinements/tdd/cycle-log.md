@@ -630,3 +630,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `39bd805`
 - state: DONE
+
+## Cycle 54: U46 a row with numberOfLoads = 1 and numberOfCompletes = 0 is unchanged (first-run pass)
+
+- test: `src/features/savedItems/db.test.ts::[U46] a row with a loaded count of 1 and a completed count of 0 is unchanged` (new; the boundary at the floor of 1)
+- first run: `pnpm vitest run src/features/savedItems/db.test.ts -t "\[U46\]"` -> `1 passed | 14 skipped (15)`. Expected: the floor is exactly 1.
+- mutant: floor raised to 2 -> same command -> `AssertionError: expected 2 to be 1` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 162 passed each (8.28 s, 7.96 s, 8.16 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `730702d`
+- state: DONE. T025 and T029 also name A16, so they wait for it.
