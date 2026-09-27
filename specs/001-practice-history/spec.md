@@ -8,7 +8,7 @@
 
 **Input**: User description: "ability to store and load a practice history from the sidebar"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Practiced texts are remembered automatically (Priority: P1)
 
@@ -72,7 +72,7 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - The user activates Load repeatedly in quick succession: only one session starts for the last selection, with no duplicate history entries. Starting or loading never changes an entry's practice count; only finishing does.
 - Two browser tabs start practice with the same new text at the same moment: the history ends up with a single entry for it, and neither tab shows an error.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -99,7 +99,7 @@ A learner scanning the history can tell entries apart and gauge progress: each e
 - **History Entry**: One distinct practice text and its usage summary. Attributes: the full text, when it was first stored, when it was last practiced, and its practice count (how many times it has been typed through to the end). There is at most one entry per distinct text.
 - **Practice Session**: A single attempt at typing a text, either started from newly entered text or loaded from a History Entry. It is not stored as its own record. Starting it updates the last-practiced date of the related History Entry, and finishing it raises that entry's practice count.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

@@ -38,7 +38,7 @@ file). These are not red-green-refactor cycles; states go straight to `BASELINE`
 
 - U1 (`src/App.test.tsx`): idle app shows the setup box and "Start practice". Mutant: renamed the
   button to "MUTANT-Start practice" in `SetupView.tsx` -> test failed (`Unable to find
-  role="button" name "Start practice"`). Restored.
+role="button" name "Start practice"`). Restored.
 - U2 (`src/App.test.tsx`): starting shows the practice view with the typed text and the typing
   input. Mutant: changed the typing input's placeholder to `"MUTANT"` in `PracticeView.tsx` ->
   failed. Restored.
@@ -115,7 +115,7 @@ version 2 upgrade function and the version 3 unique index) and were written and 
 unit rather than ten separate implementation steps.
 
 - test: `src/features/savedItems/db.test.ts`, new `describe("openSavedTextsDb migration from
-  version 1 ...")` block, ten `it` blocks tagged `[U31]` to `[U40]`. Helpers added: `seedV1()`
+version 1 ...")` block, ten `it` blocks tagged `[U31]` to `[U40]`. Helpers added: `seedV1()`
   (opens a version-1-only Dexie instance under a throwaway name and inserts rows, bypassing
   `openSavedTextsDb` so the seed predates any upgrade function) and `row()` (a `SavedText`
   builder with sensible defaults).
@@ -135,10 +135,10 @@ unit rather than ten separate implementation steps.
   - U38: `promise resolved "99" instead of rejecting` -> no unique index yet
   - U40: `promise resolved "2" instead of rejecting` -> no unique index on a fresh database either
 - green: implemented in `src/features/savedItems/db.ts`: `version(2).stores({ savedTexts: "++id,
-  dateCreated, dateModified, text" }).upgrade(...)` groups existing rows by `text`, and for each
+dateCreated, dateModified, text" }).upgrade(...)` groups existing rows by `text`, and for each
   group of 2+ keeps the lowest id, earliest `dateCreated`, latest `dateModified`, and sums
   `numberOfLoads`/`numberOfCompletes`; then `version(3).stores({ savedTexts: "++id, dateCreated,
-  dateModified, &text" })` adds the unique index once duplicates are gone. Suite ->
+dateModified, &text" })` adds the unique index once duplicates are gone. Suite ->
   `pnpm vitest run src/features/savedItems/db.test.ts`: 11 passed, 0 failed.
 - refactor: none needed beyond running Prettier on the new test file (`pnpm format` was avoided
   repo-wide after an earlier incident; only the touched file was formatted:
@@ -153,7 +153,7 @@ unit rather than ten separate implementation steps.
 - test: `src/features/savedItems/history.test.ts` (new file), five `it` blocks tagged `[U9]` to
   `[U13]`.
 - red: `pnpm vitest run src/features/savedItems/history.test.ts` against `import { normalizeText }
-  from "./history"` with no `history.ts` yet -> unresolved-symbol compile error (Vite transform
+from "./history"` with no `history.ts` yet -> unresolved-symbol compile error (Vite transform
   error), the allowed non-assertion red per the playbook. Added the minimal stub
   `normalizeText(input) { return input; }`, re-ran -> `Tests 2 failed | 3 passed (5)`, real
   assertion failures (U12: `expected '   \n\t' to be ''`; U13 failed at the same input for the
@@ -182,7 +182,7 @@ unit rather than ten separate implementation steps.
 
 - test: three `it` blocks added to `history.test.ts`, tagged `[U20]`, `[U68]`, `[U69]`.
 - red: `pnpm vitest run src/features/savedItems/history.test.ts -t "U20|U68|U69"` -> `Tests 1 failed
-  | 2 passed | 11 skipped (14)`. U20 and U69 passed trivially: the existing outer try/catch already
+| 2 passed | 11 skipped (14)`. U20 and U69 passed trivially: the existing outer try/catch already
   turns any thrown error into `{ ok: false }`, which happens to satisfy both (U69's constraint
   error, having no retry logic yet, just falls through the same path as U20's generic error). Only
   U68 failed for the real reason: `expected { ok: false } to deeply equal { ok: true }` — no retry
@@ -191,7 +191,7 @@ unit rather than ten separate implementation steps.
   `ConstraintError`, look up the entry by `text` (the row the other writer just inserted) and
   update its `dateModified` instead of re-throwing; any other error, or a `ConstraintError` with no
   such row found, re-throws to the outer catch as before. `pnpm vitest run
-  src/features/savedItems/history.test.ts` -> 14 passed, repeated 3 times clean.
+src/features/savedItems/history.test.ts` -> 14 passed, repeated 3 times clean.
 - refactor: none needed.
 - **Finding, not a behavior bug**: `pnpm test` reported all green, but `pnpm build` (tsc) failed
   with 2 real type errors in the test file — `vi.spyOn(...).mockImplementationOnce()` requires a
@@ -200,7 +200,7 @@ unit rather than ten separate implementation steps.
   compile error was invisible to `pnpm test` alone and only surfaced by also running `pnpm build`.
   Fixed by using `mockRejectedValueOnce()` instead (looser typing) and, for U68, performing the
   real insert as a separate `await savedTextsDb.savedTexts.add(...)` call before mocking the
-  *next* `add()` call to reject with `ConstraintError`, rather than wrapping both inside one mock
+  _next_ `add()` call to reject with `ConstraintError`, rather than wrapping both inside one mock
   implementation. Confirms this feature's convention (quickstart.md) of always running both
   `pnpm test` and `pnpm build`, never one alone.
 - full suite: `pnpm test` -> 35 passed, 0 failed (6 files). `pnpm build` passes (both errors gone).
@@ -227,7 +227,7 @@ unit rather than ten separate implementation steps.
   with the read wrapped in its own `try/catch` so a failure resolves to `{ status: "error" }`
   instead of being thrown during render (this is what makes U30 possible: `dexie-react-hooks`
   4.4.0 otherwise re-throws an observable's error during render). `pnpm vitest run
-  src/features/savedItems/history.test.ts` -> 20 passed, repeated 3 times clean.
+src/features/savedItems/history.test.ts` -> 20 passed, repeated 3 times clean.
 - refactor: none needed.
 - full suite: `pnpm test` -> 41 passed, 0 failed (6 files). `pnpm build` passes (checked this time
   before, not only after, formatting — see the finding in the previous cycle).
@@ -250,10 +250,10 @@ unit rather than ten separate implementation steps.
 - **Three real findings surfaced while getting this green, all documented rather than routed
   around silently**:
   1. **A mocked Dexie failure poisoned later tests.** `vi.spyOn(savedTextsDb.savedTexts,
-     "orderBy").mockImplementation(() => { throw ... })`, even after `vi.restoreAllMocks()`,
+"orderBy").mockImplementation(() => { throw ... })`, even after `vi.restoreAllMocks()`,
      left `dexie-react-hooks`' live-query cache returning the stale `{status: "error"}` result to
-     *later, unrelated* tests in the same file (confirmed by running `pnpm vitest run ... -t
-     "U62"` alone, which passed, versus failing when run after U59/U64 in the full file). Root
+     _later, unrelated_ tests in the same file (confirmed by running `pnpm vitest run ... -t
+"U62"` alone, which passed, versus failing when run after U59/U64 in the full file). Root
      cause: my `useHistory` querier catches the thrown error internally and returns a normal
      value, so Dexie's own observability/caching layer sees a successful query with no table
      dependency recorded (the mock threw before any real read occurred) and never invalidates it.
@@ -317,7 +317,7 @@ unit rather than ten separate implementation steps.
 - **Finding: a test-quality gap in `[A3]` itself, caught by its own mutant check.** The first
   version of `[A3]` asserted only `sidebar list items).toHaveLength(1)`. Mutating
   `history.ts` (temporarily forcing the "does an entry already exist" check off, `if (false &&
-  existing)`) still left exactly one entry — because the resulting unhandled
+existing)`) still left exactly one entry — because the resulting unhandled
   `ConstraintError` aborts the whole Dexie transaction, and an aborted insert is
   indistinguishable, by row count alone, from a correct update. Confirmed both ways: disabling
   the existence check alone, and disabling the `ConstraintError`-retry alone, both still passed
@@ -402,7 +402,7 @@ unit rather than ten separate implementation steps.
     (`expected onLoadRequest to be called with {text: "older"}, called with {text: "newer"}`
     in substance). Restored.
   - `[U56]`: hard-coded every `SavedTextItem`'s `text` prop to `"MUTANT"` -> failed (`Unable to
-    find role="button" name /^Load .*alpha/`, since both buttons became "Load MUTANT"). Restored.
+find role="button" name /^Load .*alpha/`, since both buttons became "Load MUTANT"). Restored.
 - No implementation change was needed; both behaviors were already correctly satisfied by the
   existing code from earlier cycles.
 - full suite: `pnpm test` -> 65 passed, 0 failed (6 files), repeated 3 times clean. `pnpm build`
@@ -449,7 +449,7 @@ unit rather than ten separate implementation steps.
   (`expect(element).toHaveValue()` expected `""`, received `"hello world"` — the setup box kept
   its draft, as every earlier cycle's tests already relied on and documented).
 - green: `handleReset` in `AppInner` now also calls `setSourceText("")`. `pnpm vitest run
-  src/App.test.tsx` -> 22 passed on the first try after the change.
+src/App.test.tsx` -> 22 passed on the first try after the change.
 - **Two earlier tests broke as an intended consequence, not a regression, and were fixed as part
   of this cycle rather than left red**: `[A3]` and `[A17]` both relied on Reset keeping the setup
   box's draft (each said so in its own comment, written before this behavior existed) to retype
@@ -458,8 +458,8 @@ unit rather than ten separate implementation steps.
   `dateModified`/entry count are unchanged).
 - **A real test flake found and fixed, not the app**: a full-suite repeat run (8 runs) caught
   `[A7]` failing intermittently (roughly 1 in 6): `within(sidebarRegion()).findAllByRole
-  ("listitem")` resolves as soon as **any** 2 `listitem`s exist, and both entries exist from the
-  start of the test — only their *order* changes after the Load-triggered `recordPractice` write
+("listitem")` resolves as soon as **any** 2 `listitem`s exist, and both entries exist from the
+  start of the test — only their _order_ changes after the Load-triggered `recordPractice` write
   resolves and `useHistory`'s live query re-sorts. The assertion on `items[0]` was therefore
   racing an unawaited async write. Fixed by wrapping the order assertion itself in `waitFor`, so
   it retries until the DOM actually reflects the reorder, instead of resolving on any 2-item
@@ -478,7 +478,7 @@ unit rather than ten separate implementation steps.
 - green: added `recordCompletion(text)`: one `"rw"` transaction that finds the entry by `text` and
   increments `numberOfCompletes` by one, tolerating a missing entry (no-op, still `{ ok: true }`),
   and resolving `{ ok: false }` on any error rather than rejecting. `pnpm vitest run
-  src/features/savedItems/history.test.ts` -> 24 passed, repeated 3 times clean.
+src/features/savedItems/history.test.ts` -> 24 passed, repeated 3 times clean.
 - refactor: none needed.
 - full suite: `pnpm test` -> 77 passed, 0 failed (6 files). `pnpm build` passes.
 
@@ -506,11 +506,11 @@ unit rather than ten separate implementation steps.
 - green: replaced the old "Last Practiced On: {dateCreated}" line with one `<p>` combining
   "Last practiced: " and `dateFormatter.format(dateModified)`, and added "Practiced {n}
   time(s)" using `numberOfCompletes` (singular only for exactly 1). `pnpm vitest run
-  src/components/SavedTextItem.test.tsx` -> 11 passed, repeated 3 times clean. Confirmed `[U7]`
+src/components/SavedTextItem.test.tsx` -> 11 passed, repeated 3 times clean. Confirmed `[U7]`
   (characterization) still passes unaffected.
 - **deliberate-mutant checks for the first-run passes**:
   - `[U50]`: truncated the preview to `text.slice(0, 10)` -> failed (`Unable to find the full
-    long text`). Restored.
+long text`). Restored.
   - `[U51]`/`[U52]`: removed the Load button's `aria-labelledby` and its text -> both failed
     (`button-name: Buttons must have discernible text`). Restored.
 - refactor: none needed.

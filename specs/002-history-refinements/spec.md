@@ -8,7 +8,7 @@
 
 **Input**: User description: "Confirm before discarding a practice session when loading a sidebar entry mid-practice, and replace the single 'Practiced N times' count with two counts: 'Loaded: N' and 'Completed: N'." Follows `specs/001-practice-history/`, found during its manual checks.
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Don't lose a half-typed session to a stray click (Priority: P1)
 
@@ -53,7 +53,7 @@ A learner scanning the history sees two numbers on each entry: how many times th
 - Entries saved before this feature keep the load counts already stored for them. Entries that were stored with a load count lower than they can possibly have had (see Assumptions) are corrected once so the loaded count is never below 1 or below the completed count.
 - If the loaded or completed count can't be saved, practice still works and the existing save-failure message appears, as it does today.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -74,7 +74,7 @@ A learner scanning the history sees two numbers on each entry: how many times th
 - **History Entry** (from `001`): gains a visible loaded count alongside its completed count. No new stored fields: the load count already exists and was kept through `001`'s upgrade.
 - **Discard Confirmation**: a short-lived question shown over a session in progress. It is not stored.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
