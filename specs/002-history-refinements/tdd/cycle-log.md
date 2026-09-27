@@ -154,3 +154,14 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `9370130`
 - state: BASELINE. T010 (U1-U7) is complete but stays unticked: the skill never ticks a task whose behaviors are `BASELINE`.
+
+## Cycle 8: A17 data from before 001, with duplicate rows of one text, shows one entry per text through the real app
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, checks carried over from 001) > [A17] data from before 001, with duplicate rows of one text, shows one entry per text` (new; new helper `seedVersion1Database()` closes `savedTextsDb`, deletes it, seeds a raw version-1 Dexie instance, closes it and reopens `savedTextsDb`, which runs every upgrade)
+- **filter note:** 001's tests in the same file already use `[A1]`-`[A22]`, so the task's `-t "\[A17\]"` matches two tests (`2 passed | 29 skipped (31)`: 001's A17 and this one) and could pass on 001's test alone. 002's acceptance tests therefore sit in describe blocks named `App (specs/002-history-refinements, ...)`, and every 002 acceptance run uses the qualified filter `-t "002-history-refinements.*\[A17\]"` -> `1 passed | 30 skipped (31)`. The confirm tasks T035-T053 are run with that form.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A17\]"` -> `1 passed | 30 skipped (31)`. Expected: 001 already built the upgrade; this is the check 001 could not automate under fake-indexeddb.
+- mutant: version 2's upgrade `if (group.length < 2) continue;` -> `continue;` (duplicates never merged) -> same command -> `AbortError: ConstraintError Unable to add key to index 'text': at least one key does not satisfy the uniqueness requirements.` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 117 passed each (5.98 s, 6.11 s, 5.86 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `a28332c`
+- state: DONE. Ticked T011 and T035 (confirmed with the qualified filter).

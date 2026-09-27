@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Dexie } from "dexie";
 import App from "./App";
 import * as historyModule from "./features/savedItems/history";
 import { savedTextsDb } from "./features/savedItems/db";
@@ -636,4 +637,61 @@ describe("App (practice text rendering)", () => {
 			expect(within(section).getByText(glyph)).toBeInTheDocument();
 		},
 	);
+});
+
+interface Version1Row {
+	text: string;
+	dateCreated: Date;
+	dateModified: Date;
+	numberOfLoads: number;
+	numberOfCompletes: number;
+}
+
+/**
+ * Replaces the app's database with one in the ORIGINAL (version 1) schema,
+ * holding `rows`, as a user of the app from before 001 would have it. Dexie
+ * opens lazily, so reopening `savedTextsDb` afterwards runs every upgrade.
+ */
+async function seedVersion1Database(rows: Version1Row[]) {
+	savedTextsDb.close();
+	await Dexie.delete(savedTextsDb.name);
+	const v1 = new Dexie(savedTextsDb.name);
+	v1.version(1).stores({ savedTexts: "++id, dateCreated, dateLastUsed, text" });
+	await v1.open();
+	await v1.table("savedTexts").bulkAdd(rows);
+	v1.close();
+	await savedTextsDb.open();
+}
+
+function version1Row(
+	overrides: Partial<Version1Row> & { text: string },
+): Version1Row {
+	return {
+		dateCreated: new Date("2026-01-01T00:00:00Z"),
+		dateModified: new Date("2026-01-01T00:00:00Z"),
+		numberOfLoads: 1,
+		numberOfCompletes: 0,
+		...overrides,
+	};
+}
+
+// Test ids below are 002's (specs/002-history-refinements/tdd/test-list.md).
+// 001's tests above reuse some of the same ids, so filter by this describe
+// name too: -t "002-history-refinements.*\[A17\]".
+describe("App (specs/002-history-refinements, checks carried over from 001)", () => {
+	it("[A17] data from before 001, with duplicate rows of one text, shows one entry per text", async () => {
+		await seedVersion1Database([
+			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 1) }),
+			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 2) }),
+			version1Row({ text: "beta", dateModified: new Date(2026, 0, 3) }),
+		]);
+
+		render(<App />);
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items.map((item) => item.querySelector("p")?.textContent)).toEqual([
+			"beta",
+			"alpha",
+		]);
+	});
 });
