@@ -238,3 +238,15 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `a2650b6`
 - state: DONE
+
+## Cycle 16: U32 a screen reader announces the read-failure alert (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U32] a screen reader announces the read-failure alert` (new). Real failure path, as in 001's `[U59]`: `savedTextsDb.close()`, reopened in `finally`.
+- test mechanics: the reader's phrasing for an alert was not known, so the first draft asserted a deliberately wrong empty string to print the log: `region, Practice History | heading, Practice History, level 2 | alert | Practice history could not be loaded. | end of alert | end of region, Practice History`. The assertion was then written as "`alert` followed by the message". That draft run is a broken-test run, not red evidence.
+- first run of the real assertion: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U32\]"` -> `1 passed | 21 skipped (22)`. Expected: 001 built the alert.
+- mutant 1: removed `role="alert"` -> same command -> `TestingLibraryElementError: Unable to find role="alert"` (1 failed, in the test's wait, not the screen-reader assertion)
+- mutant 2 (sharper): kept `role="alert"`, wrapped its message in `<span aria-hidden="true">` -> same command -> `AssertionError: expected [ 'alert', …(1) ] to deeply equal [ 'alert', …(1) ]` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 124 passed each (5.98 s, 7.26 s, 6.34 s), no unhandled errors; `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `ed60c18`
+- state: DONE

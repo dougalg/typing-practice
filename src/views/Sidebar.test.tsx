@@ -297,4 +297,23 @@ describe("Sidebar screen-reader output (specs/002-history-refinements, 001's man
 
 		expect(phrases).toContain(EMPTY_STATE);
 	});
+
+	it("[U32] a screen reader announces the read-failure alert", async () => {
+		// A real failure path (see [U59]): closing the connection, not a mock.
+		await savedTextsDb.close();
+		try {
+			const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+			await screen.findByRole("alert");
+
+			const phrases = await spokenPhrases(container);
+
+			const alertAt = phrases.indexOf("alert");
+			expect(phrases.slice(alertAt, alertAt + 2)).toEqual([
+				"alert",
+				"Practice history could not be loaded.",
+			]);
+		} finally {
+			await savedTextsDb.open();
+		}
+	});
 });
