@@ -49,4 +49,19 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 
 		expect(onCancel).toHaveBeenCalledOnce();
 	});
+
+	it("[U18] pressing Discard and load calls onConfirm once and not onCancel", async () => {
+		const onCancel = vi.fn();
+		const onConfirm = vi.fn();
+		render(
+			<ConfirmDiscardDialog open onConfirm={onConfirm} onCancel={onCancel} />,
+		);
+
+		await userEvent.click(
+			screen.getByRole("button", { name: "Discard and load" }),
+		);
+
+		expect(onConfirm).toHaveBeenCalledOnce();
+		expect(onCancel).not.toHaveBeenCalled();
+	});
 });

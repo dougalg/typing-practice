@@ -15,6 +15,7 @@ export interface ConfirmDiscardDialogProps {
  */
 export const ConfirmDiscardDialog = ({
 	open,
+	onConfirm,
 	onCancel,
 }: ConfirmDiscardDialogProps) => {
 	const dialogRef = useRef<HTMLDialogElement>(null);
@@ -36,6 +37,7 @@ export const ConfirmDiscardDialog = ({
 			<Button autoFocus onClick={onCancel}>
 				Cancel
 			</Button>
+			<Button onClick={onConfirm}>Discard and load</Button>
 		</dialog>
 	);
 };

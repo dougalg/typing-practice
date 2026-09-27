@@ -89,7 +89,7 @@ checks 11, 12 and 16, now automated.
 | U15 | When it opens, "Cancel" has focus                                                     | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U15]` |
 | U16 | Pressing "Cancel" calls `onCancel` once and not `onConfirm`                           | FR-003 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U16]` |
 | U17 | Pressing Escape calls `onCancel` once                                                 | FR-003 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U17]` |
-| U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | PENDING |                                                       |
+| U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U18]` |
 | U19 | Tab from the last button keeps focus inside the dialog                                | FR-005 | example | PENDING |                                                       |
 | U20 | Shift+Tab from the first button keeps focus inside the dialog                         | FR-005 | example | PENDING |                                                       |
 | U21 | With `open` false, no dialog is shown                                                 | FR-004 | example | PENDING |                                                       |

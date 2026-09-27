@@ -301,3 +301,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `c02cac7`
 - state: DONE
+
+## Cycle 22: U18 pressing "Discard and load" calls onConfirm once and not onCancel
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U18] pressing Discard and load calls onConfirm once and not onCancel` (new)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U18\]"` -> `TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Discard and load"` (1 failed)
+- green: a "Discard and load" `Button` after Cancel, `onClick={onConfirm}`. Same command -> `1 passed | 4 skipped (5)`. Suite `pnpm test` x3 -> 130 passed each (6.05 s, 6.01 s, 6.01 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `a46ec54`
+- state: DONE
