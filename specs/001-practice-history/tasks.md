@@ -25,9 +25,9 @@ description: "Task list for Practice History in the Sidebar"
 
 **Purpose**: Get the toolchain able to test IndexedDB and accessibility
 
-- [ ] T001 In the worktree root run `pnpm install --frozen-lockfile` (the worktree has no `node_modules`). Confirm `pnpm test` runs and the existing `src/components/Heading.test.tsx` passes (baseline: 2 passed).
-- [ ] T002 Add the two dev dependencies with `pnpm add -D fake-indexeddb vitest-axe`, updating `package.json` and `pnpm-lock.yaml` (never edit the lockfile by hand). Check that the resolved `vitest-axe` works with Vitest 5.0.1; if it does not, do not keep it, and instead add `axe-core` and write the `expectNoA11yViolations` helper in T003 that calls `axe-core` directly (research.md R8).
-- [ ] T003 Update `src/test/setup.ts`: keep `import "@testing-library/jest-dom/vitest"`, add `import "fake-indexeddb/auto"`, register the axe matcher (`toHaveNoViolations` from `vitest-axe`, including its type augmentation so `tsc` accepts it) and add an `afterEach` that removes the `savedTextsDb` database contents so tests do not leak rows into each other.
+- [X] T001 In the worktree root run `pnpm install --frozen-lockfile` (the worktree has no `node_modules`). Confirm `pnpm test` runs and the existing `src/components/Heading.test.tsx` passes (baseline: 2 passed).
+- [X] T002 Add the two dev dependencies with `pnpm add -D fake-indexeddb vitest-axe`, updating `package.json` and `pnpm-lock.yaml` (never edit the lockfile by hand). Check that the resolved `vitest-axe` works with Vitest 5.0.1; if it does not, do not keep it, and instead add `axe-core` and write the `expectNoA11yViolations` helper in T003 that calls `axe-core` directly (research.md R8).
+- [X] T003 Update `src/test/setup.ts`: keep `import "@testing-library/jest-dom/vitest"`, add `import "fake-indexeddb/auto"`, register the axe matcher (`toHaveNoViolations` from `vitest-axe`, including its type augmentation so `tsc` accepts it) and add an `afterEach` that removes the `savedTextsDb` database contents so tests do not leak rows into each other.
 
 ---
 
@@ -164,8 +164,8 @@ description: "Task list for Practice History in the Sidebar"
 - [X] T054 Write the guard test for [A19] in `src/App.test.tsx`: spy on `globalThis.fetch`, `XMLHttpRequest.prototype.open` and `navigator.sendBeacon`, run start, load and finish through the UI, and assert none was called. This is a guard, not a driver: it passes on the first run, so it cannot be seen failing. Prove it is not vacuous by temporarily adding a `fetch("/x")` call in `src/App.tsx`, observing the test fail, and removing the call again; record both runs in `tdd/cycle-log.md`.
 - [X] T055 Confirm [A19] is green on the restored code: run `pnpm vitest run src/App.test.tsx -t "<the A19 test name>"`, at least one `passed`.
 - [ ] T025 Run `pnpm format` and commit the result so it produces no diff on the committed code (Constitution: Formatting).
-- [ ] T026 Run `pnpm test` and `pnpm build` from the worktree root and confirm both pass, including all axe checks (Constitution: Quality Gates).
-- [ ] T027 Confirm FR-015 by searching `src/` for any network use (`fetch(`, `XMLHttpRequest`, `sendBeacon`, `WebSocket`) and confirming there are none introduced by this feature.
+- [X] T026 Run `pnpm test` and `pnpm build` from the worktree root and confirm both pass, including all axe checks (Constitution: Quality Gates).
+- [X] T027 Confirm FR-015 by searching `src/` for any network use (`fetch(`, `XMLHttpRequest`, `sendBeacon`, `WebSocket`) and confirming there are none introduced by this feature.
 - [ ] T028 Run the manual scenarios in `specs/001-practice-history/quickstart.md` in `pnpm dev`, including the keyboard-only pass, 200% zoom and narrow width reflow, the legacy-data upgrade, the storage-unavailable case, and the contrast check of the new text colours (at least 4.5:1). Record the results for the PR.
 - [ ] T029 Prepare the PR description (Constitution: Development Workflow): justify the two new dev dependencies (`fake-indexeddb` and `vitest-axe`, or `axe-core` if the fallback in T002 was used), note the contrast check result from T028, and state the known gap that `SetupView` and `PracticeView` still have no axe tests. Add a follow-up issue for that gap. Do not push to `main`; open a pull request from this branch.
 
@@ -240,3 +240,17 @@ Task: "Extend App.test.tsx (US1 part) in src/App.test.tsx"
 - Refactor only on a green suite, and never change a test in the same commit as a behavior change
 - The spec's edge case for a very long text is covered by [U50] and [A9]; the browser-storage-blocked case by [U20], [U30], [A14] and [A15]
 - Verify each test fails for the right reason before writing the implementation
+
+---
+
+## Close-out status (2026-09-27)
+
+Feature merged in PR #4. Remaining open items and where they went:
+
+- **T002**: done with the fallback it names. `vitest-axe` did not work with Vitest 5's types, so accessibility checks call `axe-core` directly through `src/test/a11y.ts` (see `research.md` R8 and `tdd/cycle-log.md`).
+- **T026**: `pnpm test` 93 passed, `pnpm build` clean. **T027**: no network use in `src/`; the `A19` test also checks this at runtime.
+- **T028** (manual checks, `quickstart.md`): 1-10 passed (user, 2026-09-27). Focus-ring look and a VoiceOver spot check done by the user. Checks 11 (old-data upgrade), 12 (storage failure), 15 (screen-reader announcements), 16 (zoom and reflow) and 17 (contrast) move to automated tests in `specs/002-history-refinements/`.
+- **T009, T012, T042**: open only because of `A16` (old-data upgrade through the real app), which moves to `002`'s real-browser tests together with check 11.
+- **T029**: PR #4 was merged without a description. Its content (why `fake-indexeddb` and `axe-core` were added, the contrast result, the missing accessibility tests for `SetupView` and `PracticeView`) goes into `002`'s PR description.
+- **T025**: repo-wide formatting, handled as its own chore commit.
+- Checks 6 and 7 led to spec `002` (confirm before discarding a session; separate loaded and completed counts), which replaces `001`'s single practice count.
