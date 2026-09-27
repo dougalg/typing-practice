@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Dexie } from "dexie";
+import { page } from "vitest/browser";
 import App from "./App";
 import * as historyModule from "./features/savedItems/history";
 import { savedTextsDb } from "./features/savedItems/db";
@@ -675,6 +676,9 @@ function version1Row(
 	};
 }
 
+// Vitest browser mode's default viewport, restored after a test changes it.
+const DEFAULT_VIEWPORT = { width: 414, height: 896 };
+
 // Test ids below are 002's (specs/002-history-refinements/tdd/test-list.md).
 // 001's tests above reuse some of the same ids, so filter by this describe
 // name too: -t "002-history-refinements.*\[A17\]".
@@ -722,6 +726,49 @@ describe("App (specs/002-history-refinements, checks carried over from 001)", ()
 		} finally {
 			openSpy.mockRestore();
 			await savedTextsDb.open();
+		}
+	});
+
+	it("[A19] at a 320 CSS px viewport with entries listed, the page does not scroll sideways and every Load button is fully visible", async () => {
+		// WCAG 1.4.10 Reflow: content must fit 320 CSS px without horizontal
+		// scrolling. The entries include a long unbroken text, the likeliest
+		// thing to push the layout wider.
+		const REFLOW_WIDTH = 320;
+		await savedTextsDb.savedTexts.bulkAdd([
+			{
+				text: "short text",
+				dateCreated: new Date(2026, 0, 1),
+				dateModified: new Date(2026, 0, 1),
+				numberOfLoads: 1,
+				numberOfCompletes: 0,
+			},
+			{
+				text: "unbroken".repeat(40),
+				dateCreated: new Date(2026, 0, 2),
+				dateModified: new Date(2026, 0, 2),
+				numberOfLoads: 1,
+				numberOfCompletes: 0,
+			},
+		]);
+		await page.viewport(REFLOW_WIDTH, 800);
+		try {
+			render(<App />);
+			const loadButtons = await within(sidebarRegion()).findAllByRole(
+				"button",
+				{ name: /^Load/ },
+			);
+			expect(loadButtons).toHaveLength(2);
+
+			const root = document.documentElement;
+			expect(root.clientWidth).toBe(REFLOW_WIDTH);
+			expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth);
+			for (const button of loadButtons) {
+				const box = button.getBoundingClientRect();
+				expect(box.left).toBeGreaterThanOrEqual(0);
+				expect(box.right).toBeLessThanOrEqual(root.clientWidth);
+			}
+		} finally {
+			await page.viewport(DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height);
 		}
 	});
 });

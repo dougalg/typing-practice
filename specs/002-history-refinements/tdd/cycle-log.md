@@ -177,3 +177,14 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `dfec71f`
 - state: DONE. Ticked T012 and T036 (qualified filter).
+
+## Cycle 10: A19 at a 320 CSS px viewport, the page does not scroll sideways and every Load button is fully visible (guard)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, checks carried over from 001) > [A19] at a 320 CSS px viewport with entries listed, ...` (new). Seeds two entries (one a 320-character unbroken text), sets `page.viewport(320, 800)` from `vitest/browser`, renders `App`, asserts `clientWidth` is 320, `scrollWidth <= clientWidth`, and each Load button's box lies within `[0, clientWidth]`; restores the default 414 x 896 viewport in `finally`.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A19\]"` -> `1 passed | 32 skipped (33)`. Expected: `main`'s single-column layout already reflows; this is a guard (research.md R8).
+- mutant 1 (from the task): each entry's root gets `w-[400px]` -> same command -> `AssertionError: expected 424 to be less than or equal to 320` (1 failed); restored exactly
+- mutant 2 (extra): removed `[overflow-wrap:anywhere]` from the entry preview -> **survived**. Equivalent for this behavior: the preview also has `line-clamp-3` (overflow hidden) inside a `min-w-0` box, so the long word is clipped rather than widening the page. Not a gap in the reflow guard; noted only.
+- suite: `pnpm test` x3 -> 119 passed each (6.22 s, 5.90 s, 5.86 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `bdf86f0`
+- state: DONE. Ticked T013 and T037 (qualified filter).
