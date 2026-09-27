@@ -649,3 +649,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `5cb274d`
 - state: DONE
+
+## Cycle 56: U35 SavedTextItem shows "Completed: {numberOfCompletes}"
+
+- test: `src/components/SavedTextItem.test.tsx::[U35] shows Completed: followed by the completed count` (new)
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx -t "\[U35\]"` -> `TestingLibraryElementError: Unable to find an element with the text: Completed: 1.` (1 failed)
+- **intended baseline change to a 001 test (test-list planning notes), before the implementation:** `[U47] shows 'Practiced 0 times' for a practice count of 0, and no separate 'Completed' text` asserted `queryByText(/Completed/)` is absent. FR-007 now requires exactly that text, so that one assertion was removed, with a comment. Its "Practiced 0 times" assertion stays until U36 removes the old line.
+- green: a `Completed: {numberOfCompletes}` line after "Loaded". Same command -> `1 passed | 12 skipped (13)`. Suite `pnpm test` x3 -> 164 passed each (7.86 s, 7.93 s, 7.88 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `1acd412`
+- state: DONE

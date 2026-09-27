@@ -159,7 +159,9 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		);
 
 		expect(screen.getByText("Practiced 0 times")).toBeInTheDocument();
-		expect(screen.queryByText(/Completed/)).not.toBeInTheDocument();
+		// Baseline updated for specs/002-history-refinements FR-007: the entry
+		// now shows a "Completed: N" count, so the old "no separate Completed
+		// text" assertion was removed. See that feature's tdd/cycle-log.md.
 	});
 
 	it("[U50] a text of several thousand characters still renders its full text and its Load button", () => {
@@ -234,5 +236,11 @@ describe("SavedTextItem counts (specs/002-history-refinements contracts/ui.md)",
 		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
 
 		expect(screen.getByText("Loaded: 3")).toBeInTheDocument();
+	});
+
+	it("[U35] shows Completed: followed by the completed count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		expect(screen.getByText("Completed: 1")).toBeInTheDocument();
 	});
 });
