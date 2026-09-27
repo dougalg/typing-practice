@@ -885,4 +885,19 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(getPracticeText("second text")).toBeInTheDocument();
 		expect(charactersTyped()).toHaveTextContent("0 / 11");
 	});
+
+	it("[A5] with a session in progress, pressing Load on the running entry also shows the confirmation", async () => {
+		await addHistory("hello world");
+		render(<App />);
+		const loadButton = await loadButtonFor("hello world");
+		await browserUserEvent.click(loadButton);
+		await browserUserEvent.type(typingInput(), "he");
+
+		await browserUserEvent.click(loadButton);
+
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 11");
+	});
 });

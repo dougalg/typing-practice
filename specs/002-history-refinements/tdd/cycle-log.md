@@ -491,3 +491,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `adca1a6`
 - state: DONE. Ticked T041 (qualified filter).
+
+## Cycle 40: A5 with a session in progress, Load on the running entry also shows the confirmation (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A5] with a session in progress, pressing Load on the running entry also shows the confirmation` (new)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A5\]"` -> `1 passed | 37 skipped (38)`. Expected: A1's condition does not look at which entry is loaded.
+- mutant: the condition exempts the running entry (`sessionInProgress && item.text !== session.text`) -> same command -> `TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Discard your progress on this text?"` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 148 passed each (7.44 s, 7.49 s, 7.51 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `940ccec`
+- state: DONE. Ticked T042 (qualified filter).
