@@ -90,4 +90,21 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 
 		expect(onFinish).toHaveBeenCalledOnce();
 	});
+
+	it("[U5] pressing Reset calls onReset", async () => {
+		const user = userEvent.setup();
+		const onReset = vi.fn();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={onReset}
+			/>,
+		);
+
+		await user.click(screen.getByRole("button", { name: "Reset" }));
+
+		expect(onReset).toHaveBeenCalledOnce();
+	});
 });

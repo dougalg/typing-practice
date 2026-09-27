@@ -71,7 +71,7 @@ checks 11, 12 and 16, now automated.
 | U2  | A correct character moves the position on by one                                 | FR-001 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U2]` |
 | U3  | A wrong character shows the error message and does not move the position         | FR-001 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U3]` |
 | U4  | Typing the whole text calls `onFinish` once                                      | FR-004 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U4]` |
-| U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | PENDING  |                                         |
+| U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U5]` |
 | U6  | The running view has no axe violations                                           | FR-005 (base) | characterization | PENDING  |                                         |
 | U7  | The finished view has no axe violations                                          | FR-005 (base) | characterization | PENDING  |                                         |
 | U8  | `onTypingStarted` is called once when the first character typed is correct       | FR-001        | example          | PENDING  |                                         |

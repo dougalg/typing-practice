@@ -115,3 +115,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous cycle's commit was `e8b36a1`
 - state: BASELINE
+
+## Cycle 5: U5 pressing Reset calls onReset (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U5] pressing Reset calls onReset` (new)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U5\]"` -> `1 passed | 4 skipped (5)`, as expected
+- mutant: Reset's `onClick={onReset}` -> `onClick={() => {}}` -> same command -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 114 passed each (6.18 s, 5.90 s, 6.03 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous cycle's commit was `95f6014`
+- state: BASELINE
