@@ -4,7 +4,11 @@ import { useHistory } from "../features/savedItems/history";
 import type { SavedText } from "../types";
 
 export interface SidebarProps {
-	onLoadRequest: (item: SavedText) => void;
+	/**
+	 * `trigger` is the Load button that was pressed, so focus can return to it
+	 * (passed explicitly: Safari does not focus a button when it is clicked).
+	 */
+	onLoadRequest: (item: SavedText, trigger: HTMLElement) => void;
 	/** Set by App when a history write failed; shown as an alert. */
 	saveError?: boolean;
 }
@@ -47,7 +51,9 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 						<li key={item.id}>
 							<SavedTextItem
 								{...item}
-								onLoadRequest={() => onLoadRequest(item)}
+								onLoadRequest={(event) =>
+									onLoadRequest(item, event.currentTarget as HTMLElement)
+								}
 							/>
 						</li>
 					))}

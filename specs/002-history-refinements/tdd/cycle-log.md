@@ -434,3 +434,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `0b4d731`
 - state: DONE. Ticked T017 and T021 (U8-U13 all DONE).
+
+## Cycle 35: U26 pressing an entry's Load button calls onLoadRequest with that entry and that button element
+
+- test: `src/views/Sidebar.test.tsx::[U26] pressing an entry's Load button calls onLoadRequest with that entry and that button element` (new)
+- red: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U26\]"` -> `AssertionError: expected "vi.fn()" to be called once with arguments: [ …(2) ]` (1 failed)
+- **baseline change to a 001 test, before the implementation:** `src/views/Sidebar.test.tsx::[U55] pressing Load on one entry calls onLoadRequest with exactly that entry` asserted `toHaveBeenCalledWith(objectContaining({ text: "older" }))`, i.e. exactly one argument. contracts/ui.md changes the callback to `(item, trigger)`, so that exact-arguments check encodes the old signature. It now checks `toHaveBeenCalledOnce()` (unchanged) and that the first argument is that entry (`mock.calls[0][0]`); the trigger argument is U26's to assert. Not in the test list's planning notes' list of intended baseline changes; reported. Ran green on the old code before the implementation changed: `-t "\[U55\]"` -> `1 passed | 23 skipped (24)`.
+- green: `SidebarProps.onLoadRequest` becomes `(item: SavedText, trigger: HTMLElement) => void`, and each entry passes `event.currentTarget`. Same command -> `1 passed | 23 skipped (24)`. Suite `pnpm test` x3 -> 143 passed each (6.33 s, 6.53 s, 6.23 s); `pnpm build` passes
+- refactor: the green step used `event.currentTarget as HTMLElement`, because `SavedTextItem` types its handler as a plain `MouseEventHandler`; removed in the next, structural commit
+- commit: previous commit was `41d1646`
+- state: DONE

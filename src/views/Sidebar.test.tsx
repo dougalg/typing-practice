@@ -178,7 +178,10 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 		await user.click(olderButton);
 
 		expect(onLoadRequest).toHaveBeenCalledOnce();
-		expect(onLoadRequest).toHaveBeenCalledWith(
+		// Baseline updated for 002's [U26]: onLoadRequest now also receives the
+		// pressed button (contracts/ui.md), so the entry argument is checked on
+		// its own. See specs/002-history-refinements/tdd/cycle-log.md.
+		expect(onLoadRequest.mock.calls[0]?.[0]).toEqual(
 			expect.objectContaining({ text: "older" }),
 		);
 	});
@@ -242,6 +245,32 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 
 		const items = await screen.findAllByRole("listitem");
 		expect(items).toHaveLength(2);
+	});
+});
+
+describe("Sidebar (specs/002-history-refinements contracts/ui.md)", () => {
+	it("[U26] pressing an entry's Load button calls onLoadRequest with that entry and that button element", async () => {
+		const user = userEvent.setup();
+		await addEntry({
+			text: "older",
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+		});
+		await addEntry({
+			text: "newer",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+		const onLoadRequest = vi.fn();
+		render(<Sidebar onLoadRequest={onLoadRequest} />);
+
+		const olderButton = await screen.findByRole("button", {
+			name: /^Load .*older/,
+		});
+		await user.click(olderButton);
+
+		expect(onLoadRequest).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ text: "older" }),
+			olderButton,
+		);
 	});
 });
 
