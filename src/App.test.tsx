@@ -603,3 +603,32 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		expect(items[0]).toHaveTextContent("text 99");
 	});
 });
+
+describe("App (practice text rendering)", () => {
+	// Each of these is a base letter plus a combining mark drawn above or below
+	// it. Rendered in separate elements, the mark kept the untyped colour while
+	// the letter under it was highlighted, so it seemed to vanish.
+	it.each([
+		["U+0363 combining superscript a", "a\u0363"],
+		["Thai above vowel, long ee (ดี)", "ดี"],
+		["Thai below vowel, long oo (ดู)", "ดู"],
+	])(
+		"renders a %s in the same element as the letter it sits on",
+		async (_label, glyph) => {
+			const user = userEvent.setup();
+			render(<App />);
+
+			await user.type(setupBox(), `${glyph}x`);
+			await user.click(startButton());
+
+			const section = screen
+				.getByText("Type the text below")
+				.closest("section");
+			if (!section)
+				throw new Error(
+					'Expected a <section> ancestor of "Type the text below"',
+				);
+			expect(within(section).getByText(glyph)).toBeInTheDocument();
+		},
+	);
+});

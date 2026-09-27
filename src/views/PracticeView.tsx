@@ -2,6 +2,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { Eyebrow, Panel } from "../components/Panel";
 import { fieldClassName } from "../components/field";
+import { toGlyphs, type GlyphState } from "../features/practice/glyphs";
 import type { TypingState, TypedMark } from "../types";
 
 type PracticeViewProps = {
@@ -9,6 +10,19 @@ type PracticeViewProps = {
 	typingState: TypingState;
 	onFinish: () => void;
 	onReset: () => void;
+};
+
+// Incorrect glyphs are tinted and underlined so they are distinguishable
+// without relying on color alone. The caret's background is padded
+// vertically: marks drawn above or below a letter (e.g. Thai vowels) can
+// extend past the line box, and would be white-on-white outside it. Inline
+// padding grows the background without changing the line height.
+const glyphClassName: Record<GlyphState, string> = {
+	correct: "text-success",
+	incorrect:
+		"bg-danger-soft text-danger underline decoration-4 underline-offset-4",
+	caret: "bg-accent text-on-accent py-[0.3em]",
+	pending: "text-ink-muted",
 };
 
 function displayChar(ch: string) {
@@ -209,6 +223,10 @@ function PracticeView({
 	};
 
 	const isFinished = typingState === "finished";
+	const glyphs = useMemo(
+		() => toGlyphs(targetText, typedMarks, position, typingState === "running"),
+		[targetText, typedMarks, position, typingState],
+	);
 
 	return (
 		<Panel aria-labelledby={headingId}>
@@ -271,29 +289,14 @@ function PracticeView({
 				{/* overflow-wrap:anywhere (unlike break-word) also lowers the element's
 				    min-content width, so a long unbroken run can't widen the layout. */}
 				<p className="m-0 font-mono text-xl leading-[1.9] [overflow-wrap:anywhere] whitespace-pre-wrap sm:text-2xl">
-					{Array.from(targetText).map((ch, i) => {
-						const mark = typedMarks[i] ?? null;
-						const isCaret = typingState === "running" && i === position;
-
-						// Incorrect characters are tinted and underlined so they are
-						// distinguishable without relying on color alone.
-						const className =
-							mark === "correct"
-								? "text-success"
-								: mark === "incorrect"
-									? "bg-danger-soft text-danger underline decoration-4 underline-offset-4"
-									: isCaret
-										? "bg-accent text-on-accent"
-										: "text-ink-muted";
-
-						const key = `${i}-${ch ?? ""}`;
-
-						return (
-							<span key={key} className={className}>
-								{ch}
-							</span>
-						);
-					})}
+					{glyphs.map((glyph, i) => (
+						<span
+							key={`${i}-${glyph.text}`}
+							className={glyphClassName[glyph.state]}
+						>
+							{glyph.text}
+						</span>
+					))}
 				</p>
 			</div>
 			<input
