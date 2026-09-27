@@ -319,3 +319,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed; component comment updated to say what the browser does and does not do
 - commit: previous commit was `0a3090f`
 - state: DONE
+
+## Cycle 24: U20 Shift+Tab from the first button keeps focus inside the dialog
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U20] Shift+Tab from the first button keeps focus inside the dialog` (new)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U20\]"` -> `Error: expect(element).toContainElement(element) ... does not contain: <body />` (1 failed)
+- green: the key handler also moves Shift+Tab on "Cancel" to "Discard and load". Same command -> `1 passed | 6 skipped (7)`. Suite `pnpm test` x3 -> 132 passed each (6.28 s, 6.26 s, 6.28 s); `pnpm build` passes
+- refactor: component doc comment updated to name both wraps (comment only)
+- commit: previous commit was `de75403`
+- state: DONE

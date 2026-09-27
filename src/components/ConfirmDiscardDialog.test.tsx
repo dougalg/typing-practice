@@ -80,4 +80,20 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 			document.activeElement as HTMLElement,
 		);
 	});
+
+	it("[U20] Shift+Tab from the first button keeps focus inside the dialog", async () => {
+		render(
+			<>
+				<button type="button">Outside</button>
+				<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />
+			</>,
+		);
+		screen.getByRole("button", { name: "Cancel" }).focus();
+
+		await userEvent.tab({ shift: true });
+
+		expect(screen.getByRole("dialog")).toContainElement(
+			document.activeElement as HTMLElement,
+		);
+	});
 });
