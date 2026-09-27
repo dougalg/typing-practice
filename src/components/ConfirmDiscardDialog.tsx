@@ -26,7 +26,9 @@ export const ConfirmDiscardDialog = ({
 
 	useEffect(() => {
 		const dialog = dialogRef.current;
-		if (dialog && open && !dialog.open) dialog.showModal();
+		if (!dialog) return;
+		if (open && !dialog.open) dialog.showModal();
+		else if (!open && dialog.open) dialog.close();
 	}, [open]);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLDialogElement>) => {

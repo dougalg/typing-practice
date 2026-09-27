@@ -108,4 +108,20 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
+
+	it("[U22] changing open from true to false closes it", () => {
+		const { rerender } = render(
+			<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />,
+		);
+
+		rerender(
+			<ConfirmDiscardDialog
+				open={false}
+				onConfirm={vi.fn()}
+				onCancel={vi.fn()}
+			/>,
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
 });

@@ -338,3 +338,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `f0a4366`
 - state: DONE
+
+## Cycle 26: U22 changing open from true to false closes it
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U22] changing open from true to false closes it` (new)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U22\]"` -> `Error: expect(element).not.toBeInTheDocument() expected document not to contain element, found <dialog` (1 failed)
+- green: the effect calls `dialog.close()` when `open` is false and the dialog is open. Same command -> `1 passed | 8 skipped (9)`. Suite `pnpm test` x3 -> 134 passed each (6.34 s, 7.05 s, 6.57 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `c06b9f5`
+- state: DONE
