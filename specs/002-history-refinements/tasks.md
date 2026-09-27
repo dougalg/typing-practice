@@ -87,7 +87,7 @@ description: "Task list for Practice History Refinements"
 ### Acceptance confirmation for User Story 1
 
 - [x] T038 [US1] [A1] Confirm A1 is green: run `pnpm vitest run src/App.test.tsx -t "\[A1\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
-- [ ] T039 [US1] [A2] Confirm A2 is green: run `pnpm vitest run src/App.test.tsx -t "\[A2\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
+- [x] T039 [US1] [A2] Confirm A2 is green: run `pnpm vitest run src/App.test.tsx -t "\[A2\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T040 [US1] [A3] Confirm A3 is green: run `pnpm vitest run src/App.test.tsx -t "\[A3\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T041 [US1] [A4] Confirm A4 is green: run `pnpm vitest run src/App.test.tsx -t "\[A4\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.
 - [ ] T042 [US1] [A5] Confirm A5 is green: run `pnpm vitest run src/App.test.tsx -t "\[A5\]"` and check the summary shows at least one `passed` (not all skipped); the outer loop for this behavior closes only then.

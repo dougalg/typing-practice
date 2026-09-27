@@ -91,7 +91,7 @@ function App() {
 			<ConfirmDiscardDialog
 				open={pendingLoad !== null}
 				onConfirm={handleConfirmDiscard}
-				onCancel={() => {}}
+				onCancel={() => setPendingLoad(null)}
 			/>
 		</>
 	);

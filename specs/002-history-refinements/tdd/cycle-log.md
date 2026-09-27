@@ -461,3 +461,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `0fe5f11`
 - state: DONE. Ticked T038 (confirmed with the qualified filter, above).
+
+## Cycle 37: A2 choosing Cancel closes the confirmation, keeps the same text and typed position, and returns focus to the pressed Load button
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A2] choosing Cancel closes the confirmation, ...` (new)
+- red: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A2\]"` -> `Error: expect(element).not.toBeInTheDocument() expected document not to contain element, found <dialog` (1 failed | 34 skipped)
+- green: `onCancel` clears the pending load, so the dialog closes (its U22 effect). Same command -> `1 passed | 34 skipped (35)`. Suite `pnpm test` x3 -> 145 passed each (7.37 s, 6.97 s, 6.77 s); `pnpm build` passes
+- finding: the focus assertion passed without `App` calling `trigger.focus()` (contracts/ui.md). In Chromium a click focuses the button, and closing a modal dialog restores focus to the element focused before it opened. The explicit call exists for Safari, where a click does not focus a button, so focus would not come back to it. That case is reproducible in Chromium with a DOM `click()` (which does not move focus), so it was **appended to the test list as A21** instead of being implemented untested in this cycle.
+- refactor: none needed
+- commit: previous commit was `dd86e89`
+- state: DONE. Ticked T039 (qualified filter).

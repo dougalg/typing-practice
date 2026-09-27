@@ -829,4 +829,22 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(getPracticeText("first text")).toBeInTheDocument();
 		expect(charactersTyped()).toHaveTextContent("2 / 10");
 	});
+
+	it("[A2] choosing Cancel closes the confirmation, keeps the same text and typed position, and returns focus to the pressed Load button", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+		await browserUserEvent.click(loadSecond);
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
+		expect(loadSecond).toHaveFocus();
+	});
 });
