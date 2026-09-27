@@ -1,4 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useId, useMemo, useRef, useState } from "react";
+import { Button } from "../components/Button";
+import { Eyebrow, Panel } from "../components/Panel";
+import { fieldClassName } from "../components/field";
 import type { TypingState, TypedMark } from "../types";
 
 type PracticeViewProps = {
@@ -27,6 +30,7 @@ function PracticeView({
 	const [currentInputValue, setCurrentInputValue] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const typingInputRef = useRef<HTMLInputElement>(null);
+	const headingId = useId();
 
 	// Reset typing state when target changes or we start a new run
 	useEffect(() => {
@@ -204,92 +208,119 @@ function PracticeView({
 		setCurrentInputValue("");
 	};
 
+	const isFinished = typingState === "finished";
+
 	return (
-		<div className="rounded-[18px] bg-white/96 p-8 pb-9 shadow-[0_18px_60px_rgba(15,23,42,0.2),0_0_0_1px_rgba(148,163,184,0.25)] backdrop-blur-[14px] sm:p-6 sm:pb-7">
-			<div className="mb-6 flex items-center justify-between">
-				<button
-					onClick={onReset}
-					className="cursor-pointer rounded-full border-none bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600 transition-colors duration-150 hover:bg-slate-200"
-				>
+		<Panel aria-labelledby={headingId}>
+			<div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+				<dl className="m-0 flex flex-wrap items-baseline gap-x-8 gap-y-2">
+					<div className="flex flex-col-reverse">
+						<dt className="text-ink-muted text-xs font-semibold tracking-[0.12em] uppercase">
+							Characters
+						</dt>
+						<dd className="text-ink m-0 font-mono text-2xl font-semibold tabular-nums">
+							{position}
+							<span className="text-ink-muted text-base font-normal">
+								{" "}
+								/ {targetText.length}
+							</span>
+						</dd>
+					</div>
+					<div className="flex flex-col-reverse">
+						<dt className="text-ink-muted text-xs font-semibold tracking-[0.12em] uppercase">
+							Complete
+						</dt>
+						<dd className="text-ink m-0 font-mono text-2xl font-semibold tabular-nums">
+							{progressPercentage}%
+						</dd>
+					</div>
+				</dl>
+				<Button variant="secondary" size="sm" onClick={onReset}>
+					<span aria-hidden="true">↺</span>
 					Reset
-				</button>
+				</Button>
 			</div>
 
-			<div className="mb-6 h-2 overflow-hidden rounded-full bg-slate-200">
+			<div
+				role="progressbar"
+				aria-label="Progress"
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={progressPercentage}
+				className="bg-line mb-7 h-2 overflow-hidden rounded-full"
+			>
 				<div
-					className={`h-full transition-all duration-300 ${
-						typingState === "finished" ? "bg-green-500" : "bg-blue-500"
+					className={`h-full rounded-full motion-safe:transition-[width] motion-safe:duration-300 ${
+						isFinished ? "bg-success" : "bg-accent"
 					}`}
 					style={{ width: `${progressPercentage}%` }}
 				/>
 			</div>
 
-			<div className="mb-6 flex items-center gap-6 text-sm text-slate-600">
-				<div>
-					<span className="font-semibold">{position}</span> /{" "}
-					<span>{targetText.length}</span> characters
-				</div>
-				<div>
-					<span className="font-semibold">{progressPercentage}%</span> complete
-				</div>
+			<Eyebrow id={headingId} className="mb-3">
+				Type the text below
+			</Eyebrow>
+			<div
+				className={`rounded-xl border px-5 py-4 transition-colors duration-300 ${
+					isFinished
+						? "border-success/50 bg-success-soft"
+						: "border-line bg-surface-sunken"
+				}`}
+			>
+				{/* overflow-wrap:anywhere (unlike break-word) also lowers the element's
+				    min-content width, so a long unbroken run can't widen the layout. */}
+				<p className="m-0 font-mono text-xl leading-[1.9] [overflow-wrap:anywhere] whitespace-pre-wrap sm:text-2xl">
+					{Array.from(targetText).map((ch, i) => {
+						const mark = typedMarks[i] ?? null;
+						const isCaret = typingState === "running" && i === position;
+
+						const className =
+							mark === "correct"
+								? "text-success"
+								: mark === "incorrect"
+									? "rounded-sm bg-danger-soft text-danger underline decoration-wavy decoration-1 underline-offset-4"
+									: isCaret
+										? "rounded-sm bg-accent-soft text-accent-ink font-semibold underline decoration-2 underline-offset-[6px]"
+										: "text-ink-muted";
+
+						const key = `${i}-${ch ?? ""}`;
+
+						return (
+							<span key={key} className={className}>
+								{ch}
+							</span>
+						);
+					})}
+				</p>
 			</div>
-
-			<section className="mb-5 rounded-[14px] border border-slate-300/40 bg-gradient-to-br from-slate-50 to-blue-50 p-5 pb-6">
-				<h2 className="m-0 mb-3 text-[0.95rem] tracking-[0.09em] text-slate-500 uppercase">
-					Type the text below
-				</h2>
-				<div
-					className={`mt-2 flex min-h-20 items-center rounded-[10px] px-[0.9rem] py-3 text-left text-[1.5rem] ${
-						typingState === "finished"
-							? "border border-solid border-green-500 bg-linear-to-br from-green-50 to-green-50/50"
-							: "border border-solid border-blue-500"
+			<input
+				ref={typingInputRef}
+				value={currentInputValue}
+				onInput={handleTypingInput}
+				onKeyDown={handleTypingKeyDown}
+				onCompositionStart={handleCompositionStart}
+				onCompositionEnd={handleCompositionEnd}
+				aria-label="Typing input"
+				className={`${fieldClassName} mt-4`}
+				type="text"
+				autoComplete="off"
+				spellCheck={false}
+				disabled={typingState !== "running"}
+				placeholder="Start typing… (this box stays empty; it captures keystrokes)"
+			/>
+			{errorMessage && (
+				<p
+					className={`mt-3 rounded-lg px-3 py-2 text-sm font-medium ${
+						isFinished
+							? "bg-success-soft text-success"
+							: "bg-danger-soft text-danger"
 					}`}
+					role="alert"
 				>
-					<p className="m-0 font-mono text-[1.5rem] wrap-break-word whitespace-pre-wrap">
-						{Array.from(targetText).map((ch, i) => {
-							const mark = typedMarks[i] ?? null;
-							const isCaret = typingState === "running" && i === position;
-
-							const className =
-								mark === "correct"
-									? "text-green-600"
-									: mark === "incorrect"
-										? "text-red-600"
-										: isCaret
-											? "text-blue-600 font-semibold underline"
-											: "text-slate-600";
-
-							const key = `${i}-${ch ?? ""}`;
-
-							return (
-								<span key={key} className={className}>
-									{ch}
-								</span>
-							);
-						})}
-					</p>
-				</div>
-				<input
-					ref={typingInputRef}
-					value={currentInputValue}
-					onInput={handleTypingInput}
-					onKeyDown={handleTypingKeyDown}
-					onCompositionStart={handleCompositionStart}
-					onCompositionEnd={handleCompositionEnd}
-					className="font-inherit mt-3 w-full rounded-[10px] border border-slate-300 bg-white px-[0.9rem] py-2.5 transition-all duration-150 ease-out placeholder:text-slate-400 focus:border-blue-600 focus:shadow-[0_0_0_1px_rgba(37,99,235,0.4),0_0_0_4px_rgba(191,219,254,0.9)] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-200"
-					type="text"
-					autoComplete="off"
-					spellCheck={false}
-					disabled={typingState !== "running"}
-					placeholder="Start typing… (this box stays empty; it captures keystrokes)"
-				/>
-				{errorMessage && (
-					<p className="mt-2.5 min-h-5 text-sm text-red-700" role="alert">
-						{errorMessage}
-					</p>
-				)}
-			</section>
-		</div>
+					{errorMessage}
+				</p>
+			)}
+		</Panel>
 	);
 }
 

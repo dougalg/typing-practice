@@ -1,52 +1,115 @@
 @import "tailwindcss";
 
+/*
+ * Semantic colour tokens. Components use these (bg-surface, text-ink-muted,
+ * border-line, outline-focus, …) so light and dark mode are defined in one place.
+ */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-raised: var(--surface-raised);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-focus: var(--focus);
+
+  --font-sans:
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code", Menlo, Consolas,
+    monospace;
+}
+
 @layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
+  :root {
+    color-scheme: light;
+    --canvas: #f4f5f9;
+    --surface: #ffffff;
+    --surface-sunken: #f7f8fb;
+    --surface-raised: #ffffff;
+    --line: #e2e5ee;
+    --line-strong: #c5cbd8;
+    --ink: #151a2d;
+    --ink-muted: #545d75;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-active: #3730a3;
+    --accent-soft: #eef0ff;
+    --accent-ink: #3f37c9;
+    --on-accent: #ffffff;
+    --success: #0f7a45;
+    --success-soft: #e5f6ec;
+    --danger: #c0262d;
+    --danger-soft: #fdecec;
+    --focus: #4f46e5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --canvas: #0e111b;
+      --surface: #161a28;
+      --surface-sunken: #0f1320;
+      --surface-raised: #1d2233;
+      --line: #282e42;
+      --line-strong: #3a415a;
+      --ink: #e8eaf2;
+      --ink-muted: #9aa2b8;
+      --accent: #8b87ff;
+      --accent-hover: #a29fff;
+      --accent-active: #b7b5ff;
+      --accent-soft: #23234a;
+      --accent-ink: #b4b1ff;
+      --on-accent: #0e0f1f;
+      --success: #4ade80;
+      --success-soft: #11291d;
+      --danger: #ff7b7b;
+      --danger-soft: #331618;
+      --focus: #a29fff;
+    }
   }
 
   body {
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 1rem;
-    color: #0f172a;
-    background: radial-gradient(
-      circle at top,
-      #e0f2fe 0,
-      #f9fafb 40%,
-      #f1f5f9 100%
+    color: var(--ink);
+    background-color: var(--canvas);
+    background-image: radial-gradient(
+      ellipse 80% 50% at 50% -10%,
+      color-mix(in oklab, var(--accent) 14%, transparent),
+      transparent
     );
-    font-family:
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "SF Pro Text",
-      system-ui,
-      sans-serif;
+    background-repeat: no-repeat;
+    font-family: var(--font-sans);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @media (prefers-color-scheme: dark) {
-      color: #eee;
-      background: radial-gradient(circle at top, #333 0, #444 40%, #555 100%);
-    }
   }
 
   #root {
     width: 100%;
-    max-width: 800px;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding: 2.5rem 1.5rem 4rem;
   }
 
   @media (max-width: 640px) {
-    body {
-      padding: 1.25rem 0.8rem;
+    #root {
+      padding: 1.25rem 1rem 3rem;
     }
   }
 }
