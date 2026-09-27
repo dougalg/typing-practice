@@ -26,7 +26,12 @@ export const ConfirmDiscardDialog = ({
 	}, [open]);
 
 	return (
-		<dialog ref={dialogRef} aria-labelledby={questionId}>
+		<dialog
+			ref={dialogRef}
+			aria-labelledby={questionId}
+			// The native `cancel` event: Escape (or the platform's back gesture).
+			onCancel={() => onCancel()}
+		>
 			<p id={questionId}>Discard your progress on this text?</p>
 			<Button autoFocus onClick={onCancel}>
 				Cancel

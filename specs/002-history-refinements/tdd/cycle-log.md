@@ -292,3 +292,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `0feba37`
 - state: DONE
+
+## Cycle 21: U17 pressing Escape calls onCancel once
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U17] pressing Escape calls onCancel once` (new; real `Escape` via `vitest/browser`'s `userEvent.keyboard`)
+- red: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U17\]"` -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed)
+- green: the `<dialog>`'s native `cancel` event calls `onCancel`. Same command -> `1 passed | 3 skipped (4)`. Suite `pnpm test` x3 -> 129 passed each (6.11 s, 5.99 s, 5.95 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `c02cac7`
+- state: DONE

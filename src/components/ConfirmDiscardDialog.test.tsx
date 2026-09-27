@@ -38,4 +38,15 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		expect(onCancel).toHaveBeenCalledOnce();
 		expect(onConfirm).not.toHaveBeenCalled();
 	});
+
+	it("[U17] pressing Escape calls onCancel once", async () => {
+		const onCancel = vi.fn();
+		render(
+			<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={onCancel} />,
+		);
+
+		await userEvent.keyboard("{Escape}");
+
+		expect(onCancel).toHaveBeenCalledOnce();
+	});
 });
