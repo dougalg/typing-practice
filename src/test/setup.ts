@@ -1,4 +1,8 @@
 import "@testing-library/jest-dom/vitest";
+// The app's stylesheet (Tailwind and the colour tokens), which the app loads in
+// main.tsx. Without it a component rendered on its own is unstyled, and axe's
+// colour-contrast rule measures browser defaults instead of the real palette.
+import "../style.css";
 import { afterEach } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { savedTextsDb } from "../features/savedItems/db";

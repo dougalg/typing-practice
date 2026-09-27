@@ -135,3 +135,10 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous cycle's commit was `b661c11`
 - state: BASELINE
+
+## Structural: load the app stylesheet in every test (found while characterizing U7)
+
+- finding: while mutant-checking U7, a low-contrast mutant (finished message `text-success` -> `text-success-soft`, the same colour as its background) **survived**: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U7\]"` -> `1 passed | 6 skipped (7)`. Cause: `src/style.css` (Tailwind and the colour tokens) is imported only by `main.tsx` and `App.tsx`, so a component rendered on its own in a test had no styles at all, and axe's `color-contrast` rule measured browser defaults. This also corrects cycle 6's note: U6's pass did **not** include a real-palette contrast check (its mutant was a missing name, which is unaffected).
+- change: `src/test/setup.ts` imports `../style.css`. No test changed. The U7 test was set aside (not committed) while this step ran.
+- suite: `pnpm test` x3 -> 115 passed each (6.43 s, 6.03 s, 6.07 s); `pnpm build` passes. Every existing axe check (Sidebar, SavedTextItem, PracticeView) now runs against the real palette and passes.
+- commit: previous cycle's commit was `5a9405a`
