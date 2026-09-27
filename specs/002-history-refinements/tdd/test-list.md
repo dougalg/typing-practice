@@ -68,7 +68,7 @@ checks 11, 12 and 16, now automated.
 | id  | behavior                                                                         | traces        | kind             | state    | test                                    |
 | --- | -------------------------------------------------------------------------------- | ------------- | ---------------- | -------- | --------------------------------------- |
 | U1  | While running, it shows the target text and a focused typing input               | FR-001 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U1]` |
-| U2  | A correct character moves the position on by one                                 | FR-001 (base) | characterization | PENDING  |                                         |
+| U2  | A correct character moves the position on by one                                 | FR-001 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U2]` |
 | U3  | A wrong character shows the error message and does not move the position         | FR-001 (base) | characterization | PENDING  |                                         |
 | U4  | Typing the whole text calls `onFinish` once                                      | FR-004 (base) | characterization | PENDING  |                                         |
 | U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | PENDING  |                                         |

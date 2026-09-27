@@ -1,9 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import PracticeView from "./PracticeView";
 
 function typingInput() {
 	return screen.getByRole("textbox", { name: "Typing input" });
+}
+
+// The "Characters" statistic: its <dd> reads "{position} / {length}".
+function charactersTyped() {
+	const term = screen.getByText("Characters");
+	const definition = term.nextElementSibling;
+	if (!definition) throw new Error('Expected a <dd> after "Characters"');
+	return definition;
 }
 
 // The target text is one <span> per character, so match the <p> whose
@@ -28,5 +37,21 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 
 		expect(getPracticeText("hello")).toBeInTheDocument();
 		await waitFor(() => expect(typingInput()).toHaveFocus());
+	});
+
+	it("[U2] a correct character moves the position on by one", async () => {
+		const user = userEvent.setup();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+			/>,
+		);
+
+		await user.type(typingInput(), "h");
+
+		expect(charactersTyped()).toHaveTextContent("1 / 5");
 	});
 });

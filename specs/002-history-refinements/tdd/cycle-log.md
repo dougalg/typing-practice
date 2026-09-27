@@ -85,3 +85,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - suite: `pnpm test` x3 -> 110 passed each (6.02 s, 6.12 s, 6.08 s); `pnpm build` passes
 - refactor: none needed
 - state: BASELINE
+
+## Cycle 2: U2 a correct character moves the position on by one (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U2] a correct character moves the position on by one` (new)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U2\]"` -> `1 passed | 1 skipped (2)`, as expected
+- mutant: `setPosition(nextPos)` -> `setPosition(position)` (both the input and composition branches) -> same command -> `Expected element to have text content: 1 / 5 Received: 0 / 5` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 111 passed each (6.34 s, 6.01 s, 5.99 s); `pnpm build` passes
+- refactor: none needed (added a `charactersTyped()` query helper for the "Characters" statistic)
+- commit: previous cycle's commit was `be2e8f0`
+- state: BASELINE
