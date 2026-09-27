@@ -92,7 +92,7 @@ checks 11, 12 and 16, now automated.
 | U18 | Pressing "Discard and load" calls `onConfirm` once and not `onCancel`                 | FR-002 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U18]` |
 | U19 | Tab from the last button keeps focus inside the dialog                                | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U19]` |
 | U20 | Shift+Tab from the first button keeps focus inside the dialog                         | FR-005 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U20]` |
-| U21 | With `open` false, no dialog is shown                                                 | FR-004 | example | PENDING |                                                       |
+| U21 | With `open` false, no dialog is shown                                                 | FR-004 | example | DONE    | `src/components/ConfirmDiscardDialog.test.tsx::[U21]` |
 | U22 | Changing `open` from true to false closes it                                          | FR-003 | example | PENDING |                                                       |
 | U23 | The open dialog has no axe violations                                                 | FR-005 | example | PENDING |                                                       |
 | U24 | A screen reader announces it as a dialog with its question                            | FR-005 | example | PENDING |                                                       |

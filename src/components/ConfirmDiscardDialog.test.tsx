@@ -96,4 +96,16 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 			document.activeElement as HTMLElement,
 		);
 	});
+
+	it("[U21] with open false, no dialog is shown", () => {
+		render(
+			<ConfirmDiscardDialog
+				open={false}
+				onConfirm={vi.fn()}
+				onCancel={vi.fn()}
+			/>,
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
 });

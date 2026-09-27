@@ -328,3 +328,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: component doc comment updated to name both wraps (comment only)
 - commit: previous commit was `de75403`
 - state: DONE
+
+## Cycle 25: U21 with open false, no dialog is shown (first-run pass)
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U21] with open false, no dialog is shown` (new)
+- first run: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U21\]"` -> `1 passed | 7 skipped (8)`. Passed on first run: U14's green already opens the dialog only when `open` is true, and a closed `<dialog>` is not rendered to the accessibility tree.
+- mutant: the effect's `open &&` guard removed (always `showModal()`) -> same command -> `Error: expect(element).not.toBeInTheDocument() expected document not to contain element, found <dialog` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 133 passed each (6.37 s, 6.44 s, 6.31 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `f0a4366`
+- state: DONE
