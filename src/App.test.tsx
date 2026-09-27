@@ -847,4 +847,26 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(charactersTyped()).toHaveTextContent("2 / 10");
 		expect(loadSecond).toHaveFocus();
 	});
+
+	it("[A3] pressing Escape on the confirmation does the same as Cancel", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+		await browserUserEvent.click(loadSecond);
+
+		await browserUserEvent.keyboard("{Escape}");
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
+		expect(loadSecond).toHaveFocus();
+		// The browser closes a dialog on Escape by itself; the app must also
+		// have let go of the held-back load, so the next Load asks again.
+		await browserUserEvent.click(loadSecond);
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+	});
 });

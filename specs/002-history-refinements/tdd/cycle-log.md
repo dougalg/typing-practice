@@ -471,3 +471,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `dd86e89`
 - state: DONE. Ticked T039 (qualified filter).
+
+## Cycle 38: A3 pressing Escape on the confirmation does the same as Cancel (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A3] pressing Escape on the confirmation does the same as Cancel` (new; real `Escape`). Besides A2's checks it presses the same Load again and expects the question again: the browser closes a modal dialog on Escape by itself, so "the dialog is gone" cannot show that the app let go of the held-back load.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A3\]"` -> `1 passed | 35 skipped (36)`. Passed: U17 forwards the `cancel` event and A2 wired `onCancel`.
+- mutant: `ConfirmDiscardDialog` no longer forwards the native `cancel` event -> same command -> `TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Discard your progress on this text?"` (1 failed), at the "asks again" step. The four A2-style assertions passed under this mutant, which is why the extra step is in the test. Restored from the committed file.
+- suite: `pnpm test` x3 -> 146 passed each (7.04 s, 6.98 s, 6.97 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `479d08b`
+- state: DONE. Ticked T040 (qualified filter).
