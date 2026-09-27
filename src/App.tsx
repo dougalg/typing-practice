@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./style.css";
 import type { TypingState } from "./types";
 import SetupView from "./views/SetupView";
@@ -20,6 +20,8 @@ interface Session {
 /** A Load held back by the discard confirmation. */
 interface PendingLoad {
 	text: string;
+	/** The Load button pressed, to take focus back if the load is cancelled. */
+	trigger: HTMLElement;
 }
 
 function App() {
@@ -29,6 +31,15 @@ function App() {
 	// At least one character typed in the current session (spec FR-001).
 	const [sessionTouched, setSessionTouched] = useState(false);
 	const [pendingLoad, setPendingLoad] = useState<PendingLoad | null>(null);
+	const returnFocusTo = useRef<HTMLElement | null>(null);
+
+	// Runs after the dialog's own effect has closed it (a child's effects run
+	// before its parent's), so the page is no longer inert when focus moves.
+	useEffect(() => {
+		if (pendingLoad || !returnFocusTo.current) return;
+		returnFocusTo.current.focus();
+		returnFocusTo.current = null;
+	}, [pendingLoad]);
 
 	const startSession = useCallback((text: string) => {
 		setSession((prev) => ({ text, runId: prev.runId + 1 }));
@@ -42,15 +53,21 @@ function App() {
 	const sessionInProgress = typingState === "running" && sessionTouched;
 
 	const handleLoadRequest = useCallback(
-		(item: { text: string }) => {
+		(item: { text: string }, trigger: HTMLElement) => {
 			if (sessionInProgress) {
-				setPendingLoad({ text: item.text });
+				setPendingLoad({ text: item.text, trigger });
 				return;
 			}
 			startSession(item.text);
 		},
 		[sessionInProgress, startSession],
 	);
+
+	const handleCancelDiscard = () => {
+		if (!pendingLoad) return;
+		returnFocusTo.current = pendingLoad.trigger;
+		setPendingLoad(null);
+	};
 
 	const handleConfirmDiscard = () => {
 		if (!pendingLoad) return;
@@ -91,7 +108,7 @@ function App() {
 			<ConfirmDiscardDialog
 				open={pendingLoad !== null}
 				onConfirm={handleConfirmDiscard}
-				onCancel={() => setPendingLoad(null)}
+				onCancel={handleCancelDiscard}
 			/>
 		</>
 	);

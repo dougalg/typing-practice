@@ -60,7 +60,7 @@ checks 11, 12 and 16, now automated.
 | A18 | With IndexedDB unusable from the start, practice can still be started and the sidebar shows an alert                                                   | 001:FR-013, Edge: save fails | example | DONE    | `src/App.test.tsx::App (specs/002-history-refinements, checks carried over from 001) > [A18]` |
 | A19 | At a 320 CSS px viewport with entries listed, the page does not scroll sideways and every Load button is fully visible (a guard: expected to pass)     | 001:FR-014                   | example | DONE    | `src/App.test.tsx::App (specs/002-history-refinements, checks carried over from 001) > [A19]` |
 | A20 | When a count cannot be saved, practice still works and the sidebar shows the save-failure message                                                      | Edge: save fails             | example | DONE    | `src/App.test.tsx::[A14]` (from `001`; `recordPractice` path unchanged)                       |
-| A21 | Cancel returns focus to the pressed Load button even when pressing it did not move focus there (Safari: a click does not focus a button)               | US1.2, FR-003                | example | PENDING |                                                                                               |
+| A21 | Cancel returns focus to the pressed Load button even when pressing it did not move focus there (Safari: a click does not focus a button)               | US1.2, FR-003                | example | DONE    | `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A21]`                 |
 
 ## Inner loop: unit behaviors
 

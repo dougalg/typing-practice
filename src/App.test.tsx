@@ -993,4 +993,24 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(setupBox()).toHaveValue("");
 	});
+
+	it("[A21] Cancel returns focus to the pressed Load button even when pressing it did not move focus there", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+
+		// Safari does not focus a button when it is clicked. A DOM click()
+		// activates the button the same way, leaving focus in the typing input.
+		loadSecond.click();
+		await waitFor(() =>
+			expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus(),
+		);
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+
+		expect(loadSecond).toHaveFocus();
+	});
 });

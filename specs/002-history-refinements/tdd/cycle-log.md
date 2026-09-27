@@ -551,3 +551,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `df9f2c6`
 - state: DONE. Ticked T047 (qualified filter), and T019 and T023 (A1-A8, A14, A15 all DONE).
+
+## Cycle 46: A21 Cancel returns focus to the pressed Load button even when pressing it did not move focus there (added in cycle 37)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A21] Cancel returns focus to the pressed Load button even when pressing it did not move focus there` (new). The Load button is activated with a DOM `click()`, which, like a click in Safari, does not focus it; focus stays in the typing input.
+- red: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A21\]"` -> `Error: expect(element).toHaveFocus() Expected element with focus: <button aria-labelledby="_r_7_ _r_6_" ...` (1 failed | 43 skipped). The browser returned focus to the typing input, the element focused before the dialog opened.
+- green: `App`'s pending load keeps the `trigger` passed by `Sidebar` (U26); cancelling stores it, and an effect on `pendingLoad` focuses it once the load is cleared. The effect runs after the dialog's own effect has called `close()`, so the page is no longer inert. Same command -> `1 passed | 43 skipped (44)`. Suite `pnpm test` x3 -> 154 passed each (8.33 s, 8.33 s, 8.00 s); `pnpm build` passes
+- refactor: none needed
+- tasks: A21 has no task in `tasks.md` (it was added mid-loop), so nothing is ticked for it
+- commit: previous commit was `6f6294b`
+- state: DONE
