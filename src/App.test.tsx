@@ -1078,4 +1078,31 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 		expect(await entry.findByText("Completed: 1")).toBeInTheDocument();
 		expect(entry.getByText("Loaded: 1")).toBeInTheDocument();
 	});
+
+	it("[A13] cancelling the confirmation leaves the target entry's Loaded count and last-practiced date unchanged", async () => {
+		await addHistory("second text", "first text"); // second text: Jan 1, Loaded 1
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+		// IndexedDB runs read-write transactions in order, so once this no-op
+		// write is done, any write the Load might have started is done too.
+		await historyModule.recordCompletion("no such text");
+
+		const row = await savedTextsDb.savedTexts
+			.where("text")
+			.equals("second text")
+			.first();
+		expect(row).toMatchObject({
+			numberOfLoads: 1,
+			dateModified: new Date(2026, 0, 1),
+		});
+		expect(
+			(await historyEntry("second text")).getByText("Loaded: 1"),
+		).toBeInTheDocument();
+	});
 });

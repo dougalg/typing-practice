@@ -723,3 +723,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `1789da5`
 - state: DONE. Ticked T051 (qualified filter).
+
+## Cycle 63: A13 cancelling the confirmation leaves the target entry's "Loaded" count and last-practiced date unchanged (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A13] cancelling the confirmation leaves the target entry's Loaded count and last-practiced date unchanged` (new). After Cancel it awaits a no-op `recordCompletion` as a barrier (IndexedDB runs read-write transactions in order), then checks the stored row (`numberOfLoads: 1`, `dateModified` Jan 1) and the visible "Loaded: 1". Asserting "unchanged" without the barrier could pass before a stray write lands.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A13\]"` -> `1 passed | 48 skipped (49)`. Expected: A1's pending load writes nothing (contracts/ui.md).
+- mutant: the in-progress branch calls `recordPractice(item.text)` before asking -> same command -> `AssertionError: expected { text: 'second text', …(5) } to match object { numberOfLoads: 1, …(1) }` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 171 passed each (8.83 s, 8.94 s, 9.34 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `9f77faa`
+- state: DONE. Ticked T052 (qualified filter).
