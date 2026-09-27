@@ -347,3 +347,15 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `c06b9f5`
 - state: DONE
+
+## Cycle 27: U23 the open dialog has no axe violations (first-run pass)
+
+- test: `src/components/ConfirmDiscardDialog.test.tsx::[U23] the open dialog has no axe violations` (new)
+- first run: `pnpm vitest run src/components/ConfirmDiscardDialog.test.tsx -t "\[U23\]"` -> `1 passed | 9 skipped (10)`. Passed on first run: the dialog built for U14-U22 has no violations.
+- mutant 1: removed `aria-labelledby` -> **survived**. Axe lists `aria-dialog-name` as inapplicable to a native `<dialog>` without an explicit role; the name is pinned by U14 instead.
+- mutant 2: question paragraph `text-[#cccccc]` -> **survived**. A throwaway debug test (deleted) showed axe files that paragraph under `incomplete`: "Element's background color could not be determined because it's partially obscured by another element" (the unstyled dialog). Revisited in the styling step that follows.
+- mutant 3: Cancel button `style={{ color: "#cccccc" }}` -> same command -> `Expected no accessibility violations, found 1: - color-contrast: Elements must meet minimum color contrast ratio thresholds (1 node(s))` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 135 passed each (6.27 s, 6.24 s, 6.59 s); `pnpm build` passes
+- refactor: none in this commit; the dialog's visual styling is its own commit next
+- commit: previous commit was `50805e5`
+- state: DONE

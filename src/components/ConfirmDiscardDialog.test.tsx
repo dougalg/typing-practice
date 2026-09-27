@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 // Real input through Playwright: the dialog's behavior is the browser's own.
 import { userEvent } from "vitest/browser";
+import { expectNoA11yViolations } from "../test/a11y";
 import { ConfirmDiscardDialog } from "./ConfirmDiscardDialog";
 
 const QUESTION = "Discard your progress on this text?";
@@ -123,5 +124,13 @@ describe("ConfirmDiscardDialog (specs/002-history-refinements contracts/ui.md)",
 		);
 
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
+
+	it("[U23] the open dialog has no axe violations", async () => {
+		const { container } = render(
+			<ConfirmDiscardDialog open onConfirm={vi.fn()} onCancel={vi.fn()} />,
+		);
+
+		await expectNoA11yViolations(container);
 	});
 });
