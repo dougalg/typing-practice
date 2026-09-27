@@ -95,3 +95,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed (added a `charactersTyped()` query helper for the "Characters" statistic)
 - commit: previous cycle's commit was `be2e8f0`
 - state: BASELINE
+
+## Cycle 3: U3 a wrong character shows the error message and does not move the position (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U3] a wrong character shows the error message and does not move the position` (new)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U3\]"` -> `1 passed | 2 skipped (3)`, as expected
+- mutant: `actual === expected || (...)` -> `true || (...)` (every character accepted) -> same command -> `TestingLibraryElementError: Unable to find an accessible element with the role "alert"` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 112 passed each (6.26 s, 6.15 s, 6.03 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous cycle's commit was `ce4333c`
+- state: BASELINE

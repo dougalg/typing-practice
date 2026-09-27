@@ -54,4 +54,23 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 
 		expect(charactersTyped()).toHaveTextContent("1 / 5");
 	});
+
+	it("[U3] a wrong character shows the error message and does not move the position", async () => {
+		const user = userEvent.setup();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+			/>,
+		);
+
+		await user.type(typingInput(), "x");
+
+		expect(screen.getByRole("alert")).toHaveTextContent(
+			'Error at position 1: expected "h" but got "x". Keep typing until you get it right!',
+		);
+		expect(charactersTyped()).toHaveTextContent("0 / 5");
+	});
 });
