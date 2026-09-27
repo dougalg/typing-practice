@@ -188,3 +188,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `bdf86f0`
 - state: DONE. Ticked T013 and T037 (qualified filter).
+
+## Cycle 11: U27 a populated sidebar passes axe's colour-contrast rule in the real browser, and fails it on a low-contrast mutant (covered by an existing test)
+
+- test: none new. Already covered by 001's `src/views/Sidebar.test.tsx::[U63] the populated sidebar has no axe violations`, which runs the full axe rule set, `color-contrast` included, and since the structural commit `9370130` does so against the real palette (before it, the sidebar rendered unstyled and contrast was measured on browser defaults). Adding a second test with the same render and the same assertion would be a duplicate.
+- verification: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U63\]"` -> `1 passed | 16 skipped (17)`.
+- mutant 1: entry metadata `text-ink-muted` -> `text-[#eeeeee]` -> **survived**. A throwaway debug test (deleted) showed why: the entry background (`bg-surface-sunken`) is itself `#eeeeee`, and axe files an exact 1:1 ratio under `incomplete` ("Element has a 1:1 contrast ratio with the background"), not `violations`. Recorded as a known limit of axe: text coloured exactly like its background is not reported.
+- mutant 2: entry metadata `text-ink-muted` -> `text-[#bbbbbb]` -> same command -> `Expected no accessibility violations, found 1: - color-contrast: Elements must meet minimum color contrast ratio thresholds (2 node(s))` (1 failed); restored exactly
+- suite: unchanged since cycle 10 (119 passed x3); no code or test changed in this cycle
+- commit: previous commit was `e3a60c9`
+- state: DONE (test: U63). Ticked T014: its contrast check exists and is proven to compute colours, although no new test was added.

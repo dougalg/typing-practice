@@ -101,16 +101,16 @@ checks 11, 12 and 16, now automated.
 
 `U27`-`U33` automate `001`'s manual checks 15 and 17.
 
-| id  | behavior                                                                                                         | traces     | kind    | state   | test |
-| --- | ---------------------------------------------------------------------------------------------------------------- | ---------- | ------- | ------- | ---- |
-| U26 | Pressing an entry's Load button calls `onLoadRequest` with that entry and that button element                    | FR-003     | example | PENDING |      |
-| U27 | A populated sidebar passes axe's colour-contrast rule in the real browser, and fails it on a low-contrast mutant | 001:FR-014 | example | PENDING |      |
-| U28 | A screen reader announces the region as "Practice History"                                                       | 001:FR-014 | example | PENDING |      |
-| U29 | A screen reader reads the entries newest first                                                                   | 001:FR-005 | example | PENDING |      |
-| U30 | A screen reader announces each Load button as "Load" plus that entry's text                                      | 001:FR-014 | example | PENDING |      |
-| U31 | A screen reader reads the empty-state message                                                                    | 001:FR-011 | example | PENDING |      |
-| U32 | A screen reader announces the read-failure alert                                                                 | 001:FR-013 | example | PENDING |      |
-| U33 | A screen reader announces the save-failure alert                                                                 | 001:FR-013 | example | PENDING |      |
+| id  | behavior                                                                                                         | traces     | kind    | state   | test                                                                                                                                       |
+| --- | ---------------------------------------------------------------------------------------------------------------- | ---------- | ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| U26 | Pressing an entry's Load button calls `onLoadRequest` with that entry and that button element                    | FR-003     | example | PENDING |                                                                                                                                            |
+| U27 | A populated sidebar passes axe's colour-contrast rule in the real browser, and fails it on a low-contrast mutant | 001:FR-014 | example | DONE    | `src/views/Sidebar.test.tsx::[U63] the populated sidebar has no axe violations` (001 test; covers U27 since the stylesheet loads in tests) |
+| U28 | A screen reader announces the region as "Practice History"                                                       | 001:FR-014 | example | PENDING |                                                                                                                                            |
+| U29 | A screen reader reads the entries newest first                                                                   | 001:FR-005 | example | PENDING |                                                                                                                                            |
+| U30 | A screen reader announces each Load button as "Load" plus that entry's text                                      | 001:FR-014 | example | PENDING |                                                                                                                                            |
+| U31 | A screen reader reads the empty-state message                                                                    | 001:FR-011 | example | PENDING |                                                                                                                                            |
+| U32 | A screen reader announces the read-failure alert                                                                 | 001:FR-013 | example | PENDING |                                                                                                                                            |
+| U33 | A screen reader announces the save-failure alert                                                                 | 001:FR-013 | example | PENDING |                                                                                                                                            |
 
 ### `src/components/SavedTextItem.tsx`
 
