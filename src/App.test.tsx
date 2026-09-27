@@ -924,4 +924,36 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 		expect(getPracticeText("second text")).toBeInTheDocument();
 	});
+
+	it("[A8] using only the keyboard, the user can open the confirmation from a Load button, cancel it, open it again and confirm it", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		const loadSecond = await loadButtonFor("second text");
+		// From here on, keyboard only: type, then Tab from the typing input to
+		// the Load button (bounded, so a broken tab order fails, not hangs).
+		await waitFor(() => expect(typingInput()).toHaveFocus());
+		await browserUserEvent.keyboard("fi");
+		for (let i = 0; i < 10 && document.activeElement !== loadSecond; i++) {
+			await browserUserEvent.tab();
+		}
+		expect(loadSecond).toHaveFocus();
+
+		await browserUserEvent.keyboard("{Enter}");
+		expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+		await browserUserEvent.keyboard("{Enter}");
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(loadSecond).toHaveFocus();
+
+		await browserUserEvent.keyboard(" ");
+		await browserUserEvent.tab();
+		expect(
+			screen.getByRole("button", { name: "Discard and load" }),
+		).toHaveFocus();
+		await browserUserEvent.keyboard("{Enter}");
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("0 / 11");
+	});
 });

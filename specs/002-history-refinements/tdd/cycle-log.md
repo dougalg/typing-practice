@@ -521,3 +521,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `9b37463`
 - state: DONE. Ticked T044 (qualified filter).
+
+## Cycle 43: A8 using only the keyboard, the user can open the confirmation, cancel it, open it again and confirm it (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A8] using only the keyboard, ...` (new). After one click to start the session, keyboard only (real keys): type "fi", Tab (bounded loop) from the typing input to the second entry's Load button, Enter opens the question with Cancel focused, Enter cancels (focus back on Load), Space reopens, Tab to "Discard and load", Enter loads the entry from its first character.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A8\]"` -> `1 passed | 40 skipped (41)`. Expected: built by U14-U20 and A1-A4.
+- mutant: "Discard and load" gets `tabIndex={-1}` -> same command -> `Error: expect(element).toHaveFocus()` (1 failed, the Tab to "Discard and load"); restored from the committed file
+- suite: `pnpm test` x3 -> 151 passed each (8.13 s, 7.63 s, 7.66 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `a157c70`
+- state: DONE. Ticked T045 (qualified filter).
