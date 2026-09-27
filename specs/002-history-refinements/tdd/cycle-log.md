@@ -105,3 +105,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous cycle's commit was `ce4333c`
 - state: BASELINE
+
+## Cycle 4: U4 typing the whole text calls onFinish once (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U4] typing the whole text calls onFinish once` (new)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U4\]"` -> `1 passed | 3 skipped (4)`, as expected
+- mutant: removed the `onFinish()` call in the input handler's last-character branch -> same command -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 113 passed each (6.04 s, 6.07 s, 6.08 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous cycle's commit was `e8b36a1`
+- state: BASELINE

@@ -73,4 +73,21 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 		);
 		expect(charactersTyped()).toHaveTextContent("0 / 5");
 	});
+
+	it("[U4] typing the whole text calls onFinish once", async () => {
+		const user = userEvent.setup();
+		const onFinish = vi.fn();
+		render(
+			<PracticeView
+				targetText="hi"
+				typingState="running"
+				onFinish={onFinish}
+				onReset={vi.fn()}
+			/>,
+		);
+
+		await user.type(typingInput(), "hi");
+
+		expect(onFinish).toHaveBeenCalledOnce();
+	});
 });
