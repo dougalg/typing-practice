@@ -561,3 +561,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - tasks: A21 has no task in `tasks.md` (it was added mid-loop), so nothing is ticked for it
 - commit: previous commit was `6f6294b`
 - state: DONE
+
+## Cycle 47: U38 recordPractice on a new text creates one entry with numberOfLoads = 1 and numberOfCompletes = 0
+
+- test: `src/features/savedItems/history.test.ts::[U38] on a new text creates one entry with a loaded count of 1 and a completed count of 0` (new describe block for 002's loaded count)
+- red: `pnpm vitest run src/features/savedItems/history.test.ts -t "\[U38\]"` -> `AssertionError: expected { text: 'hello world', …(5) } to match object { numberOfLoads: 1, …(1) }` (1 failed | 25 skipped)
+- green: `recordPractice` creates new entries with `numberOfLoads: 1`. Same command -> `1 passed | 25 skipped (26)`. Suite `pnpm test` x3 -> 155 passed each (8.62 s, 8.23 s, 8.00 s); `pnpm build` passes
+- baseline check: 001's `[U14]` and `[U15]` assert only the completed count and the dates, not `numberOfLoads`, so neither needed changing (the planning notes expected `[U15]` might)
+- refactor: `recordPractice`'s doc comment says "loaded count 1, completed count 0" for a new entry (comment only)
+- commit: previous commit was `5e0fa8a`
+- state: DONE

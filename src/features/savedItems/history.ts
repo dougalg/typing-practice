@@ -13,9 +13,10 @@ export function normalizeText(input: string): string {
 export type WriteResult = { ok: true } | { ok: false };
 
 /**
- * Called when a session starts (Start or Load). Creates the entry (practice
- * count 0) or refreshes an existing one (dateModified = now; the practice
- * count is NOT touched here — only recordCompletion changes it). Ignores
+ * Called when a session starts (Start or Load). Creates the entry (loaded
+ * count 1, completed count 0) or refreshes an existing one (dateModified =
+ * now; the completed count is NOT touched here — only recordCompletion
+ * changes it). Ignores
  * empty normalised text. Never rejects.
  */
 export async function recordPractice(text: string): Promise<WriteResult> {
@@ -42,7 +43,7 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 					text: normalized,
 					dateCreated: now,
 					dateModified: now,
-					numberOfLoads: 0,
+					numberOfLoads: 1,
 					numberOfCompletes: 0,
 				});
 			} catch (err) {

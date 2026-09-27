@@ -166,6 +166,20 @@ describe("recordPractice (specs/001-practice-history contracts/history-module.md
 	});
 });
 
+describe("recordPractice loaded count (specs/002-history-refinements contracts/history-module.md)", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("[U38] on a new text creates one entry with a loaded count of 1 and a completed count of 0", async () => {
+		await recordPractice("hello world");
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]).toMatchObject({ numberOfLoads: 1, numberOfCompletes: 0 });
+	});
+});
+
 describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
