@@ -79,7 +79,7 @@ checks 11, 12 and 16, now automated.
 | U10 | `onTypingStarted` is called when the first input arrives through composition end | FR-001        | example          | DONE     | `src/views/PracticeView.test.tsx::[U10]` |
 | U11 | `onTypingStarted` is not called when nothing has been typed                      | FR-004        | example          | DONE     | `src/views/PracticeView.test.tsx::[U11]` |
 | U12 | `onTypingStarted` is not called a second time within the same run                | FR-001        | example          | DONE     | `src/views/PracticeView.test.tsx::[U12]` |
-| U13 | After a remount (a new run), the first character calls `onTypingStarted` again   | FR-001        | example          | PENDING  |                                          |
+| U13 | After a remount (a new run), the first character calls `onTypingStarted` again   | FR-001        | example          | DONE     | `src/views/PracticeView.test.tsx::[U13]` |
 
 ### `src/components/ConfirmDiscardDialog.tsx` (new)
 

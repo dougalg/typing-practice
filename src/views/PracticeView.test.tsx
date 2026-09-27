@@ -244,4 +244,27 @@ describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/
 
 		expect(onTypingStarted).toHaveBeenCalledOnce();
 	});
+
+	it("[U13] after a remount (a new run), the first character calls onTypingStarted again", async () => {
+		const user = userEvent.setup();
+		const onTypingStarted = vi.fn();
+		// App keys PracticeView by run id, so a new run is a new mount.
+		const view = (runId: number) => (
+			<PracticeView
+				key={runId}
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>
+		);
+		const { rerender } = render(view(1));
+		await user.type(typingInput(), "h");
+
+		rerender(view(2));
+		await user.type(typingInput(), "h");
+
+		expect(onTypingStarted).toHaveBeenCalledTimes(2);
+	});
 });

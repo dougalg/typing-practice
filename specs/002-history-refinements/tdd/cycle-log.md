@@ -424,3 +424,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none beyond the shared function introduced by the green step
 - commit: previous commit was `165bcaa`
 - state: DONE
+
+## Cycle 34: U13 after a remount (a new run), the first character calls onTypingStarted again (first-run pass)
+
+- test: `src/views/PracticeView.test.tsx::[U13] after a remount (a new run), the first character calls onTypingStarted again` (new; re-renders with a new `key`, as `App` does per run)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U13\]"` -> `1 passed | 12 skipped (13)`. Passed: U12's flag is a `useRef`, which starts fresh on each mount.
+- mutant: the flag moved to a module-level object shared by every mount -> same command -> `AssertionError: expected "vi.fn()" to be called 2 times, but got 1 times` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 142 passed each (6.40 s, 6.34 s, 6.47 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `0b4d731`
+- state: DONE. Ticked T017 and T021 (U8-U13 all DONE).
