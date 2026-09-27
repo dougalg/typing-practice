@@ -138,7 +138,7 @@ description: "Task list for Practice History Refinements"
 ## Phase 5: Polish & Cross-Cutting Concerns
 
 - [x] T031 [A17] Close out `001`: in `specs/001-practice-history/tasks.md`, tick `T009`, `T012` and `T042` now that `A16` is green (T011), and note in its close-out section that checks 11, 12, 15, 16 and 17 are automated by T011-T015; set `A16` to `DONE` in `specs/001-practice-history/tdd/test-list.md` with the test name.
-- [ ] T032 Run `pnpm test`, `pnpm build` and `npx prettier --check .` from the repository root; all must pass.
+- [x] T032 Run `pnpm test`, `pnpm build` and `npx prettier --check .` from the repository root; all must pass.
 - [ ] T033 Manual checks from `quickstart.md` (user): the focus ring on the dialog's buttons and the Load buttons is clearly visible; a VoiceOver spot check of the dialog (announced with its question; Escape returns to the Load button).
 - [ ] T034 Write the PR description: justify the dev dependency changes (added `@vitest/browser-playwright`, `playwright`, `@guidepup/virtual-screen-reader`; removed `fake-indexeddb` and `jsdom`; `axe-core` from `001`); carry `001`'s missing `T029` notes (why `axe-core` replaced `vitest-axe`, the contrast result, `SetupView` still has no accessibility tests); note the constitution amendment to 1.3.0 and the still-open progress-bar bug (stops one character short of 100%). Open a pull request from `002-history-refinements`; do not push to `main`.
 

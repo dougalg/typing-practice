@@ -756,3 +756,21 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - T031: in `specs/001-practice-history/tasks.md`, T009, T012 and T042 ticked, and the close-out section says which 002 tests automate 001's checks 11, 12, 15, 16 and 17. Check 16 is automated for reflow at 320 CSS px only; the 200% zoom step is not separately automated. In `specs/001-practice-history/tdd/test-list.md`, 001's `A16` is `DONE` (was `BLOCKED`), naming 002's `[A17]` test. 001's own `tdd/cycle-log.md` was not touched.
 - No code or test changed; suite as after cycle 64's refactor (172 passed).
 - commit: previous commit was `1443b4c`
+
+## Gates (task T032) and session summary
+
+- `pnpm test` x3 -> 172 passed, 0 failed (9 files), Duration 9.37 s, 8.81 s, 9.56 s (jsdom baseline 4.52 s; 109 tests then, 172 now)
+- `pnpm build` passes; `npx prettier --check .` -> "All matched files use Prettier code style!"
+- all 002 acceptance tests at once: `pnpm vitest run src/App.test.tsx -t "002-history-refinements"` -> `20 passed | 30 skipped (50)`
+- behaviors: every `A` and `U` behavior is `DONE` except U1-U7 (`BASELINE`, characterization). A21 was added mid-loop (cycle 37). Nothing is `BLOCKED`.
+- tasks left open on purpose: T010 (its behaviors are `BASELINE`, which the skill never ticks, although the work is done), T033 (the user's manual checks) and T034 (PR description and opening the PR).
+
+## Notes and deviations
+
+- Tooling: `@vitest/browser-playwright` is 5.0.2, not the 5.0.1 in T002 (exact peer on the installed `vitest` 5.0.2; confirmed by the user). `screenshotFailures: false` and `optimizeDeps.include` were added to `vite.config.ts` beyond T003's text, and `src/test/setup.ts` now loads `src/style.css` (structural commit `9370130`), without which component-level axe checks measured browser defaults instead of the palette.
+- 002 acceptance tests are selected with `-t "002-history-refinements.*\[Ann\]"`, because 001's tests in the same file reuse `[A1]`-`[A22]`; the confirm tasks' literal `-t "\[Ann\]"` would also match 001's tests.
+- First-run passes, each mutant-checked (mutant killed unless noted): U21, U23, U24, U11, U13, U40, U45, U46, A3, A4, A5, A6, A7, A8, A14, A15, A9-A13, A16, A17, A18, A19, U28-U33 (guards), U1-U7 (characterization). U27 was covered by 001's existing `[U63]` and mutant-checked there.
+- Surviving mutants, recorded rather than hidden: A19's overflow-wrap mutant (equivalent: the preview is clipped by `line-clamp`); U23's unnamed-dialog mutant (axe treats `aria-dialog-name` as inapplicable to a native `<dialog>`; U14 and U24 pin the name); exact 1:1 colour mutants (axe reports them as `incomplete`).
+- Baseline changes to 001 tests: `[A6]`, `[A20]` (confirm through the dialog), `[U55]` (entry argument checked on its own; not in the planning notes' list), `[U45]`-`[U47]` and `[A10]`, `[A11]` ("Completed: N" instead of "Practiced N time(s)"); `[U47]` also lost its "no Completed text" assertion. 001's `[U15]`, `[A7]` and `[A18]`, named in the notes, needed no change.
+- Findings not acted on: 001's `[U68]` never reaches the retry path it names (the winning row exists before the call); 001's "Last practiced:" line is read by a screen reader as two phrases (label, then date), as the counts were before U37; the pre-existing progress-bar quirk (one character short of 100%) is untouched; `.specify/memory/tdd-profile.md` records the suite at about 6 s, and it is now about 9 s with 172 tests.
+- commit: previous commit was `50a4c8f`
