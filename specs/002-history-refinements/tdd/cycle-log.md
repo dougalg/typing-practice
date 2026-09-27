@@ -733,3 +733,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `9f77faa`
 - state: DONE. Ticked T052 (qualified filter).
+
+## Cycle 64: A16 an entry stored with a loaded count of 0 shows "Loaded: 1" after the upgrade (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 2) > [A16] an entry stored with a loaded count of 0 shows Loaded: 1 after the upgrade` (new). It replaces the app's database with one at schema version 3 (as 001 left it) holding a row with `numberOfLoads: 0`, reopens `savedTextsDb` (running version 4) and renders `App`. T025 asked to extend A17's test with this check; it is a separate test instead (one behavior per test), for data written by 001 rather than pre-001 data.
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A16\]"` -> `1 passed | 49 skipped (50)`. Expected: U43 built the upgrade.
+- mutant: version 4's floor changed from 1 to 0 -> same command -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 1.` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 172 passed each (8.33 s, 8.24 s, 8.77 s); `pnpm build` passes
+- refactor: the database replacement duplicates `seedVersion1Database`'s steps; extracted in the next, structural commit
+- commit: previous commit was `2dffd17`
+- state: DONE. Ticked T053 (qualified filter), and T025 and T029 (U43-U46 and A16 all DONE).

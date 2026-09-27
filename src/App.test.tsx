@@ -1105,4 +1105,25 @@ describe("App (specs/002-history-refinements, User Story 2)", () => {
 			(await historyEntry("second text")).getByText("Loaded: 1"),
 		).toBeInTheDocument();
 	});
+
+	it("[A16] an entry stored with a loaded count of 0 shows Loaded: 1 after the upgrade", async () => {
+		// Written by 001 (schema version 3), which stored 0 for new entries.
+		savedTextsDb.close();
+		await Dexie.delete(savedTextsDb.name);
+		const v3 = new Dexie(savedTextsDb.name);
+		v3.version(3).stores({
+			savedTexts: "++id, dateCreated, dateModified, &text",
+		});
+		await v3.open();
+		await v3
+			.table("savedTexts")
+			.add(version1Row({ text: "from 001", numberOfLoads: 0 }));
+		v3.close();
+		await savedTextsDb.open();
+
+		render(<App />);
+
+		const entry = await historyEntry("from 001");
+		expect(entry.getByText("Loaded: 1")).toBeInTheDocument();
+	});
 });
