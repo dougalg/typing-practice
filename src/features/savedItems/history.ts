@@ -15,8 +15,8 @@ export type WriteResult = { ok: true } | { ok: false };
 /**
  * Called when a session starts (Start or Load). Creates the entry (loaded
  * count 1, completed count 0) or refreshes an existing one (dateModified =
- * now; the completed count is NOT touched here — only recordCompletion
- * changes it). Ignores
+ * now, loaded count + 1; the completed count is NOT touched here — only
+ * recordCompletion changes it). Ignores
  * empty normalised text. Never rejects.
  */
 export async function recordPractice(text: string): Promise<WriteResult> {
@@ -34,6 +34,7 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 			if (existing) {
 				await savedTextsDb.savedTexts.update(existing.id, {
 					dateModified: now,
+					numberOfLoads: existing.numberOfLoads + 1,
 				});
 				return;
 			}

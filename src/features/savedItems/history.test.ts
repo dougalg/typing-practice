@@ -178,6 +178,22 @@ describe("recordPractice loaded count (specs/002-history-refinements contracts/h
 		expect(rows).toHaveLength(1);
 		expect(rows[0]).toMatchObject({ numberOfLoads: 1, numberOfCompletes: 0 });
 	});
+
+	it("[U39] on an existing text adds 1 to the loaded count and leaves the completed count", async () => {
+		await savedTextsDb.savedTexts.add({
+			text: "hello world",
+			dateCreated: new Date("2026-01-01T00:00:00Z"),
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+			numberOfLoads: 3,
+			numberOfCompletes: 2,
+		});
+
+		await recordPractice("hello world");
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]).toMatchObject({ numberOfLoads: 4, numberOfCompletes: 2 });
+	});
 });
 
 describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {

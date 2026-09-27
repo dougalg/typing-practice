@@ -571,3 +571,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: `recordPractice`'s doc comment says "loaded count 1, completed count 0" for a new entry (comment only)
 - commit: previous commit was `5e0fa8a`
 - state: DONE
+
+## Cycle 48: U39 recordPractice on an existing text adds 1 to numberOfLoads and leaves numberOfCompletes
+
+- test: `src/features/savedItems/history.test.ts::[U39] on an existing text adds 1 to the loaded count and leaves the completed count` (new; seeds loads 3, completes 2)
+- red: `pnpm vitest run src/features/savedItems/history.test.ts -t "\[U39\]"` -> `AssertionError: expected { text: 'hello world', …(5) } to match object { numberOfLoads: 4, …(1) }` (1 failed)
+- green: the existing-entry update also sets `numberOfLoads: existing.numberOfLoads + 1`. Same command -> `1 passed | 26 skipped (27)`. Suite `pnpm test` x3 -> 156 passed each (8.28 s, 8.16 s, 8.25 s); `pnpm build` passes
+- refactor: doc comment mentions "loaded count + 1" for an existing entry (comment only)
+- commit: previous commit was `adfb4e4`
+- state: DONE
