@@ -541,3 +541,13 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `31d252e`
 - state: DONE. Ticked T046 (qualified filter).
+
+## Cycle 45: A15 pressing Reset while a session is in progress returns to the empty setup box with no confirmation (first-run pass)
+
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A15] pressing Reset while a session is in progress returns to the empty setup box with no confirmation` (new)
+- first run: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A15\]"` -> `1 passed | 42 skipped (43)`. Expected: Reset was not changed (FR-006).
+- mutant: `handleReset` returns early while running (Reset held back mid-session) -> same command -> `TestingLibraryElementError: Unable to find an element with the placeholder text of: Type or paste any text you want to practice...` (1 failed); restored from the committed file
+- suite: `pnpm test` x3 -> 153 passed each (8.20 s, 8.30 s, 8.00 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `df9f2c6`
+- state: DONE. Ticked T047 (qualified filter), and T019 and T023 (A1-A8, A14, A15 all DONE).

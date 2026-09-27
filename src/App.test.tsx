@@ -981,4 +981,16 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		);
 		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 	});
+
+	it("[A15] pressing Reset while a session is in progress returns to the empty setup box with no confirmation", async () => {
+		await addHistory("first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+
+		await browserUserEvent.click(resetButton());
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(setupBox()).toHaveValue("");
+	});
 });
