@@ -17,27 +17,32 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 	return (
 		<section
 			aria-labelledby={HEADING_ID}
-			className="rounded-[14px] border border-slate-300/40 p-5 pb-6"
+			className="pixel-panel p-5 pb-6 sm:p-6"
 		>
-			<Heading id={HEADING_ID} level={2}>
+			<Heading id={HEADING_ID} level={2} className="mb-4">
 				Practice History
 			</Heading>
 
 			{state.status === "error" && (
-				<p role="alert">Practice history could not be loaded.</p>
+				<p role="alert" className="text-miss mb-3 font-bold">
+					Practice history could not be loaded.
+				</p>
 			)}
 			{saveError && (
-				<p role="alert">
+				<p role="alert" className="text-miss mb-3 font-bold">
 					Your practice history could not be saved. You can keep practicing.
 				</p>
 			)}
 
 			{state.status === "ready" && state.entries.length === 0 && (
-				<p>No practice history yet. Texts you practice will appear here.</p>
+				<p className="text-muted">
+					No practice history yet. Texts you practice will appear here.
+				</p>
 			)}
 
+			{/* Explicit role: Safari drops list semantics when list-style is none. */}
 			{state.status === "ready" && state.entries.length > 0 && (
-				<ul className="flex max-h-[70vh] flex-col gap-2 overflow-y-auto">
+				<ul role="list" className="grid gap-4 sm:grid-cols-2">
 					{state.entries.map((item) => (
 						<li key={item.id}>
 							<SavedTextItem
