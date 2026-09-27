@@ -11,7 +11,7 @@ export type SavedTextItemProps = Pick<
 	| "numberOfLoads"
 	| "numberOfCompletes"
 > & {
-	onLoadRequest: MouseEventHandler;
+	onLoadRequest: MouseEventHandler<HTMLButtonElement>;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("en-CA", {

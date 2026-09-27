@@ -52,7 +52,7 @@ export const Sidebar = ({ onLoadRequest, saveError }: SidebarProps) => {
 							<SavedTextItem
 								{...item}
 								onLoadRequest={(event) =>
-									onLoadRequest(item, event.currentTarget as HTMLElement)
+									onLoadRequest(item, event.currentTarget)
 								}
 							/>
 						</li>

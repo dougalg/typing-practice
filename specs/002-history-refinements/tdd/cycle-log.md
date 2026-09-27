@@ -444,3 +444,9 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: the green step used `event.currentTarget as HTMLElement`, because `SavedTextItem` types its handler as a plain `MouseEventHandler`; removed in the next, structural commit
 - commit: previous commit was `41d1646`
 - state: DONE
+
+## Refactor (U26): drop the type assertion on the Load trigger
+
+- change: `SavedTextItem`'s `onLoadRequest` is typed `MouseEventHandler<HTMLButtonElement>`, so `Sidebar` passes `event.currentTarget` without `as HTMLElement` (constitution II: no unchecked assertions). No test changed.
+- suite: `pnpm test` x3 -> 143 passed each (6.61 s, 6.25 s, 6.36 s); `pnpm build` passes
+- commit: previous commit was `189bf5d`
