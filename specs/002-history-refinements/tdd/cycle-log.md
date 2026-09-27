@@ -228,3 +228,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `dbf475d`
 - state: DONE
+
+## Cycle 15: U31 a screen reader reads the empty-state message (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U31] a screen reader reads the empty-state message` (new)
+- first run: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U31\]"` -> `1 passed | 20 skipped (21)`. Expected.
+- mutant: `aria-hidden="true"` on the empty-state paragraph (still in the DOM, so `findByText` still finds it) -> same command -> `AssertionError: expected [ 'region, Practice History', …(2) ] to include 'No practice history yet. Texts you pr…'` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 123 passed each (5.93 s, 6.03 s, 6.18 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `a2650b6`
+- state: DONE

@@ -286,4 +286,15 @@ describe("Sidebar screen-reader output (specs/002-history-refinements, 001's man
 		const buttons = phrases.filter((p) => p.startsWith("button,"));
 		expect(buttons.sort()).toEqual(["button, Load alpha", "button, Load beta"]);
 	});
+
+	it("[U31] a screen reader reads the empty-state message", async () => {
+		const EMPTY_STATE =
+			"No practice history yet. Texts you practice will appear here.";
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText(EMPTY_STATE);
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases).toContain(EMPTY_STATE);
+	});
 });
