@@ -640,3 +640,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `730702d`
 - state: DONE. T025 and T029 also name A16, so they wait for it.
+
+## Cycle 55: U34 SavedTextItem shows "Loaded: {numberOfLoads}"
+
+- test: `src/components/SavedTextItem.test.tsx::[U34] shows Loaded: followed by the loaded count` (new describe block; new `renderEntry(counts)` helper)
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx -t "\[U34\]"` -> `TestingLibraryElementError: Unable to find an element with the text: Loaded: 3.` (1 failed)
+- green: a `Loaded: {numberOfLoads}` line in the entry's muted metadata, above the existing "Practiced" line. Same command -> `1 passed | 11 skipped (12)`. Suite `pnpm test` x3 -> 163 passed each (7.84 s, 7.83 s, 7.84 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `5cb274d`
+- state: DONE

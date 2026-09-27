@@ -212,3 +212,27 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		await expectNoA11yViolations(container);
 	});
 });
+
+function renderEntry(counts: {
+	numberOfLoads: number;
+	numberOfCompletes: number;
+}) {
+	return render(
+		<SavedTextItem
+			id={1}
+			text="hello world"
+			dateCreated={new Date("2026-01-01T12:00:00Z")}
+			dateModified={new Date("2026-01-01T12:00:00Z")}
+			{...counts}
+			onLoadRequest={vi.fn()}
+		/>,
+	);
+}
+
+describe("SavedTextItem counts (specs/002-history-refinements contracts/ui.md)", () => {
+	it("[U34] shows Loaded: followed by the loaded count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		expect(screen.getByText("Loaded: 3")).toBeInTheDocument();
+	});
+});
