@@ -65,21 +65,21 @@ checks 11, 12 and 16, now automated.
 
 ### `src/views/PracticeView.tsx` (untested: characterize before changing)
 
-| id  | behavior                                                                         | traces        | kind             | state   | test |
-| --- | -------------------------------------------------------------------------------- | ------------- | ---------------- | ------- | ---- |
-| U1  | While running, it shows the target text and a focused typing input               | FR-001 (base) | characterization | PENDING |      |
-| U2  | A correct character moves the position on by one                                 | FR-001 (base) | characterization | PENDING |      |
-| U3  | A wrong character shows the error message and does not move the position         | FR-001 (base) | characterization | PENDING |      |
-| U4  | Typing the whole text calls `onFinish` once                                      | FR-004 (base) | characterization | PENDING |      |
-| U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | PENDING |      |
-| U6  | The running view has no axe violations                                           | FR-005 (base) | characterization | PENDING |      |
-| U7  | The finished view has no axe violations                                          | FR-005 (base) | characterization | PENDING |      |
-| U8  | `onTypingStarted` is called once when the first character typed is correct       | FR-001        | example          | PENDING |      |
-| U9  | `onTypingStarted` is called once when the first character typed is wrong         | FR-001        | example          | PENDING |      |
-| U10 | `onTypingStarted` is called when the first input arrives through composition end | FR-001        | example          | PENDING |      |
-| U11 | `onTypingStarted` is not called when nothing has been typed                      | FR-004        | example          | PENDING |      |
-| U12 | `onTypingStarted` is not called a second time within the same run                | FR-001        | example          | PENDING |      |
-| U13 | After a remount (a new run), the first character calls `onTypingStarted` again   | FR-001        | example          | PENDING |      |
+| id  | behavior                                                                         | traces        | kind             | state    | test                                    |
+| --- | -------------------------------------------------------------------------------- | ------------- | ---------------- | -------- | --------------------------------------- |
+| U1  | While running, it shows the target text and a focused typing input               | FR-001 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U1]` |
+| U2  | A correct character moves the position on by one                                 | FR-001 (base) | characterization | PENDING  |                                         |
+| U3  | A wrong character shows the error message and does not move the position         | FR-001 (base) | characterization | PENDING  |                                         |
+| U4  | Typing the whole text calls `onFinish` once                                      | FR-004 (base) | characterization | PENDING  |                                         |
+| U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | PENDING  |                                         |
+| U6  | The running view has no axe violations                                           | FR-005 (base) | characterization | PENDING  |                                         |
+| U7  | The finished view has no axe violations                                          | FR-005 (base) | characterization | PENDING  |                                         |
+| U8  | `onTypingStarted` is called once when the first character typed is correct       | FR-001        | example          | PENDING  |                                         |
+| U9  | `onTypingStarted` is called once when the first character typed is wrong         | FR-001        | example          | PENDING  |                                         |
+| U10 | `onTypingStarted` is called when the first input arrives through composition end | FR-001        | example          | PENDING  |                                         |
+| U11 | `onTypingStarted` is not called when nothing has been typed                      | FR-004        | example          | PENDING  |                                         |
+| U12 | `onTypingStarted` is not called a second time within the same run                | FR-001        | example          | PENDING  |                                         |
+| U13 | After a remount (a new run), the first character calls `onTypingStarted` again   | FR-001        | example          | PENDING  |                                         |
 
 ### `src/components/ConfirmDiscardDialog.tsx` (new)
 

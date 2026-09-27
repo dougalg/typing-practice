@@ -76,3 +76,12 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
   - two list items with the same paragraph text, read once and in order, observed through a deliberately failing assertion: `list | listitem, level 1, position 1, set size 2 | paragraph | same | end of paragraph | end of listitem, level 1, position 1, set size 2 | listitem, level 1, position 2, set size 2 | paragraph | same | end of paragraph | end of listitem, level 1, position 2, set size 2 | end of list`.
 - The first run of that throwaway failed as a suite with "Vite unexpectedly reloaded a test" (new dependency optimised mid-run). Fix: `optimizeDeps.include: ["@guidepup/virtual-screen-reader"]` in `vite.config.ts`. Then `node_modules/.vite` removed and `pnpm test` run cold -> 109 passed, 5.92 s, no reload.
 - T008 `.specify/memory/tdd-profile.md` refreshed (`/speckit-tdd-setup refresh`, detected at `fa1e8fc`). Verified by running: `pnpm test` -> 109 passed (5.7-6.1 s); `pnpm vitest run src/App.test.tsx -t "\[A14\]"` -> `1 passed | 29 skipped (30)`; `pnpm vitest run src/App.test.tsx -t "no such test xyz"` -> `30 skipped (30)`, exit 0; `pnpm vitest run src/components/Heading.test.tsx` -> `2 passed (2)`, exit 0. Changes from the jsdom profile: runner is browser mode; `acceptance` is now `src/App.test.tsx` through the same runner (was null); exemplars are `SavedTextItem.test.tsx` (unit) and `App.test.tsx` (acceptance) instead of `Heading.test.tsx` alone; helpers add `a11y.ts` and `screenReader.ts`; notes rewritten (IndexedDB, module spying, `tsc` gate, cold-cache reload, areas with no tests). Coverage, mutation and property tools are still absent.
+
+## Cycle 1: U1 while running, PracticeView shows the target text and a focused typing input (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U1] while running, shows the target text and a focused typing input` (new file)
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U1\]"` -> `1 passed (1)`, as expected for a characterization test against the untouched view
+- mutant: removed `setTimeout(() => typingInputRef.current?.focus(), 0)` from the run-start effect -> same command -> `Error: expect(element).toHaveFocus()` (1 failed); restored exactly (working tree shows `PracticeView.tsx` unchanged)
+- suite: `pnpm test` x3 -> 110 passed each (6.02 s, 6.12 s, 6.08 s); `pnpm build` passes
+- refactor: none needed
+- state: BASELINE
