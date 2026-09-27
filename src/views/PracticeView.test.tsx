@@ -226,4 +226,22 @@ describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/
 
 		expect(onTypingStarted).not.toHaveBeenCalled();
 	});
+
+	it("[U12] onTypingStarted is not called a second time within the same run", async () => {
+		const user = userEvent.setup();
+		const onTypingStarted = vi.fn();
+		render(
+			<PracticeView
+				targetText="hello"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>,
+		);
+
+		await user.type(typingInput(), "hex");
+
+		expect(onTypingStarted).toHaveBeenCalledOnce();
+	});
 });

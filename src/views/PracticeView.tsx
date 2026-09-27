@@ -47,6 +47,7 @@ function PracticeView({
 	const [currentInputValue, setCurrentInputValue] = useState("");
 	const [errorMessage, setErrorMessage] = useState("");
 	const typingInputRef = useRef<HTMLInputElement>(null);
+	const typingStartedRef = useRef(false);
 	const headingId = useId();
 
 	// Reset typing state when target changes or we start a new run
@@ -60,6 +61,13 @@ function PracticeView({
 			setTimeout(() => typingInputRef.current?.focus(), 0);
 		}
 	}, [targetText, typingState]);
+
+	// This view is keyed by run, so "first per mount" is "first per run".
+	const reportTypingStarted = () => {
+		if (typingStartedRef.current) return;
+		typingStartedRef.current = true;
+		onTypingStarted?.();
+	};
 
 	const progressPercentage = useMemo(
 		() =>
@@ -76,7 +84,7 @@ function PracticeView({
 		const newValue = inputElement.value;
 
 		if (newValue.length > currentInputValue.length) {
-			onTypingStarted?.();
+			reportTypingStarted();
 			const typedChar = newValue.slice(currentInputValue.length);
 			const actual = typedChar[0];
 			const expected = targetText[position];
@@ -183,7 +191,7 @@ function PracticeView({
 		const composedText = inputElement.value;
 
 		if (composedText.length > 0) {
-			onTypingStarted?.();
+			reportTypingStarted();
 			const expected = targetText[position];
 			const actual = composedText[0];
 

@@ -415,3 +415,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `e36d24d`
 - state: DONE
+
+## Cycle 33: U12 onTypingStarted is not called a second time within the same run
+
+- test: `src/views/PracticeView.test.tsx::[U12] onTypingStarted is not called a second time within the same run` (new; types "hex": two correct, one wrong)
+- red: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U12\]"` -> `AssertionError: expected "vi.fn()" to be called once, but got 3 times` (1 failed)
+- green: a `typingStartedRef` flag and a `reportTypingStarted()` function that calls `onTypingStarted` only the first time; both call sites (input and composition end) use it. Same command -> `1 passed | 11 skipped (12)`. Suite `pnpm test` x3 -> 141 passed each (6.36 s, 6.58 s, 6.32 s); `pnpm build` passes
+- refactor: none beyond the shared function introduced by the green step
+- commit: previous commit was `165bcaa`
+- state: DONE
