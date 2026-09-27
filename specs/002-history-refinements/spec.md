@@ -62,7 +62,7 @@ A learner scanning the history sees two numbers on each entry: how many times th
 - **FR-003**: Cancelling, by the cancel control or the Escape key, MUST close the confirmation, leave the session exactly as it was, and return focus to the Load control that was activated.
 - **FR-004**: The system MUST NOT ask for confirmation when no character has been typed in the current session, when the session is finished, or when the setup view is showing.
 - **FR-005**: The confirmation MUST be announced to assistive technology with its question, give initial focus to the cancel choice, keep keyboard focus within it while open, be fully operable by keyboard, and meet WCAG 2.2 AA.
-- **FR-006**: Pressing Reset during a session in progress MUST [NEEDS CLARIFICATION: also ask for confirmation before discarding the session, or keep resetting immediately as today?]
+- **FR-006**: Pressing Reset during a session in progress MUST keep resetting immediately, with no confirmation, since Reset is itself a deliberate choice to start over.
 - **FR-007**: Each sidebar entry MUST show "Loaded: N" and "Completed: N" in place of the single "Practiced N times" count. This replaces `001` FR-006's count.
 - **FR-008**: Starting a session with a text, from the setup box or from Load, MUST increase that entry's loaded count by exactly one. A new entry MUST start with a loaded count of 1. This replaces `001` FR-009's "MUST NOT change its practice count".
 - **FR-009**: The completed count MUST keep the behavior of `001` FR-010: raised by exactly one when the text is typed to the end, with or without mistakes, and never by resets, abandoned sessions or loads.
@@ -92,3 +92,4 @@ A learner scanning the history sees two numbers on each entry: how many times th
 - Entries saved by versions before `001` keep the load counts summed during `001`'s upgrade.
 - Confirmation before starting new text from the setup box is out of scope: that view only appears once no session is in progress.
 - Undo after confirming a discard is out of scope.
+- Only Load asks before discarding. Reset keeps working immediately (decided with the user, 2026-09-27).

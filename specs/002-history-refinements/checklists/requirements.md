@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,6 +31,6 @@
 
 ## Notes
 
-- One open marker: FR-006, whether Reset also asks before discarding a session in progress. Asked twice during the 001 manual checks without an answer, so it stays open rather than guessed.
+- FR-006 resolved with the user: only Load asks; Reset keeps resetting immediately. All items now pass.
 - FR-007, FR-008 and FR-011 deliberately replace parts of `001` FR-006 and FR-009 (the single practice count). The `001` tests that encode the old rule (A7, A18, U15, U45-U47, A10, A11) will change in this feature's test list.
 - Test tooling (a real-browser runner and a virtual screen reader, to replace most of `001`'s manual checks) is a plan decision, not a spec one; raised with the user for `/speckit-plan`.
