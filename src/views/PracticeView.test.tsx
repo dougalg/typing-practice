@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
 import PracticeView from "./PracticeView";
@@ -183,6 +183,28 @@ describe("PracticeView onTypingStarted (specs/002-history-refinements contracts/
 		);
 
 		await user.type(typingInput(), "x");
+
+		expect(onTypingStarted).toHaveBeenCalledOnce();
+	});
+
+	it("[U10] onTypingStarted is called when the first input arrives through composition end", () => {
+		const onTypingStarted = vi.fn();
+		render(
+			<PracticeView
+				targetText="ดี"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+				onTypingStarted={onTypingStarted}
+			/>,
+		);
+		const input = typingInput() as HTMLInputElement;
+
+		// An IME cannot be driven from a test: dispatch what one produces, a
+		// composition whose committed text is in the input when it ends.
+		fireEvent.compositionStart(input);
+		input.value = "ด";
+		fireEvent.compositionEnd(input);
 
 		expect(onTypingStarted).toHaveBeenCalledOnce();
 	});

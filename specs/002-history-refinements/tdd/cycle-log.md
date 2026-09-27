@@ -396,3 +396,12 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `bebfeee`
 - state: DONE
+
+## Cycle 31: U10 onTypingStarted is called when the first input arrives through composition end
+
+- test: `src/views/PracticeView.test.tsx::[U10] onTypingStarted is called when the first input arrives through composition end` (new). Playwright cannot drive a real IME, so the test dispatches `compositionstart`, sets the committed text (`ด`) on the input, and dispatches `compositionend` with Testing Library's `fireEvent`, the same sequence `PracticeView`'s handlers read.
+- red: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U10\]"` -> `AssertionError: expected "vi.fn()" to be called once, but got 0 times` (1 failed)
+- green: `handleCompositionEnd` calls `onTypingStarted?.()` when the composed text is non-empty. Same command -> `1 passed | 9 skipped (10)`. Suite `pnpm test` x3 -> 139 passed each (6.35 s, 6.28 s, 6.39 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `4bc9d47`
+- state: DONE

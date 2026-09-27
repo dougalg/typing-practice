@@ -183,6 +183,7 @@ function PracticeView({
 		const composedText = inputElement.value;
 
 		if (composedText.length > 0) {
+			onTypingStarted?.();
 			const expected = targetText[position];
 			const actual = composedText[0];
 
