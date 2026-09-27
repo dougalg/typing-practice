@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Dexie } from "dexie";
-import { page } from "vitest/browser";
+// Real input through Playwright, for 002's tests, where native <dialog>
+// behavior (Escape, focus) is part of what is being tested.
+import { page, userEvent as browserUserEvent } from "vitest/browser";
 import App from "./App";
 import * as historyModule from "./features/savedItems/history";
 import { savedTextsDb } from "./features/savedItems/db";
@@ -352,6 +354,9 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 			name: /^Load .*second text/,
 		});
 		await user.click(loadSecond);
+		// Baseline updated for specs/002-history-refinements (US1): a Load while
+		// a session is in progress now asks first; confirming loads as before.
+		await user.click(screen.getByRole("button", { name: "Discard and load" }));
 
 		expect(getPracticeText("second text")).toBeInTheDocument();
 		expect(screen.getByText("0")).toBeInTheDocument();
@@ -464,6 +469,9 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
 
 		await user.click(loadButton);
+		// Baseline updated for specs/002-history-refinements (US1): a Load while
+		// a session is in progress now asks first; confirming loads as before.
+		await user.click(screen.getByRole("button", { name: "Discard and load" }));
 
 		expect(getPracticeText("hello world")).toBeInTheDocument();
 		expect(screen.getByText("0")).toBeInTheDocument();
@@ -770,5 +778,55 @@ describe("App (specs/002-history-refinements, checks carried over from 001)", ()
 		} finally {
 			await page.viewport(DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height);
 		}
+	});
+});
+
+const DISCARD_QUESTION = "Discard your progress on this text?";
+
+/** Adds history entries directly, the last one most recently practiced. */
+async function addHistory(...texts: string[]) {
+	await savedTextsDb.savedTexts.bulkAdd(
+		texts.map((text, i) => ({
+			text,
+			dateCreated: new Date(2026, 0, i + 1),
+			dateModified: new Date(2026, 0, i + 1),
+			numberOfLoads: 1,
+			numberOfCompletes: 0,
+		})),
+	);
+}
+
+function loadButtonFor(text: string) {
+	return within(sidebarRegion()).findByRole("button", {
+		name: new RegExp(`^Load .*${text}`),
+	});
+}
+
+function typingInput() {
+	return screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+}
+
+/** The practice view's "Characters" statistic, e.g. "2 / 10". */
+function charactersTyped() {
+	const term = screen.getByText("Characters");
+	if (!term.nextElementSibling)
+		throw new Error('Expected a <dd> after "Characters"');
+	return term.nextElementSibling;
+}
+
+describe("App (specs/002-history-refinements, User Story 1)", () => {
+	it("[A1] with a session in progress, pressing Load on a different entry shows the discard question and leaves the session untouched", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
 	});
 });

@@ -450,3 +450,14 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - change: `SavedTextItem`'s `onLoadRequest` is typed `MouseEventHandler<HTMLButtonElement>`, so `Sidebar` passes `event.currentTarget` without `as HTMLElement` (constitution II: no unchecked assertions). No test changed.
 - suite: `pnpm test` x3 -> 143 passed each (6.61 s, 6.25 s, 6.36 s); `pnpm build` passes
 - commit: previous commit was `189bf5d`
+
+## Cycle 36: A1 with a session in progress, Load on a different entry shows the discard question and leaves the session untouched
+
+- (bookkeeping for the previous commit `0fe5f11`: T018 and T022 were ticked in that refactor commit, once U26 was DONE.)
+- test: `src/App.test.tsx::App (specs/002-history-refinements, User Story 1) > [A1] with a session in progress, pressing Load on a different entry shows the discard question and leaves the session untouched` (new; real input via `userEvent` from `vitest/browser`; new helpers `addHistory()`, `loadButtonFor()`, `typingInput()`, `charactersTyped()`)
+- red: `pnpm vitest run src/App.test.tsx -t "002-history-refinements.*\[A1\]"` -> `TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Discard your progress on this text?"` (1 failed | 33 skipped). The filter does not match `[A10]`-`[A19]`: `\]` must follow `A1`.
+- **intended baseline changes to 001's tests (test-list planning notes), before the implementation:** `[A6] loading a different entry while another text is half typed ...` and `[A20] loading the entry that is currently running restarts it ...` Load mid-practice, which now asks first. Each gets one added step after that Load: click "Discard and load". Their assertions are unchanged. Red on the unchanged app: `-t "practice-history, User Story 2.*\[A(6|20)\]"` -> `Unable to find an accessible element with the role "button" and name "Discard and load"` (2 failed).
+- green: `App` keeps `sessionTouched` (set by `PracticeView`'s `onTypingStarted`, reset on every start) and a `pendingLoad`. Load while `typingState === "running" && sessionTouched` stores the load and opens `ConfirmDiscardDialog` without writing; `onConfirm` starts the pending text. Confirm had to be wired in this cycle because the updated A6/A20 need it; A4 therefore follows as a first-run pass with a mutant check. `onCancel` is a no-op until A2. A1 -> `1 passed | 33 skipped (34)`; A6 + A20 -> `2 passed | 32 skipped (34)`. Suite `pnpm test` x3 -> 144 passed each (6.73 s, 6.57 s, 6.69 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `0fe5f11`
+- state: DONE. Ticked T038 (confirmed with the qualified filter, above).
