@@ -73,7 +73,7 @@ checks 11, 12 and 16, now automated.
 | U4  | Typing the whole text calls `onFinish` once                                      | FR-004 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U4]` |
 | U5  | Pressing Reset calls `onReset`                                                   | FR-006 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U5]` |
 | U6  | The running view has no axe violations                                           | FR-005 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U6]` |
-| U7  | The finished view has no axe violations                                          | FR-005 (base) | characterization | PENDING  |                                         |
+| U7  | The finished view has no axe violations                                          | FR-005 (base) | characterization | BASELINE | `src/views/PracticeView.test.tsx::[U7]` |
 | U8  | `onTypingStarted` is called once when the first character typed is correct       | FR-001        | example          | PENDING  |                                         |
 | U9  | `onTypingStarted` is called once when the first character typed is wrong         | FR-001        | example          | PENDING  |                                         |
 | U10 | `onTypingStarted` is called when the first input arrives through composition end | FR-001        | example          | PENDING  |                                         |

@@ -121,4 +121,31 @@ describe("PracticeView (characterization: current behavior before specs/002-hist
 
 		await expectNoA11yViolations(container);
 	});
+
+	it("[U7] the finished view has no axe violations", async () => {
+		const user = userEvent.setup();
+		const { container, rerender } = render(
+			<PracticeView
+				targetText="hi"
+				typingState="running"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+			/>,
+		);
+		await user.type(typingInput(), "hi");
+		// App moves to "finished" when onFinish fires; the view stays mounted.
+		rerender(
+			<PracticeView
+				targetText="hi"
+				typingState="finished"
+				onFinish={vi.fn()}
+				onReset={vi.fn()}
+			/>,
+		);
+		expect(screen.getByRole("alert")).toHaveTextContent(
+			"Nice work! You finished.",
+		);
+
+		await expectNoA11yViolations(container);
+	});
 });

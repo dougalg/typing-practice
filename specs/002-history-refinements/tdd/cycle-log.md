@@ -142,3 +142,15 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - change: `src/test/setup.ts` imports `../style.css`. No test changed. The U7 test was set aside (not committed) while this step ran.
 - suite: `pnpm test` x3 -> 115 passed each (6.43 s, 6.03 s, 6.07 s); `pnpm build` passes. Every existing axe check (Sidebar, SavedTextItem, PracticeView) now runs against the real palette and passes.
 - commit: previous cycle's commit was `5a9405a`
+
+## Cycle 7: U7 the finished view has no axe violations (characterization)
+
+- test: `src/views/PracticeView.test.tsx::[U7] the finished view has no axe violations` (new). Types the text to the end, then re-renders with `typingState="finished"` as `App` does, so the success message and colours are on screen.
+- first run: `pnpm vitest run src/views/PracticeView.test.tsx -t "\[U7\]"` -> `1 passed | 6 skipped (7)`, as expected
+- mutant 1 (before the stylesheet step above): finished message `text-success` -> `text-success-soft` -> **survived** (`1 passed`); led to the structural commit `9370130`.
+- mutant 1 again, with styles: still passed. A throwaway debug test (deleted) showed the styles now apply (`color` and `background` both `rgb(227, 245, 225)`) and that axe files an exact 1:1 ratio under `incomplete` ("Element has a 1:1 contrast ratio with the background"), not as a violation, because identical colours can be deliberately hidden text.
+- mutant 2: finished message `text-success` -> `text-[#9ccf97]` (light green on light green) -> same command -> `Expected no accessibility violations, found 1: - color-contrast: Elements must meet minimum color contrast ratio thresholds (1 node(s))` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 116 passed each (6.29 s, 6.03 s, 5.94 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `9370130`
+- state: BASELINE. T010 (U1-U7) is complete but stays unticked: the skill never ticks a task whose behaviors are `BASELINE`.
