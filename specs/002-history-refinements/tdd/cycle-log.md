@@ -208,3 +208,13 @@ Not a TDD cycle (test infrastructure only). Ticked as preflight.
 - refactor: none needed
 - commit: previous commit was `54bc87b`
 - state: DONE
+
+## Cycle 13: U29 a screen reader reads the entries newest first (guard)
+
+- test: `src/views/Sidebar.test.tsx::[U29] a screen reader reads the entries newest first` (new)
+- first run: `pnpm vitest run src/views/Sidebar.test.tsx -t "\[U29\]"` -> `1 passed | 18 skipped (19)`. Expected: 001 built the ordering.
+- mutant: removed `.reverse()` from `useHistory`'s query -> same command -> `AssertionError: expected [ 'older', 'newer' ] to deeply equal [ 'newer', 'older' ]` (1 failed); restored exactly
+- suite: `pnpm test` x3 -> 121 passed each (5.94 s, 6.09 s, 5.93 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `e996544`
+- state: DONE

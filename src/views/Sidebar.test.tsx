@@ -256,4 +256,22 @@ describe("Sidebar screen-reader output (specs/002-history-refinements, 001's man
 
 		expect(phrases[0]).toBe("region, Practice History");
 	});
+
+	it("[U29] a screen reader reads the entries newest first", async () => {
+		await addEntry({
+			text: "older",
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+		});
+		await addEntry({
+			text: "newer",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText("older");
+
+		const phrases = await spokenPhrases(container);
+
+		const entryTexts = phrases.filter((p) => p === "older" || p === "newer");
+		expect(entryTexts).toEqual(["newer", "older"]);
+	});
 });
