@@ -254,7 +254,17 @@ function PracticeView({
 					</div>
 				</dl>
 				<Button variant="secondary" size="sm" onClick={onReset}>
-					<span aria-hidden="true">↺</span>
+					{/* Pixel-art ↺: the pixel font has no such glyph, and the fallback
+					    font draws it tiny at the button's size. */}
+					<svg
+						aria-hidden="true"
+						viewBox="0 0 10 7"
+						fill="currentColor"
+						shapeRendering="crispEdges"
+						className="h-[14px] w-[20px] shrink-0"
+					>
+						<path d="M2 0h3v1h-3zM7 0h1v1h-1zM1 1h1v1h-1zM6 1h3v1h-3zM0 2h1v3h-1zM5 2h5v1h-5zM7 3h1v2h-1zM1 5h1v1h-1zM6 5h1v1h-1zM2 6h4v1h-4z" />
+					</svg>
 					Reset
 				</Button>
 			</div>
