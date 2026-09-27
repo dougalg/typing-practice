@@ -20,12 +20,13 @@ export interface ConfirmDiscardDialogProps {
 | Confirm | `button` "Discard and load"                                                  | Calls `onConfirm`                                                      |
 | Escape  | —                                                                            | Calls `onCancel` (native `cancel` event)                               |
 
-Focus stays inside the dialog while open (native modal behavior). Must not import from `views/` or
-`features/`.
+Focus stays inside the dialog while open (native modal behavior). Both buttons use the shared `Button`
+component from `main`'s restyle. Must not import from `views/` or `features/`.
 
 ## `SavedTextItem`
 
-"Practiced N time(s)" is replaced by two lines, both `text-slate-600`:
+"Practiced N time(s)" is replaced by two lines, in the theme's existing muted text style
+(`text-ink-muted`, from `main`'s restyle):
 
 - "Loaded: {numberOfLoads}"
 - "Completed: {numberOfCompletes}"
@@ -60,5 +61,5 @@ onTypingStarted?: () => void; // first input of this run, correct or wrong, incl
 
 ## Page layout
 
-`PageLayout` stacks main and sidebar in one column below a medium breakpoint and keeps the 9/3 split
-above it, so the page reflows at 320 CSS px without horizontal scrolling (WCAG 1.4.10).
+No change. `main` (PR #7) already lays the page out as a single column at every width. A reflow test at
+320 CSS px guards it (WCAG 1.4.10).

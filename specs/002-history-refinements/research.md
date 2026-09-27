@@ -25,7 +25,7 @@ itself). Unmounting and remounting `App` against real IndexedDB covers what the 
 
 ## R2. Migration strategy
 
-**Decision**: migrate first, as its own step on a green suite, with **no behavior change**: the same 93
+**Decision**: migrate first, as its own step on a green suite, with **no behavior change**: the same 109
 tests, same names, all passing, before any 002 test is written.
 
 - Enable `test.browser` in `vite.config.ts`; drop `fake-indexeddb/auto` from `src/test/setup.ts`.
@@ -44,7 +44,9 @@ tests, same names, all passing, before any 002 test is written.
 The constitution's Technology section names "Vitest with jsdom and Testing Library". Proposed amendment
 (MINOR, 1.2.0 → 1.3.0): "Vitest in browser mode (Playwright provider, Chromium) with Testing Library",
 and Principle V's note that "jsdom cannot compute rendered contrast" becomes "contrast is checked by axe
-in the real browser". Shown to the user before applying. The TDD profile is refreshed after the
+in the real browser". Approved by the user (2026-09-27, with the new dev dependencies); applied in the
+same commit as the migration, so the constitution never describes tooling that is not in place. The TDD
+profile is refreshed after the
 migration (runner, timings, the acceptance layer now being a real browser).
 
 ## R4. `A16` becomes testable
@@ -91,9 +93,10 @@ is weaker (no reading-order semantics) and would be reported.
 ## R8. Reflow and contrast
 
 - Reflow (WCAG 1.4.10): set the viewport to 320 CSS px wide (`page.viewport` from `vitest/browser`) and
-  assert no horizontal overflow and that sidebar entries are fully visible. Expected to fail today:
-  `Page.tsx` uses a fixed 12-column grid (sidebar = 3 columns ≈ 80 px at 320 px). Fix: single column on
-  narrow screens, 9/3 split from a medium breakpoint. In scope as `001` FR-014 carried over.
+  assert no horizontal overflow and that sidebar entries are fully visible. `main` (PR #7) already
+  changed `Page.tsx` to a single column at every width, so this is expected to pass: it is a guard for
+  `001` FR-014, verified non-vacuous with a deliberate mutant (a fixed-width element wider than 320 px).
+  No layout change is planned.
 - Contrast: `expectNoA11yViolations` already runs axe; in a real browser axe's `color-contrast` rule
   actually computes colours. Add one populated-sidebar check that would fail on low contrast (verified
   with a deliberate low-contrast mutant).

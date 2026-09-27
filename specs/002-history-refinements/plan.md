@@ -51,7 +51,7 @@ migration and recorded in the TDD profile)
 locally (`pnpm exec playwright install chromium`), a one-off download
 
 **Scale/Scope**: Touches `App.tsx`, `PracticeView.tsx`, `Sidebar.tsx`, `SavedTextItem.tsx`,
-`history.ts`, `db.ts`, `Page.tsx` (reflow fix, if the new test fails as expected), one new component,
+`history.ts`, `db.ts`, one new component (built on `main`'s shared `Button` component),
 test config and setup
 
 ## Constitution Check
@@ -65,7 +65,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 | III. TDD                 | Pass. Migration is its own step on a green suite (no behavior change, test counts identical before and after). `PracticeView` has no tests, so characterization comes before adding `onTypingStarted`. Every 002 behavior gets a failing test first. `A16` becomes drivable. |
 | IV. Structure            | Pass. Tests stay beside code; no separate `e2e/` folder is needed, which browser mode makes possible. New `ConfirmDiscardDialog` is presentational in `components/`.                                                                                                         |
 | V. Accessible by Default | Strengthened. Real-browser axe (contrast now checkable), reflow at 320 CSS px, and screen-reader output assertions. Closes the known gap for `PracticeView` (touched here, so it gets an axe check). `SetupView` still has none; noted, out of scope.                        |
-| Technology & Tooling     | **Amendment needed**: the constitution names "Vitest with jsdom". Changing to browser mode is the user's decision; the amendment is a task (MINOR bump, 1.2.0 → 1.3.0), shown to the user before it is applied. New dev dependencies justified in the PR.                    |
+| Technology & Tooling     | **Amendment approved** (user, 2026-09-27): the constitution names "Vitest with jsdom"; it becomes browser mode (MINOR bump, 1.2.0 → 1.3.0), applied in the migration commit. New dev dependencies approved by the user and justified in the PR.                              |
 
 ## Project Structure
 
@@ -98,7 +98,6 @@ src/
 ├── features/savedItems/
 │   ├── db.ts                          # version(4) count correction
 │   └── history.ts                     # recordPractice increments numberOfLoads
-├── layouts/Page.tsx                   # stack columns on narrow widths (if reflow test fails)
 ├── test/
 │   ├── setup.ts                       # drop fake-indexeddb; keep cleanup + table clear
 │   ├── a11y.ts                        # unchanged
