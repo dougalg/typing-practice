@@ -544,8 +544,10 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(typingInput, "X"); // mistake: expected "h"
 		await user.type(typingInput, "hi"); // corrected, then completes
 
+		// Baseline updated for specs/002-history-refinements FR-007: the count
+		// reads "Completed: N" instead of "Practiced N time(s)".
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 1 time"),
+			await within(sidebarRegion()).findByText("Completed: 1"),
 		).toBeInTheDocument();
 
 		// Finishing the same text again, in a separate session, shows 2.
@@ -555,7 +557,7 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hi");
 
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 2 times"),
+			await within(sidebarRegion()).findByText("Completed: 2"),
 		).toBeInTheDocument();
 	});
 
@@ -568,8 +570,10 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
 		await user.click(resetButton());
 
+		// Baseline updated for specs/002-history-refinements FR-007: the count
+		// reads "Completed: N" instead of "Practiced N time(s)".
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 0 times"),
+			await within(sidebarRegion()).findByText("Completed: 0"),
 		).toBeInTheDocument();
 	});
 

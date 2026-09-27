@@ -659,3 +659,17 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `1acd412`
 - state: DONE
+
+## Cycle 57: U36 SavedTextItem shows no "Practiced" count
+
+- test: `src/components/SavedTextItem.test.tsx::[U36] shows no Practiced count` (new; case-sensitive `/Practiced/`, so the "Last practiced:" date line is not matched)
+- red: `pnpm vitest run src/components/SavedTextItem.test.tsx -t "\[U36\]"` -> `Error: expect(element).not.toBeInTheDocument() expected document not to contain element, found <p` (1 failed)
+- **intended baseline changes to 001 tests (test-list planning notes), before the implementation**, each moved from "Practiced N time(s)" to the equivalent "Completed: N", keeping its sample and assertion strength:
+  - `src/components/SavedTextItem.test.tsx`: `[U45]` (count 1), `[U46]` (count 2), `[U47]` (count 0); titles updated to match. No plural forms exist any more, so the singular/plural distinction they pinned is gone by design (contracts/ui.md).
+  - `src/App.test.tsx`: `[A10] typing a text to its last character, even after a mistake, raises the practice count by exactly one` (`Completed: 1`, then `Completed: 2`) and `[A11] pressing Reset before finishing leaves the practice count unchanged` (`Completed: 0`).
+  - All five pass on the pre-change code (the "Completed" line exists since U35): `-t "\[U4[567]\]"` -> `3 passed`; `-t "practice-history, User Story 3.*\[A1[01]\]"` -> `2 passed`.
+  - 001's `[A7]` and `[A18]` (named in the notes) assert `numberOfCompletes` in the store, not the "Practiced" text, so they needed no change.
+- green: the "Practiced N time(s)" line removed from `SavedTextItem`. Same command -> `1 passed | 13 skipped (14)`. Suite `pnpm test` x3 -> 165 passed each (7.98 s, 7.93 s, 7.95 s); `pnpm build` passes
+- refactor: none needed
+- commit: previous commit was `d645aea`
+- state: DONE

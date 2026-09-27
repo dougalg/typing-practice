@@ -113,7 +113,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		);
 	});
 
-	it("[U45] shows 'Practiced 1 time' (singular) for a practice count of 1", () => {
+	// [U45]-[U47]: baseline updated for specs/002-history-refinements FR-007,
+	// which replaces "Practiced N time(s)" with "Completed: N" (no plural
+	// forms). Each keeps its sample count. See that feature's tdd/cycle-log.md.
+	it("[U45] shows 'Completed: 1' for a completed count of 1", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -126,10 +129,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 1 time")).toBeInTheDocument();
+		expect(screen.getByText("Completed: 1")).toBeInTheDocument();
 	});
 
-	it("[U46] shows 'Practiced 2 times' for a practice count of 2", () => {
+	it("[U46] shows 'Completed: 2' for a completed count of 2", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -142,10 +145,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 2 times")).toBeInTheDocument();
+		expect(screen.getByText("Completed: 2")).toBeInTheDocument();
 	});
 
-	it("[U47] shows 'Practiced 0 times' for a practice count of 0, and no separate 'Completed' text", () => {
+	it("[U47] shows 'Completed: 0' for a completed count of 0", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -158,10 +161,7 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 0 times")).toBeInTheDocument();
-		// Baseline updated for specs/002-history-refinements FR-007: the entry
-		// now shows a "Completed: N" count, so the old "no separate Completed
-		// text" assertion was removed. See that feature's tdd/cycle-log.md.
+		expect(screen.getByText("Completed: 0")).toBeInTheDocument();
 	});
 
 	it("[U50] a text of several thousand characters still renders its full text and its Load button", () => {
@@ -242,5 +242,12 @@ describe("SavedTextItem counts (specs/002-history-refinements contracts/ui.md)",
 		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
 
 		expect(screen.getByText("Completed: 1")).toBeInTheDocument();
+	});
+
+	it("[U36] shows no Practiced count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		// Case-sensitive: "Last practiced:" is the date line, and stays.
+		expect(screen.queryByText(/Practiced/)).not.toBeInTheDocument();
 	});
 });

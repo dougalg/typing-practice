@@ -37,10 +37,6 @@ export const SavedTextItem = (props: SavedTextItemProps) => {
 					</p>
 					<p className="m-0">Loaded: {props.numberOfLoads}</p>
 					<p className="m-0">Completed: {props.numberOfCompletes}</p>
-					<p className="m-0">
-						Practiced {props.numberOfCompletes}{" "}
-						{props.numberOfCompletes === 1 ? "time" : "times"}
-					</p>
 				</div>
 				<Button
 					id={loadId}
