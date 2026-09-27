@@ -900,4 +900,15 @@ describe("App (specs/002-history-refinements, User Story 1)", () => {
 		).toBeInTheDocument();
 		expect(charactersTyped()).toHaveTextContent("2 / 11");
 	});
+
+	it("[A6] with a session started but nothing typed, pressing Load loads immediately with no confirmation", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+	});
 });
