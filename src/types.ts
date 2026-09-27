@@ -6,9 +6,9 @@ export interface SavedText {
 	dateCreated: Date;
 	/** Last practiced: refreshed every time a session starts with this text. */
 	dateModified: Date;
-	/** Legacy, unused: how many sessions earlier versions started with this text. No longer read, shown or updated. */
+	/** Loaded count: how many sessions have been started with this text, from Start or Load. Shown as "Loaded: N". */
 	numberOfLoads: number;
-	/** Practice count: how many sessions have typed this text through to the end, with or without mistakes. */
+	/** Completed count: how many sessions have typed this text through to the end, with or without mistakes. Shown as "Completed: N". */
 	numberOfCompletes: number;
 	text: string;
 }

@@ -590,3 +590,15 @@ The outer loop is opened per acceptance behavior after its units, not before: th
 - refactor: none needed
 - commit: previous commit was `b09c502`
 - state: DONE
+
+## Cycle 50: U41 when the insert loses a two-writer race, the retry path also adds 1 to numberOfLoads
+
+- test: `src/features/savedItems/history.test.ts::[U41] when the insert loses a two-writer race, the retry path also adds 1 to the loaded count` (new). The mocked `add` inserts the other writer's row (loaded count 3) through the real `add` and then rejects with `ConstraintError`, so this call's lookup has already missed and the retry path really runs.
+- finding (001, not changed): `[U68] when inserting a new text loses a race ..., retries once as an update and resolves ok` inserts the winning row _before_ calling `recordPractice`, so the first lookup finds it, the existing-entry path runs, and the mocked `add` is never called. It passes without exercising the retry path its name describes. Reported, not fixed (a 001 test, outside this behavior).
+- red: `pnpm vitest run src/features/savedItems/history.test.ts -t "\[U41\]"` -> `AssertionError: expected 3 to be 4` (1 failed | 28 skipped): the retry ran (one row, result ok) but left the loaded count.
+- green: the retry's update also sets `numberOfLoads: winner.numberOfLoads + 1`. Same command -> `1 passed | 28 skipped (29)`.
+- first gate: `pnpm test` x3 green (158), but **`pnpm build` failed**: `TS2345: Argument of type '(item: InsertType<SavedText, "id">) => Promise<never>' is not assignable to ... PromiseExtended<number>` in the test's `async` mock. The mock was rewritten to chain off the real `add` (`realAdd(...).then(() => { throw constraintError; })`), which returns Dexie's promise type. Re-verified: with the implementation line removed the rewritten test fails the same way (`expected 3 to be 4`), and with it, passes.
+- suite: `pnpm test` x3 -> 158 passed each (8.01 s, 7.91 s, 7.84 s); `pnpm build` passes
+- refactor: `src/types.ts` comments: `numberOfLoads` is the "Loaded count" (was "Legacy, unused"), `numberOfCompletes` the "Completed count" (T028; comments only)
+- commit: previous commit was `b79fe7c`
+- state: DONE. Ticked T024 and T028 (U38-U41 all DONE).

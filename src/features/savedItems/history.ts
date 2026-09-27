@@ -59,7 +59,10 @@ export async function recordPractice(text: string): Promise<WriteResult> {
 					.equals(normalized)
 					.first();
 				if (!winner) throw err;
-				await savedTextsDb.savedTexts.update(winner.id, { dateModified: now });
+				await savedTextsDb.savedTexts.update(winner.id, {
+					dateModified: now,
+					numberOfLoads: winner.numberOfLoads + 1,
+				});
 			}
 		});
 		return { ok: true };

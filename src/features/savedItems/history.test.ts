@@ -205,6 +205,30 @@ describe("recordPractice loaded count (specs/002-history-refinements contracts/h
 		expect(rows).toHaveLength(1);
 		expect(rows[0]?.numberOfLoads).toBe(2);
 	});
+
+	it("[U41] when the insert loses a two-writer race, the retry path also adds 1 to the loaded count", async () => {
+		// The other writer's insert lands between this call's lookup (which
+		// found nothing) and its own add, which then hits the unique index.
+		const table = savedTextsDb.savedTexts;
+		const realAdd = table.add.bind(table);
+		const constraintError = new Error(
+			"Key already exists in the object store.",
+		);
+		constraintError.name = "ConstraintError";
+		// Chained off the real add so the mock returns Dexie's own promise type.
+		vi.spyOn(table, "add").mockImplementationOnce((item) =>
+			realAdd({ ...item, numberOfLoads: 3 }).then(() => {
+				throw constraintError;
+			}),
+		);
+
+		const result = await recordPractice("hello world");
+
+		expect(result).toEqual({ ok: true });
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfLoads).toBe(4);
+	});
 });
 
 describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {
