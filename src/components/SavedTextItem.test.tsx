@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
+import { spokenPhrases } from "../test/screenReader";
 import { SavedTextItem } from "./SavedTextItem";
 
 describe("SavedTextItem (characterization: current behavior before the practice-history feature)", () => {
@@ -113,7 +114,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		);
 	});
 
-	it("[U45] shows 'Practiced 1 time' (singular) for a practice count of 1", () => {
+	// [U45]-[U47]: baseline updated for specs/002-history-refinements FR-007,
+	// which replaces "Practiced N time(s)" with "Completed: N" (no plural
+	// forms). Each keeps its sample count. See that feature's tdd/cycle-log.md.
+	it("[U45] shows 'Completed: 1' for a completed count of 1", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -126,10 +130,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 1 time")).toBeInTheDocument();
+		expect(screen.getByText("Completed: 1")).toBeInTheDocument();
 	});
 
-	it("[U46] shows 'Practiced 2 times' for a practice count of 2", () => {
+	it("[U46] shows 'Completed: 2' for a completed count of 2", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -142,10 +146,10 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 2 times")).toBeInTheDocument();
+		expect(screen.getByText("Completed: 2")).toBeInTheDocument();
 	});
 
-	it("[U47] shows 'Practiced 0 times' for a practice count of 0, and no separate 'Completed' text", () => {
+	it("[U47] shows 'Completed: 0' for a completed count of 0", () => {
 		render(
 			<SavedTextItem
 				id={1}
@@ -158,8 +162,7 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 			/>,
 		);
 
-		expect(screen.getByText("Practiced 0 times")).toBeInTheDocument();
-		expect(screen.queryByText(/Completed/)).not.toBeInTheDocument();
+		expect(screen.getByText("Completed: 0")).toBeInTheDocument();
 	});
 
 	it("[U50] a text of several thousand characters still renders its full text and its Load button", () => {
@@ -210,5 +213,55 @@ describe("SavedTextItem (specs/001-practice-history contracts/sidebar-ui.md)", (
 		);
 
 		await expectNoA11yViolations(container);
+	});
+});
+
+function renderEntry(counts: {
+	numberOfLoads: number;
+	numberOfCompletes: number;
+}) {
+	return render(
+		<SavedTextItem
+			id={1}
+			text="hello world"
+			dateCreated={new Date("2026-01-01T12:00:00Z")}
+			dateModified={new Date("2026-01-01T12:00:00Z")}
+			{...counts}
+			onLoadRequest={vi.fn()}
+		/>,
+	);
+}
+
+describe("SavedTextItem counts (specs/002-history-refinements contracts/ui.md)", () => {
+	it("[U34] shows Loaded: followed by the loaded count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		expect(screen.getByText("Loaded: 3")).toBeInTheDocument();
+	});
+
+	it("[U35] shows Completed: followed by the completed count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		expect(screen.getByText("Completed: 1")).toBeInTheDocument();
+	});
+
+	it("[U36] shows no Practiced count", () => {
+		renderEntry({ numberOfLoads: 3, numberOfCompletes: 1 });
+
+		// Case-sensitive: "Last practiced:" is the date line, and stays.
+		expect(screen.queryByText(/Practiced/)).not.toBeInTheDocument();
+	});
+
+	it("[U37] a screen reader reads both counts", async () => {
+		const { container } = renderEntry({
+			numberOfLoads: 3,
+			numberOfCompletes: 1,
+		});
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases).toEqual(
+			expect.arrayContaining(["Loaded: 3", "Completed: 1"]),
+		);
 	});
 });

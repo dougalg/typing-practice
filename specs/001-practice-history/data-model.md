@@ -5,14 +5,14 @@
 One row per distinct practice text. The type is defined once in `src/types.ts` and imported by the
 feature module, the database definition and the presentational components.
 
-| Field | Type | Meaning | Rules |
-|-------|------|---------|-------|
-| `id` | number | Auto-incremented primary key | Assigned by the store |
-| `text` | string | The full text to type | Non-empty, no trailing whitespace (`normalizeText`); **unique** across entries |
-| `dateCreated` | Date | When the entry was first stored | Set once at creation, never changed |
-| `dateModified` | Date | **Last practiced**: the last time a session was started with this text | Set to "now" on every start or load |
-| `numberOfCompletes` | number | **Practice count**: how many sessions typed the text through to the end, with or without mistakes | Starts at 0, +1 per finished session; never changed by start, load, reset or abandon |
-| `numberOfLoads` | number | **Legacy, unused**: how many sessions earlier versions started with this text | No longer read, shown or updated. New entries are written with 0. Kept in the type and the store so no data migration is needed |
+| Field               | Type   | Meaning                                                                                           | Rules                                                                                                                           |
+| ------------------- | ------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                | number | Auto-incremented primary key                                                                      | Assigned by the store                                                                                                           |
+| `text`              | string | The full text to type                                                                             | Non-empty, no trailing whitespace (`normalizeText`); **unique** across entries                                                  |
+| `dateCreated`       | Date   | When the entry was first stored                                                                   | Set once at creation, never changed                                                                                             |
+| `dateModified`      | Date   | **Last practiced**: the last time a session was started with this text                            | Set to "now" on every start or load                                                                                             |
+| `numberOfCompletes` | number | **Practice count**: how many sessions typed the text through to the end, with or without mistakes | Starts at 0, +1 per finished session; never changed by start, load, reset or abandon                                            |
+| `numberOfLoads`     | number | **Legacy, unused**: how many sessions earlier versions started with this text                     | No longer read, shown or updated. New entries are written with 0. Kept in the type and the store so no data migration is needed |
 
 Invariants:
 
@@ -30,12 +30,12 @@ practice": no session starts and no entry is written (FR-003). It is the only pl
 
 ## Operations and state transitions
 
-| Trigger | Effect on the store |
-|---------|--------------------|
+| Trigger                                     | Effect on the store                                                                                                                                              |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Start with text `t` (normalised, non-empty) | If no entry has `text = t`: create one (`numberOfCompletes = 0`, `numberOfLoads = 0`, both dates now). Otherwise: `dateModified = now` and nothing else (FR-009) |
-| Load entry `e` | Same as Start with `t = e.text` |
-| Session for `t` reaches the last character | If an entry has `text = t`: `numberOfCompletes += 1` (FR-010) |
-| Reset, Load of another entry, or leaving | No change beyond the start that already happened |
+| Load entry `e`                              | Same as Start with `t = e.text`                                                                                                                                  |
+| Session for `t` reaches the last character  | If an entry has `text = t`: `numberOfCompletes += 1` (FR-010)                                                                                                    |
+| Reset, Load of another entry, or leaving    | No change beyond the start that already happened                                                                                                                 |
 
 Each operation runs in a single read-write transaction so a read followed by a write cannot
 interleave with another one in the same tab. Across tabs the unique index is the backstop: if the
@@ -51,11 +51,11 @@ the operations above update the view without manual refresh (SC-004).
 
 ## Schema versions
 
-| Version | `savedTexts` store definition | Notes |
-|---------|-------------------------------|-------|
-| 1 (existing) | `++id, dateCreated, dateLastUsed, text` | `dateLastUsed` is not a real field, so that index is empty. Duplicates by `text` are possible |
-| 2 | `++id, dateCreated, dateModified, text` | Upgrade merges duplicate `text` rows (see below) |
-| 3 | `++id, dateCreated, dateModified, &text` | Unique text index; no upgrade function needed |
+| Version      | `savedTexts` store definition            | Notes                                                                                         |
+| ------------ | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1 (existing) | `++id, dateCreated, dateLastUsed, text`  | `dateLastUsed` is not a real field, so that index is empty. Duplicates by `text` are possible |
+| 2            | `++id, dateCreated, dateModified, text`  | Upgrade merges duplicate `text` rows (see below)                                              |
+| 3            | `++id, dateCreated, dateModified, &text` | Unique text index; no upgrade function needed                                                 |
 
 ### Version 2 upgrade: merge duplicates
 

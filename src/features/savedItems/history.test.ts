@@ -166,6 +166,71 @@ describe("recordPractice (specs/001-practice-history contracts/history-module.md
 	});
 });
 
+describe("recordPractice loaded count (specs/002-history-refinements contracts/history-module.md)", () => {
+	afterEach(() => {
+		vi.restoreAllMocks();
+	});
+
+	it("[U38] on a new text creates one entry with a loaded count of 1 and a completed count of 0", async () => {
+		await recordPractice("hello world");
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]).toMatchObject({ numberOfLoads: 1, numberOfCompletes: 0 });
+	});
+
+	it("[U39] on an existing text adds 1 to the loaded count and leaves the completed count", async () => {
+		await savedTextsDb.savedTexts.add({
+			text: "hello world",
+			dateCreated: new Date("2026-01-01T00:00:00Z"),
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+			numberOfLoads: 3,
+			numberOfCompletes: 2,
+		});
+
+		await recordPractice("hello world");
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]).toMatchObject({ numberOfLoads: 4, numberOfCompletes: 2 });
+	});
+
+	it("[U40] two calls for a new text issued together leave one entry with a loaded count of 2", async () => {
+		await Promise.all([
+			recordPractice("hello world"),
+			recordPractice("hello world"),
+		]);
+
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfLoads).toBe(2);
+	});
+
+	it("[U41] when the insert loses a two-writer race, the retry path also adds 1 to the loaded count", async () => {
+		// The other writer's insert lands between this call's lookup (which
+		// found nothing) and its own add, which then hits the unique index.
+		const table = savedTextsDb.savedTexts;
+		const realAdd = table.add.bind(table);
+		const constraintError = new Error(
+			"Key already exists in the object store.",
+		);
+		constraintError.name = "ConstraintError";
+		// Chained off the real add so the mock returns Dexie's own promise type.
+		vi.spyOn(table, "add").mockImplementationOnce((item) =>
+			realAdd({ ...item, numberOfLoads: 3 }).then(() => {
+				throw constraintError;
+			}),
+		);
+
+		const result = await recordPractice("hello world");
+
+		expect(result).toEqual({ ok: true });
+		const rows = await savedTextsDb.savedTexts.toArray();
+		expect(rows).toHaveLength(1);
+		expect(rows[0]?.numberOfLoads).toBe(4);
+	});
+});
+
 describe("useHistory (specs/001-practice-history contracts/history-module.md)", () => {
 	afterEach(() => {
 		vi.restoreAllMocks();

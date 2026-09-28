@@ -73,6 +73,27 @@ export function openSavedTextsDb(name: string): SavedTextsDb {
 		savedTexts: "++id, dateCreated, dateModified, &text",
 	});
 
+	// 001 stopped counting loads and wrote 0 for new entries. Every stored entry
+	// was started at least once, and at least as often as it was completed, so
+	// its loaded count is raised to that lower bound
+	// (specs/002-history-refinements FR-011).
+	db.version(4)
+		.stores({
+			savedTexts: "++id, dateCreated, dateModified, &text",
+		})
+		.upgrade(async (tx) => {
+			await tx
+				.table<SavedText, number>("savedTexts")
+				.toCollection()
+				.modify((entry) => {
+					entry.numberOfLoads = Math.max(
+						entry.numberOfLoads,
+						entry.numberOfCompletes,
+						1,
+					);
+				});
+		});
+
 	return db;
 }
 

@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "./style.css";
 import type { TypingState } from "./types";
 import SetupView from "./views/SetupView";
 import PracticeView from "./views/PracticeView";
 import { PageLayout } from "./layouts/Page";
 import { Sidebar } from "./views/Sidebar";
+import { ConfirmDiscardDialog } from "./components/ConfirmDiscardDialog";
 import {
 	normalizeText,
 	recordCompletion,
@@ -16,25 +17,63 @@ interface Session {
 	runId: number;
 }
 
+/** A Load held back by the discard confirmation. */
+interface PendingLoad {
+	text: string;
+	/** The Load button pressed, to take focus back if the load is cancelled. */
+	trigger: HTMLElement;
+}
+
 function App() {
 	const [typingState, setTypingState] = useState<TypingState>("idle");
 	const [session, setSession] = useState<Session>({ text: "", runId: 0 });
 	const [saveError, setSaveError] = useState(false);
+	// At least one character typed in the current session (spec FR-001).
+	const [sessionTouched, setSessionTouched] = useState(false);
+	const [pendingLoad, setPendingLoad] = useState<PendingLoad | null>(null);
+	const returnFocusTo = useRef<HTMLElement | null>(null);
+
+	// Runs after the dialog's own effect has closed it (a child's effects run
+	// before its parent's), so the page is no longer inert when focus moves.
+	useEffect(() => {
+		if (pendingLoad || !returnFocusTo.current) return;
+		returnFocusTo.current.focus();
+		returnFocusTo.current = null;
+	}, [pendingLoad]);
 
 	const startSession = useCallback((text: string) => {
 		setSession((prev) => ({ text, runId: prev.runId + 1 }));
+		setSessionTouched(false);
 		setTypingState("running");
 		recordPractice(text).then((result) => {
 			if (!result.ok) setSaveError(true);
 		});
 	}, []);
 
+	const sessionInProgress = typingState === "running" && sessionTouched;
+
 	const handleLoadRequest = useCallback(
-		(item: { text: string }) => {
+		(item: { text: string }, trigger: HTMLElement) => {
+			if (sessionInProgress) {
+				setPendingLoad({ text: item.text, trigger });
+				return;
+			}
 			startSession(item.text);
 		},
-		[startSession],
+		[sessionInProgress, startSession],
 	);
+
+	const handleCancelDiscard = () => {
+		if (!pendingLoad) return;
+		returnFocusTo.current = pendingLoad.trigger;
+		setPendingLoad(null);
+	};
+
+	const handleConfirmDiscard = () => {
+		if (!pendingLoad) return;
+		setPendingLoad(null);
+		startSession(pendingLoad.text);
+	};
 
 	const handleFinish = useCallback(() => {
 		// Guards against a text being counted twice if onFinish is ever invoked
@@ -50,20 +89,28 @@ function App() {
 	}, [session.text]);
 
 	return (
-		<PageLayout
-			main={
-				<AppInner
-					typingState={typingState}
-					setTypingState={setTypingState}
-					session={session}
-					onStartSession={startSession}
-					onFinish={handleFinish}
-				/>
-			}
-			sidebar={
-				<Sidebar onLoadRequest={handleLoadRequest} saveError={saveError} />
-			}
-		/>
+		<>
+			<PageLayout
+				main={
+					<AppInner
+						typingState={typingState}
+						setTypingState={setTypingState}
+						session={session}
+						onStartSession={startSession}
+						onFinish={handleFinish}
+						onTypingStarted={() => setSessionTouched(true)}
+					/>
+				}
+				sidebar={
+					<Sidebar onLoadRequest={handleLoadRequest} saveError={saveError} />
+				}
+			/>
+			<ConfirmDiscardDialog
+				open={pendingLoad !== null}
+				onConfirm={handleConfirmDiscard}
+				onCancel={handleCancelDiscard}
+			/>
+		</>
 	);
 }
 
@@ -73,6 +120,7 @@ interface AppInnerProps {
 	session: Session;
 	onStartSession: (text: string) => void;
 	onFinish: () => void;
+	onTypingStarted: () => void;
 }
 
 function AppInner({
@@ -81,6 +129,7 @@ function AppInner({
 	session,
 	onStartSession,
 	onFinish,
+	onTypingStarted,
 }: AppInnerProps) {
 	const [sourceText, setSourceText] = useState("");
 	const [setupError, setSetupError] = useState("");
@@ -128,6 +177,7 @@ function AppInner({
 			typingState={typingState}
 			onFinish={onFinish}
 			onReset={handleReset}
+			onTypingStarted={onTypingStarted}
 		/>
 	);
 }

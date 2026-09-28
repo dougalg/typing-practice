@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expectNoA11yViolations } from "../test/a11y";
+import { spokenPhrases } from "../test/screenReader";
 import { Sidebar } from "./Sidebar";
 import { savedTextsDb } from "../features/savedItems/db";
 
@@ -177,7 +178,10 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 		await user.click(olderButton);
 
 		expect(onLoadRequest).toHaveBeenCalledOnce();
-		expect(onLoadRequest).toHaveBeenCalledWith(
+		// Baseline updated for 002's [U26]: onLoadRequest now also receives the
+		// pressed button (contracts/ui.md), so the entry argument is checked on
+		// its own. See specs/002-history-refinements/tdd/cycle-log.md.
+		expect(onLoadRequest.mock.calls[0]?.[0]).toEqual(
 			expect.objectContaining({ text: "older" }),
 		);
 	});
@@ -241,5 +245,119 @@ describe("Sidebar (specs/001-practice-history contracts/sidebar-ui.md)", () => {
 
 		const items = await screen.findAllByRole("listitem");
 		expect(items).toHaveLength(2);
+	});
+});
+
+describe("Sidebar (specs/002-history-refinements contracts/ui.md)", () => {
+	it("[U26] pressing an entry's Load button calls onLoadRequest with that entry and that button element", async () => {
+		const user = userEvent.setup();
+		await addEntry({
+			text: "older",
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+		});
+		await addEntry({
+			text: "newer",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+		const onLoadRequest = vi.fn();
+		render(<Sidebar onLoadRequest={onLoadRequest} />);
+
+		const olderButton = await screen.findByRole("button", {
+			name: /^Load .*older/,
+		});
+		await user.click(olderButton);
+
+		expect(onLoadRequest).toHaveBeenCalledExactlyOnceWith(
+			expect.objectContaining({ text: "older" }),
+			olderButton,
+		);
+	});
+});
+
+describe("Sidebar screen-reader output (specs/002-history-refinements, 001's manual checks 15 and 17)", () => {
+	it("[U28] a screen reader announces the region as Practice History", async () => {
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText(
+			"No practice history yet. Texts you practice will appear here.",
+		);
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases[0]).toBe("region, Practice History");
+	});
+
+	it("[U29] a screen reader reads the entries newest first", async () => {
+		await addEntry({
+			text: "older",
+			dateModified: new Date("2026-01-01T00:00:00Z"),
+		});
+		await addEntry({
+			text: "newer",
+			dateModified: new Date("2026-01-02T00:00:00Z"),
+		});
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText("older");
+
+		const phrases = await spokenPhrases(container);
+
+		const entryTexts = phrases.filter((p) => p === "older" || p === "newer");
+		expect(entryTexts).toEqual(["newer", "older"]);
+	});
+
+	it("[U30] a screen reader announces each Load button as Load plus that entry's text", async () => {
+		await addEntry({ text: "alpha" });
+		await addEntry({ text: "beta" });
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText("alpha");
+
+		const phrases = await spokenPhrases(container);
+
+		const buttons = phrases.filter((p) => p.startsWith("button,"));
+		expect(buttons.sort()).toEqual(["button, Load alpha", "button, Load beta"]);
+	});
+
+	it("[U31] a screen reader reads the empty-state message", async () => {
+		const EMPTY_STATE =
+			"No practice history yet. Texts you practice will appear here.";
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+		await screen.findByText(EMPTY_STATE);
+
+		const phrases = await spokenPhrases(container);
+
+		expect(phrases).toContain(EMPTY_STATE);
+	});
+
+	it("[U32] a screen reader announces the read-failure alert", async () => {
+		// A real failure path (see [U59]): closing the connection, not a mock.
+		await savedTextsDb.close();
+		try {
+			const { container } = render(<Sidebar onLoadRequest={vi.fn()} />);
+			await screen.findByRole("alert");
+
+			const phrases = await spokenPhrases(container);
+
+			const alertAt = phrases.indexOf("alert");
+			expect(phrases.slice(alertAt, alertAt + 2)).toEqual([
+				"alert",
+				"Practice history could not be loaded.",
+			]);
+		} finally {
+			await savedTextsDb.open();
+		}
+	});
+
+	it("[U33] a screen reader announces the save-failure alert", async () => {
+		const { container } = render(<Sidebar onLoadRequest={vi.fn()} saveError />);
+		await screen.findByText(
+			"No practice history yet. Texts you practice will appear here.",
+		);
+
+		const phrases = await spokenPhrases(container);
+
+		const alertAt = phrases.indexOf("alert");
+		expect(phrases.slice(alertAt, alertAt + 2)).toEqual([
+			"alert",
+			"Your practice history could not be saved. You can keep practicing.",
+		]);
 	});
 });

@@ -1,9 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Dexie } from "dexie";
+// Real input through Playwright, for 002's tests, where native <dialog>
+// behavior (Escape, focus) is part of what is being tested.
+import { page, userEvent as browserUserEvent } from "vitest/browser";
 import App from "./App";
 import * as historyModule from "./features/savedItems/history";
 import { savedTextsDb } from "./features/savedItems/db";
+
+// In the browser, ES module namespaces are real and their exports cannot be
+// redefined, so `vi.spyOn(historyModule, ...)` needs the module to be wrapped
+// first. `spy: true` keeps every export's real implementation.
+vi.mock("./features/savedItems/history", { spy: true });
 
 const SETUP_PLACEHOLDER = "Type or paste any text you want to practice...";
 const TYPING_PLACEHOLDER =
@@ -345,6 +354,9 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 			name: /^Load .*second text/,
 		});
 		await user.click(loadSecond);
+		// Baseline updated for specs/002-history-refinements (US1): a Load while
+		// a session is in progress now asks first; confirming loads as before.
+		await user.click(screen.getByRole("button", { name: "Discard and load" }));
 
 		expect(getPracticeText("second text")).toBeInTheDocument();
 		expect(screen.getByText("0")).toBeInTheDocument();
@@ -457,6 +469,9 @@ describe("App (specs/001-practice-history, User Story 2)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
 
 		await user.click(loadButton);
+		// Baseline updated for specs/002-history-refinements (US1): a Load while
+		// a session is in progress now asks first; confirming loads as before.
+		await user.click(screen.getByRole("button", { name: "Discard and load" }));
 
 		expect(getPracticeText("hello world")).toBeInTheDocument();
 		expect(screen.getByText("0")).toBeInTheDocument();
@@ -529,8 +544,10 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(typingInput, "X"); // mistake: expected "h"
 		await user.type(typingInput, "hi"); // corrected, then completes
 
+		// Baseline updated for specs/002-history-refinements FR-007: the count
+		// reads "Completed: N" instead of "Practiced N time(s)".
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 1 time"),
+			await within(sidebarRegion()).findByText("Completed: 1"),
 		).toBeInTheDocument();
 
 		// Finishing the same text again, in a separate session, shows 2.
@@ -540,7 +557,7 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hi");
 
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 2 times"),
+			await within(sidebarRegion()).findByText("Completed: 2"),
 		).toBeInTheDocument();
 	});
 
@@ -553,8 +570,10 @@ describe("App (specs/001-practice-history, User Story 3)", () => {
 		await user.type(screen.getByPlaceholderText(TYPING_PLACEHOLDER), "hel");
 		await user.click(resetButton());
 
+		// Baseline updated for specs/002-history-refinements FR-007: the count
+		// reads "Completed: N" instead of "Practiced N time(s)".
 		expect(
-			await within(sidebarRegion()).findByText("Practiced 0 times"),
+			await within(sidebarRegion()).findByText("Completed: 0"),
 		).toBeInTheDocument();
 	});
 
@@ -631,4 +650,480 @@ describe("App (practice text rendering)", () => {
 			expect(within(section).getByText(glyph)).toBeInTheDocument();
 		},
 	);
+});
+
+interface Version1Row {
+	text: string;
+	dateCreated: Date;
+	dateModified: Date;
+	numberOfLoads: number;
+	numberOfCompletes: number;
+}
+
+/** The savedTexts store definitions of earlier schema versions. */
+const OLD_SCHEMAS = {
+	1: "++id, dateCreated, dateLastUsed, text", // before 001
+	3: "++id, dateCreated, dateModified, &text", // as 001 shipped it
+} as const;
+
+/**
+ * Replaces the app's database with one at an earlier schema `version`, holding
+ * `rows`. Dexie opens lazily, so reopening `savedTextsDb` afterwards runs every
+ * upgrade from that version on.
+ */
+async function seedOldDatabase(
+	version: keyof typeof OLD_SCHEMAS,
+	rows: Version1Row[],
+) {
+	savedTextsDb.close();
+	await Dexie.delete(savedTextsDb.name);
+	const old = new Dexie(savedTextsDb.name);
+	old.version(version).stores({ savedTexts: OLD_SCHEMAS[version] });
+	await old.open();
+	await old.table("savedTexts").bulkAdd(rows);
+	old.close();
+	await savedTextsDb.open();
+}
+
+function version1Row(
+	overrides: Partial<Version1Row> & { text: string },
+): Version1Row {
+	return {
+		dateCreated: new Date("2026-01-01T00:00:00Z"),
+		dateModified: new Date("2026-01-01T00:00:00Z"),
+		numberOfLoads: 1,
+		numberOfCompletes: 0,
+		...overrides,
+	};
+}
+
+// Vitest browser mode's default viewport, restored after a test changes it.
+const DEFAULT_VIEWPORT = { width: 414, height: 896 };
+
+// Test ids below are 002's (specs/002-history-refinements/tdd/test-list.md).
+// 001's tests above reuse some of the same ids, so filter by this describe
+// name too: -t "002-history-refinements.*\[A17\]".
+describe("App (specs/002-history-refinements, checks carried over from 001)", () => {
+	it("[A17] data from before 001, with duplicate rows of one text, shows one entry per text", async () => {
+		await seedOldDatabase(1, [
+			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 1) }),
+			version1Row({ text: "alpha", dateModified: new Date(2026, 0, 2) }),
+			version1Row({ text: "beta", dateModified: new Date(2026, 0, 3) }),
+		]);
+
+		render(<App />);
+
+		const items = await within(sidebarRegion()).findAllByRole("listitem");
+		expect(items.map((item) => item.querySelector("p")?.textContent)).toEqual([
+			"beta",
+			"alpha",
+		]);
+	});
+
+	it("[A18] with IndexedDB unusable from the start, practice can still be started and the sidebar shows an alert", async () => {
+		// Closed but still allowed to auto-open, so the app's first query opens
+		// the database afresh, and that open fails the way it does in a browser
+		// where storage is blocked.
+		savedTextsDb.close({ disableAutoOpen: false });
+		const openSpy = vi.spyOn(indexedDB, "open").mockImplementation(() => {
+			throw new DOMException(
+				"IndexedDB is not available.",
+				"InvalidStateError",
+			);
+		});
+		try {
+			const user = userEvent.setup();
+			render(<App />);
+
+			expect(
+				await within(sidebarRegion()).findByRole("alert"),
+			).toHaveTextContent("Practice history could not be loaded.");
+
+			await user.type(setupBox(), "hello world");
+			await user.click(startButton());
+			expect(
+				screen.getByPlaceholderText(TYPING_PLACEHOLDER),
+			).toBeInTheDocument();
+		} finally {
+			openSpy.mockRestore();
+			await savedTextsDb.open();
+		}
+	});
+
+	it("[A19] at a 320 CSS px viewport with entries listed, the page does not scroll sideways and every Load button is fully visible", async () => {
+		// WCAG 1.4.10 Reflow: content must fit 320 CSS px without horizontal
+		// scrolling. The entries include a long unbroken text, the likeliest
+		// thing to push the layout wider.
+		const REFLOW_WIDTH = 320;
+		await savedTextsDb.savedTexts.bulkAdd([
+			{
+				text: "short text",
+				dateCreated: new Date(2026, 0, 1),
+				dateModified: new Date(2026, 0, 1),
+				numberOfLoads: 1,
+				numberOfCompletes: 0,
+			},
+			{
+				text: "unbroken".repeat(40),
+				dateCreated: new Date(2026, 0, 2),
+				dateModified: new Date(2026, 0, 2),
+				numberOfLoads: 1,
+				numberOfCompletes: 0,
+			},
+		]);
+		await page.viewport(REFLOW_WIDTH, 800);
+		try {
+			render(<App />);
+			const loadButtons = await within(sidebarRegion()).findAllByRole(
+				"button",
+				{ name: /^Load/ },
+			);
+			expect(loadButtons).toHaveLength(2);
+
+			const root = document.documentElement;
+			expect(root.clientWidth).toBe(REFLOW_WIDTH);
+			expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth);
+			for (const button of loadButtons) {
+				const box = button.getBoundingClientRect();
+				expect(box.left).toBeGreaterThanOrEqual(0);
+				expect(box.right).toBeLessThanOrEqual(root.clientWidth);
+			}
+		} finally {
+			await page.viewport(DEFAULT_VIEWPORT.width, DEFAULT_VIEWPORT.height);
+		}
+	});
+});
+
+const DISCARD_QUESTION = "Discard your progress on this text?";
+
+/** Adds history entries directly, the last one most recently practiced. */
+async function addHistory(...texts: string[]) {
+	await savedTextsDb.savedTexts.bulkAdd(
+		texts.map((text, i) => ({
+			text,
+			dateCreated: new Date(2026, 0, i + 1),
+			dateModified: new Date(2026, 0, i + 1),
+			numberOfLoads: 1,
+			numberOfCompletes: 0,
+		})),
+	);
+}
+
+function loadButtonFor(text: string) {
+	return within(sidebarRegion()).findByRole("button", {
+		name: new RegExp(`^Load .*${text}`),
+	});
+}
+
+function typingInput() {
+	return screen.getByPlaceholderText(TYPING_PLACEHOLDER);
+}
+
+/** The practice view's "Characters" statistic, e.g. "2 / 10". */
+function charactersTyped() {
+	const term = screen.getByText("Characters");
+	if (!term.nextElementSibling)
+		throw new Error('Expected a <dd> after "Characters"');
+	return term.nextElementSibling;
+}
+
+describe("App (specs/002-history-refinements, User Story 1)", () => {
+	it("[A1] with a session in progress, pressing Load on a different entry shows the discard question and leaves the session untouched", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
+	});
+
+	it("[A2] choosing Cancel closes the confirmation, keeps the same text and typed position, and returns focus to the pressed Load button", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+		await browserUserEvent.click(loadSecond);
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
+		expect(loadSecond).toHaveFocus();
+	});
+
+	it("[A3] pressing Escape on the confirmation does the same as Cancel", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+		await browserUserEvent.click(loadSecond);
+
+		await browserUserEvent.keyboard("{Escape}");
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("first text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 10");
+		expect(loadSecond).toHaveFocus();
+		// The browser closes a dialog on Escape by itself; the app must also
+		// have let go of the held-back load, so the next Load asks again.
+		await browserUserEvent.click(loadSecond);
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+	});
+
+	it("[A4] choosing Discard and load starts the chosen entry from its first character", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Discard and load" }),
+		);
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("0 / 11");
+	});
+
+	it("[A5] with a session in progress, pressing Load on the running entry also shows the confirmation", async () => {
+		await addHistory("hello world");
+		render(<App />);
+		const loadButton = await loadButtonFor("hello world");
+		await browserUserEvent.click(loadButton);
+		await browserUserEvent.type(typingInput(), "he");
+
+		await browserUserEvent.click(loadButton);
+
+		expect(
+			screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+		).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("2 / 11");
+	});
+
+	it("[A6] with a session started but nothing typed, pressing Load loads immediately with no confirmation", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+	});
+
+	it("[A7] with a session finished, pressing Load loads immediately with no confirmation", async () => {
+		await addHistory("second text", "hi");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("hi"));
+		await browserUserEvent.type(typingInput(), "hi");
+		expect(screen.getByText("Nice work! You finished.")).toBeInTheDocument();
+
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+	});
+
+	it("[A8] using only the keyboard, the user can open the confirmation from a Load button, cancel it, open it again and confirm it", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		const loadSecond = await loadButtonFor("second text");
+		// From here on, keyboard only: type, then Tab from the typing input to
+		// the Load button (bounded, so a broken tab order fails, not hangs).
+		await waitFor(() => expect(typingInput()).toHaveFocus());
+		await browserUserEvent.keyboard("fi");
+		for (let i = 0; i < 10 && document.activeElement !== loadSecond; i++) {
+			await browserUserEvent.tab();
+		}
+		expect(loadSecond).toHaveFocus();
+
+		await browserUserEvent.keyboard("{Enter}");
+		expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+		await browserUserEvent.keyboard("{Enter}");
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(loadSecond).toHaveFocus();
+
+		await browserUserEvent.keyboard(" ");
+		await browserUserEvent.tab();
+		expect(
+			screen.getByRole("button", { name: "Discard and load" }),
+		).toHaveFocus();
+		await browserUserEvent.keyboard("{Enter}");
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(getPracticeText("second text")).toBeInTheDocument();
+		expect(charactersTyped()).toHaveTextContent("0 / 11");
+	});
+
+	it("[A14] pressing Load several times quickly while a session is in progress shows exactly one confirmation", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+
+		// Real input cannot reach the page once the modal is open (it is inert),
+		// so the repeat presses are DOM clicks, as fast as they come.
+		loadSecond.click();
+		loadSecond.click();
+		loadSecond.click();
+
+		await waitFor(() =>
+			expect(
+				screen.getByRole("dialog", { name: DISCARD_QUESTION }),
+			).toBeInTheDocument(),
+		);
+		expect(screen.getAllByRole("dialog")).toHaveLength(1);
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+	});
+
+	it("[A15] pressing Reset while a session is in progress returns to the empty setup box with no confirmation", async () => {
+		await addHistory("first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+
+		await browserUserEvent.click(resetButton());
+
+		expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+		expect(setupBox()).toHaveValue("");
+	});
+
+	it("[A21] Cancel returns focus to the pressed Load button even when pressing it did not move focus there", async () => {
+		await addHistory("second text", "first text");
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		const loadSecond = await loadButtonFor("second text");
+
+		// Safari does not focus a button when it is clicked. A DOM click()
+		// activates the button the same way, leaving focus in the typing input.
+		loadSecond.click();
+		await waitFor(() =>
+			expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus(),
+		);
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+
+		expect(loadSecond).toHaveFocus();
+	});
+});
+
+/** The sidebar entry (list item) for `text`, once it is listed. */
+async function historyEntry(text: string) {
+	const preview = await within(sidebarRegion()).findByText(text);
+	const entry = preview.closest("li");
+	if (!entry) throw new Error(`Expected a list item around "${text}"`);
+	return within(entry);
+}
+
+describe("App (specs/002-history-refinements, User Story 2)", () => {
+	it("[A9] starting a new text shows Loaded: 1 and Completed: 0 on its entry", async () => {
+		render(<App />);
+
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 1")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
+
+	it("[A10] starting the same text again from the setup box raises Loaded by one and leaves Completed", async () => {
+		render(<App />);
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+		await (await historyEntry("hello world")).findByText("Loaded: 1");
+		await browserUserEvent.click(resetButton());
+
+		await browserUserEvent.type(setupBox(), "hello world");
+		await browserUserEvent.click(startButton());
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
+
+	it("[A11] loading an entry from the sidebar raises its Loaded by one and leaves Completed", async () => {
+		await addHistory("hello world"); // Loaded: 1, Completed: 0
+		render(<App />);
+
+		await browserUserEvent.click(await loadButtonFor("hello world"));
+
+		const entry = await historyEntry("hello world");
+		expect(await entry.findByText("Loaded: 2")).toBeInTheDocument();
+		expect(entry.getByText("Completed: 0")).toBeInTheDocument();
+	});
+
+	it("[A12] finishing a text, with a mistake on the way, raises Completed by one and leaves Loaded", async () => {
+		render(<App />);
+		await browserUserEvent.type(setupBox(), "hi");
+		await browserUserEvent.click(startButton());
+		await (await historyEntry("hi")).findByText("Loaded: 1");
+
+		await browserUserEvent.type(typingInput(), "X"); // mistake: expected "h"
+		await browserUserEvent.type(typingInput(), "hi");
+
+		const entry = await historyEntry("hi");
+		expect(await entry.findByText("Completed: 1")).toBeInTheDocument();
+		expect(entry.getByText("Loaded: 1")).toBeInTheDocument();
+	});
+
+	it("[A13] cancelling the confirmation leaves the target entry's Loaded count and last-practiced date unchanged", async () => {
+		await addHistory("second text", "first text"); // second text: Jan 1, Loaded 1
+		render(<App />);
+		await browserUserEvent.click(await loadButtonFor("first text"));
+		await browserUserEvent.type(typingInput(), "fi");
+		await browserUserEvent.click(await loadButtonFor("second text"));
+
+		await browserUserEvent.click(
+			screen.getByRole("button", { name: "Cancel" }),
+		);
+		// IndexedDB runs read-write transactions in order, so once this no-op
+		// write is done, any write the Load might have started is done too.
+		await historyModule.recordCompletion("no such text");
+
+		const row = await savedTextsDb.savedTexts
+			.where("text")
+			.equals("second text")
+			.first();
+		expect(row).toMatchObject({
+			numberOfLoads: 1,
+			dateModified: new Date(2026, 0, 1),
+		});
+		expect(
+			(await historyEntry("second text")).getByText("Loaded: 1"),
+		).toBeInTheDocument();
+	});
+
+	it("[A16] an entry stored with a loaded count of 0 shows Loaded: 1 after the upgrade", async () => {
+		// Written by 001 (schema version 3), which stored 0 for new entries.
+		await seedOldDatabase(3, [
+			version1Row({ text: "from 001", numberOfLoads: 0 }),
+		]);
+
+		render(<App />);
+
+		const entry = await historyEntry("from 001");
+		expect(entry.getByText("Loaded: 1")).toBeInTheDocument();
+	});
 });
